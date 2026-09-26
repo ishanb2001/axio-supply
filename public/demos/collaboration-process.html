@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collaboration Process</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --ink: #1d1d1f;
+        --muted: #6e6e73;
+        --soft: #86868b;
+        --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --radius: 28px;
+        --stack-top: clamp(64px, 9vh, 96px);
+        --stack-step: 26px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        font-family: var(--font);
+        color: #111111;
+        background: var(--bg);
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      .page {
+        position: relative;
+        z-index: 1;
+      }
+
+      .intro,
+      .outro {
+        min-height: 45vh;
+        display: grid;
+        place-items: center;
+        padding: 48px 24px;
+      }
+
+      .intro__label,
+      .outro__label {
+        font-size: 12px;
+        font-weight: 510;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(17, 17, 17, 0.4);
+      }
+
+      .process {
+        width: min(920px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: clamp(24px, 5vh, 48px) 0 28vh;
+      }
+
+      .process__title {
+        max-width: 12ch;
+        margin: 0 auto clamp(40px, 6vh, 64px);
+        text-align: center;
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        font-weight: 600;
+        letter-spacing: -0.035em;
+        line-height: 1.05;
+        color: #111111;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .card {
+        --card: #ffffff;
+        --card-ink: #000000;
+        position: sticky;
+        top: var(--stack-top);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 18px;
+        width: min(920px, calc(100% - 48px));
+        min-height: 0;
+        margin: 0 auto;
+        padding: 16px 16px 22px;
+        border: 1px solid #e0e0e4;
+        border-radius: var(--radius);
+        background: #e8e8ec;
+        color: #111111;
+        transform-origin: 50% 0%;
+        clip-path: inset(0 0 0 0 round var(--radius));
+        will-change: transform, clip-path;
+        z-index: calc(10 + var(--i, 0));
+        box-shadow: none;
+      }
+
+      .card__photo {
+        display: block;
+        width: 100%;
+        height: 210px;
+        object-fit: cover;
+        border-radius: 18px;
+      }
+
+      .card__label {
+        margin: 0;
+        padding: 0 8px 4px;
+        font-family: Inter, sans-serif;
+        font-size: clamp(22px, 2vw, 36px);
+        font-weight: 600;
+        letter-spacing: -0.06em;
+        line-height: 1.06;
+        color: #111111;
+      }
+
+      .card__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: clamp(22px, 3vw, 32px);
+      }
+
+      .card__title {
+        font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        max-width: 14ch;
+      }
+
+      .card__title .quiet {
+        color: var(--card-muted);
+        font-weight: 500;
+      }
+
+      .card__num {
+        flex-shrink: 0;
+        font-size: clamp(2.4rem, 5.5vw, 3.5rem);
+        font-weight: 510;
+        letter-spacing: -0.05em;
+        line-height: 0.9;
+        color: var(--card-soft);
+        user-select: none;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .card__grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(20px, 3vw, 40px);
+      }
+
+      .point__label {
+        margin-bottom: 6px;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        color: var(--card-ink);
+      }
+
+      .point__body {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.45;
+        letter-spacing: -0.01em;
+        color: var(--card-muted);
+        max-width: 28ch;
+      }
+
+      @media (max-width: 720px) {
+        .card__grid {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+
+        .card__title {
+          max-width: 12ch;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .card {
+          will-change: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <section class="intro">
+        <p class="intro__label">Scroll</p>
+      </section>
+
+      <section class="process" id="process">
+        <h1 class="process__title" id="processTitle">
+          A simpler way to collaborate
+        </h1>
+
+        <div class="stack" id="stack">
+          <article class="card" style="--i: 0" data-card>
+            <img class="card__photo" src="/images/placeholders/01.jpg" alt="" />
+            <p class="card__label">Consultation</p>
+          </article>
+
+          <article class="card" style="--i: 1" data-card>
+            <img class="card__photo" src="/images/placeholders/02.jpg" alt="" />
+            <p class="card__label">Solution design</p>
+          </article>
+
+          <article class="card" style="--i: 2" data-card>
+            <img class="card__photo" src="/images/placeholders/03.jpg" alt="" />
+            <p class="card__label">Implementation</p>
+          </article>
+
+          <article class="card" style="--i: 3" data-card>
+            <img class="card__photo" src="/images/placeholders/04.jpg" alt="" />
+            <p class="card__label">Monitoring</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="outro">
+        <p class="outro__label">Keep scrolling</p>
+      </section>
+    </div>
+
+    <script>
+      gsap.registerPlugin(ScrollTrigger, CustomEase);
+
+      // ≈ cubic-bezier(0.22, 1, 0.36, 1)
+      CustomEase.create("appleOut", "M0,0 C0.22,1 0.36,1 1,1");
+      /*
+       * Ease-in for card travel: slow departure, natural acceleration.
+       * Slight softening near 1 so arrival isn’t a hard stop
+       * (≈ cubic-bezier(0.5, 0, 0.75, 0.45)).
+       */
+      CustomEase.create("cardIn", "M0,0 C0.5,0 0.75,0.45 1,1");
+      // Quiet settle for the reverse pop accent — no spring/bounce.
+      CustomEase.create("popSettle", "M0,0 C0.25,0.1 0.25,1 1,1");
+
+      const MAX_BEHIND = 2;
+      const SCALE_STEP = 0.09;
+      const Y_STEP = 28;
+      const POP = 0.02;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const dur = (n) => (reduced ? 0.01 : n);
+      const cards = gsap.utils.toArray("[data-card]");
+      const title = document.getElementById("processTitle");
+
+      gsap.set(title, { autoAlpha: 0, y: 32, filter: "blur(10px)" });
+      gsap.to(title, {
+        autoAlpha: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: dur(1.35),
+        ease: "appleOut",
+        scrollTrigger: {
+          trigger: title,
+          start: "top 90%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      cards.forEach((card, index) => {
+        gsap.set(card, {
+          transformOrigin: "50% 0%",
+          force3D: true,
+          scaleX: 1,
+          scaleY: 1,
+          y: 0,
+          clipPath: "inset(0% 0% 0% 0% round 28px)",
+          zIndex: 10 + index,
+        });
+      });
+
+      function scaleForDepth(depth) {
+        if (depth <= 0) return 1;
+        return 1 - Math.min(depth, MAX_BEHIND) * SCALE_STEP;
+      }
+
+      function getStackTopPx() {
+        return parseFloat(getComputedStyle(cards[0]).top) || 80;
+      }
+
+      /*
+       * Cover progress is driven by real overlap only:
+       * 0 → front card’s top meets the card behind’s bottom (first contact)
+       * 1 → front card reaches the sticky stack top (fully covering)
+       * Motion uses destination-relative ease-in so both stacking and
+       * unstacking start slow, then accelerate toward the target state.
+       */
+      const targetProgress = cards.slice(1).map(() => 0);
+      const currentProgress = cards.slice(1).map(() => 0);
+      // 1 = easing toward stacked, 0 = easing toward unstacked
+      const dirBlend = cards.slice(1).map(() => 1);
+      const cardIn = gsap.parseEase("cardIn");
+      const prevDepth = cards.map(() => 0);
+      const pop = cards.map(() => ({ v: 0 }));
+      const squish = cards.map(() => ({ v: 0 }));
+
+      // Ease-in toward destination in both scroll directions.
+      function easeToward(progress, towardStacked) {
+        const p = gsap.utils.clamp(0, 1, progress);
+        const forward = cardIn(p);
+        const reverse = 1 - cardIn(1 - p);
+        return gsap.utils.interpolate(reverse, forward, towardStacked);
+      }
+
+      function triggerSquish(cardIndex, speed) {
+        if (reduced) return;
+        const impact = gsap.utils.clamp(
+          0.08,
+          1,
+          gsap.utils.mapRange(140, 2400, 0.08, 1, Math.abs(speed))
+        );
+        gsap.killTweensOf(squish[cardIndex]);
+        squish[cardIndex].v = 0;
+        const press = gsap.utils.mapRange(0.08, 1, 0.2, 0.09, impact);
+        const release = gsap.utils.mapRange(0.08, 1, 0.38, 0.82, impact);
+        gsap.to(squish[cardIndex], {
+          keyframes: [
+            { v: impact, duration: press, ease: "power2.in" },
+            { v: 0, duration: release, ease: "appleOut" },
+          ],
+          overwrite: true,
+        });
+      }
+      function triggerPop(cardIndex) {
+        if (reduced) return;
+        gsap.killTweensOf(pop[cardIndex]);
+        pop[cardIndex].v = 1;
+        gsap.to(pop[cardIndex], {
+          v: 0,
+          duration: 0.64,
+          ease: "popSettle",
+          overwrite: true,
+        });
+      }
+
+      let scrollVelocity = 0;
+      let lastScrollY = window.scrollY;
+
+      gsap.ticker.add(() => {
+        const y = window.scrollY;
+        const dt = Math.max(gsap.ticker.deltaRatio(60) / 60, 0.001);
+        const instant = (y - lastScrollY) / dt;
+        lastScrollY = y;
+        scrollVelocity += (instant - scrollVelocity) * 0.4;
+      });
+
+      cards.forEach((card, index) => {
+        ScrollTrigger.create({
+          trigger: card,
+          start: () => `top ${getStackTopPx()}px`,
+          onEnter(self) {
+            if (self.direction !== 1) return;
+            const speed = Math.max(Math.abs(self.getVelocity() || 0), Math.abs(scrollVelocity));
+            triggerSquish(index, speed);
+          },
+        });
+      });
+
+      cards.slice(1).forEach((incoming, incomingIndex) => {
+        const behind = cards[incomingIndex];
+
+        ScrollTrigger.create({
+          trigger: incoming,
+          // Scale the card behind only while this card is covering it.
+          start: () => `top ${getStackTopPx() + behind.offsetHeight}px`,
+          end: () => `top ${getStackTopPx()}px`,
+          invalidateOnRefresh: true,
+          onUpdate(self) {
+            targetProgress[incomingIndex] = self.progress;
+          },
+          onRefresh(self) {
+            targetProgress[incomingIndex] = self.progress;
+            if (reduced) currentProgress[incomingIndex] = self.progress;
+          },
+        });
+      });
+
+      function renderStack() {
+        cards.forEach((card, cardIndex) => {
+          let depth = 0;
+
+          // Only transitions belonging to cards after this card add depth.
+          for (let i = cardIndex; i < currentProgress.length; i += 1) {
+            depth += easeToward(currentProgress[i], dirBlend[i]);
+          }
+
+          // Soft accent only on deliberate reverse steps — skip fast jumps.
+          const depthDelta = prevDepth[cardIndex] - depth;
+          const depthLevel = Math.min(MAX_BEHIND, Math.floor(depth + 0.12));
+          const prevLevel = Math.min(
+            MAX_BEHIND,
+            Math.floor(prevDepth[cardIndex] + 0.12)
+          );
+          if (
+            depthLevel < prevLevel &&
+            depthDelta > 0.02 &&
+            depthDelta < 0.55
+          ) {
+            triggerPop(cardIndex);
+          }
+          prevDepth[cardIndex] = depth;
+
+          const stackedDepth = Math.min(depth, MAX_BEHIND);
+          const exitRaw = gsap.utils.clamp(0, 1, depth - MAX_BEHIND);
+          // Same ease-in character for the exit slide / mask.
+          const exitProgress = easeToward(exitRaw, 1);
+          const stackedY = -stackedDepth * Y_STEP;
+          const exitY = Math.min(120, card.offsetHeight * 0.36);
+          const y = gsap.utils.interpolate(stackedY, exitY, exitProgress);
+          const baseScale =
+            scaleForDepth(stackedDepth) - exitProgress * 0.03;
+
+          const p = pop[cardIndex].v;
+          const s = squish[cardIndex].v;
+          const scaleX = baseScale * (1 + p * POP * 0.55) * (1 + s * 0.05);
+          const scaleY = baseScale * (1 + p * POP) * (1 - s * 0.16);
+          const popY = y + p * 6;
+
+          gsap.set(card, {
+            y: popY,
+            scaleX,
+            scaleY,
+            clipPath: `inset(0% 0% ${exitProgress * 100}% 0% round 28px)`,
+          });
+        });
+      }
+
+      gsap.ticker.add(() => {
+        const frameRatio = gsap.ticker.deltaRatio(60);
+        let changed = false;
+
+        currentProgress.forEach((value, index) => {
+          const delta = targetProgress[index] - value;
+          const abs = Math.abs(delta);
+
+          // Smoothly aim ease-in toward the active destination.
+          const wantStacked = targetProgress[index] >= value ? 1 : 0;
+          const dirRate = reduced ? 1 : 0.18;
+          const dirMix = 1 - Math.pow(1 - dirRate, frameRatio);
+          dirBlend[index] += (wantStacked - dirBlend[index]) * dirMix;
+
+          if (abs < 0.00008) {
+            currentProgress[index] = targetProgress[index];
+            return;
+          }
+
+          // Light follow so cubic ease-in shapes the motion, not the lag.
+          const rate = reduced
+            ? 1
+            : gsap.utils.clamp(0.18, 0.78, 0.2 + abs * 1.75);
+          const blend = 1 - Math.pow(1 - rate, frameRatio);
+          currentProgress[index] += delta * blend;
+          changed = true;
+        });
+
+        if (!changed) {
+          const dirMoving = dirBlend.some((v, i) => {
+            const want = targetProgress[i] >= currentProgress[i] ? 1 : 0;
+            return Math.abs(v - want) > 0.001;
+          });
+          if (dirMoving) changed = true;
+          else {
+            for (let i = 0; i < pop.length; i += 1) {
+              if (pop[i].v > 0.001 || squish[i].v > 0.001) {
+                changed = true;
+                break;
+              }
+            }
+          }
+        }
+
+        if (changed) renderStack();
+      });
+
+      renderStack();
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

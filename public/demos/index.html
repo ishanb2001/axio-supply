@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Explore Menu</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0e100f;
+        --nav-bg: #ffffff;
+        --ink: #111111;
+        --muted: rgba(17, 17, 17, 0.5);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        letter-spacing: -0.02em;
+        font-size: 14px;
+        font-family: Inter, Arial, sans-serif;
+      }
+
+      .nav-shell {
+        position: fixed;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(920px, calc(100% - 32px));
+        z-index: 100;
+      }
+
+      .nav-pill {
+        background: var(--nav-bg);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      }
+
+      .nav-bar {
+        height: 56px;
+        padding: 0 14px 0 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .nav-logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #000;
+        border: 0;
+        padding: 0;
+        display: block;
+        flex-shrink: 0;
+      }
+
+      .nav-menu {
+        display: flex;
+        align-items: center;
+        gap: clamp(12px, 2.5vw, 30px);
+      }
+
+      .nav-menu__item {
+        border: 0;
+        background: transparent;
+        color: var(--ink);
+        padding: 10px 0;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 500;
+        letter-spacing: -0.025em;
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+
+      .nav-menu__item:hover,
+      .nav-menu__item.is-active {
+        color: #777;
+      }
+
+      #expanded-menu {
+        overflow: hidden;
+        height: 0;
+        background: var(--nav-bg);
+        will-change: height;
+      }
+
+      .content {
+        padding: 8px 20px 24px;
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        gap: 40px;
+        opacity: 0;
+        transform: translateY(8px);
+        will-change: transform, opacity;
+      }
+
+      .menu-links {
+        list-style: none;
+        margin: 0;
+        padding: 8px 0 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.25rem;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .menu-links a {
+        color: var(--ink);
+        text-decoration: none;
+        font-size: clamp(1.6rem, 3vw, 2.4rem);
+        font-weight: 500;
+        letter-spacing: -0.04em;
+        line-height: 1.15;
+        display: inline-block;
+        transition: color 0.2s ease;
+      }
+
+      .menu-links a:hover {
+        color: #555;
+      }
+
+      .menu-card {
+        flex: 0 0 clamp(180px, 24vw, 260px);
+        position: relative;
+        display: block;
+        padding: 0;
+        border: 0;
+        border-radius: 14px;
+        overflow: hidden;
+        aspect-ratio: 4 / 5;
+        background: #000;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .menu-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        will-change: transform, filter;
+      }
+
+      .menu-card__label {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        color: #fff;
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+        z-index: 1;
+      }
+
+      .menu-card__panel {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 22px;
+        background: #050505;
+        color: #fff;
+        transform: translateX(-100%);
+        will-change: transform;
+      }
+
+      .menu-card__title {
+        margin: 0 0 10px;
+        font-size: 1.35rem;
+        font-weight: 500;
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+      }
+
+      .menu-card__description {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.65);
+        font-size: 0.78rem;
+        line-height: 1.5;
+        letter-spacing: -0.015em;
+      }
+
+      @media (max-width: 640px) {
+        .nav-bar {
+          padding-right: 12px;
+        }
+
+        .nav-menu {
+          gap: 10px;
+        }
+
+        .nav-menu__item {
+          font-size: 0.72rem;
+        }
+
+        .content {
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .menu-card {
+          flex: none;
+          width: 100%;
+          max-width: 240px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="nav-shell">
+      <div class="nav-pill" id="nav-pill">
+        <div class="nav-bar">
+          <button class="nav-logo" type="button" aria-label="Home"></button>
+          <div class="nav-menu" aria-label="Main navigation">
+            <button class="nav-menu__item" data-menu="work" type="button" aria-expanded="false">Work</button>
+            <button class="nav-menu__item" data-menu="services" type="button" aria-expanded="false">Services</button>
+            <button class="nav-menu__item" data-menu="about" type="button" aria-expanded="false">About</button>
+            <button class="nav-menu__item" data-menu="contact" type="button" aria-expanded="false">Contact</button>
+          </div>
+        </div>
+        <div id="expanded-menu">
+          <div id="sub-menu" class="content">
+            <ul class="menu-links">
+              <li><a href="#">Work</a></li>
+              <li><a href="#">Services</a></li>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+            <button
+              class="menu-card"
+              type="button"
+              aria-label="View featured project details"
+            >
+              <img
+                src="https://assets.codepen.io/16327/portrait-image-5.jpg"
+                alt=""
+              />
+              <p class="menu-card__label">Featured project</p>
+              <div class="menu-card__panel">
+                <h2 class="menu-card__title">Featured project</h2>
+                <p class="menu-card__description">
+                  A closer look at the ideas, process, and details behind this project.
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      const triggers = gsap.utils.toArray(".nav-menu__item");
+      const pill = document.getElementById("nav-pill");
+      const expandedMenu = document.getElementById("expanded-menu");
+      const subMenu = document.getElementById("sub-menu");
+      const menuLinks = gsap.utils.toArray(".menu-links a");
+      const menuCard = document.querySelector(".menu-card");
+      const menuImage = document.querySelector(".menu-card img");
+      const menuLabel = document.querySelector(".menu-card__label");
+      const menuPanel = document.querySelector(".menu-card__panel");
+      const menuTitle = document.querySelector(".menu-card__title");
+      const menuDescription = document.querySelector(".menu-card__description");
+      let activeTrigger = null;
+      let isOpen = false;
+      let closeTimer;
+      let switchTimeline;
+
+      const menus = {
+        work: {
+          links: ["Selected work", "Case studies", "Archive", "Playground"],
+          image: "https://assets.codepen.io/16327/portrait-image-5.jpg",
+          label: "Featured work",
+          description: "Selected identities, digital experiences, and visual systems made for ambitious teams.",
+        },
+        services: {
+          links: ["Art direction", "Brand identity", "Digital design", "Strategy"],
+          image: "https://assets.codepen.io/16327/portrait-image-1.jpg",
+          label: "Our capabilities",
+          description: "From strategy through launch, we shape clear ideas into distinctive brand experiences.",
+        },
+        about: {
+          links: ["Our studio", "Approach", "Team", "Journal"],
+          image: "https://assets.codepen.io/16327/portrait-image-11.jpg",
+          label: "Inside the studio",
+          description: "An independent studio built around close collaboration, curiosity, and thoughtful craft.",
+        },
+        contact: {
+          links: ["Start a project", "New business", "Careers", "Instagram"],
+          image: "https://assets.codepen.io/16327/portrait-image-3.jpg",
+          label: "Let's work together",
+          description: "Tell us what you are building, where you need help, and what success looks like.",
+        },
+      };
+
+      const cardTimeline = gsap
+        .timeline({ paused: true })
+        .to(
+          menuImage,
+          {
+            filter: "blur(12px)",
+            scale: 1.08,
+            duration: 0.78,
+            ease: "power4.inOut",
+          },
+          0
+        )
+        .to(
+          menuLabel,
+          {
+            autoAlpha: 0,
+            x: 8,
+            duration: 0.3,
+            ease: "power3.inOut",
+          },
+          0
+        )
+        .to(
+          menuPanel,
+          {
+            xPercent: 100,
+            duration: 0.82,
+            ease: "power4.inOut",
+          },
+          0
+        )
+        .fromTo(
+          [menuTitle, menuDescription],
+          { autoAlpha: 0, x: -12 },
+          {
+            autoAlpha: 1,
+            x: 0,
+            duration: 0.44,
+            stagger: 0.07,
+            ease: "power4.out",
+          },
+          0.4
+        );
+
+      function resetCard(animate = false) {
+        animate ? cardTimeline.reverse() : cardTimeline.progress(0).pause();
+      }
+
+      function renderMenu(key) {
+        const menu = menus[key];
+        resetCard(false);
+        menuLinks.forEach((link, index) => {
+          link.textContent = menu.links[index];
+        });
+        menuImage.src = menu.image;
+        menuLabel.textContent = menu.label;
+        menuTitle.textContent = menu.label;
+        menuDescription.textContent = menu.description;
+        menuCard.setAttribute("aria-label", `View ${menu.label} details`);
+      }
+
+      function setActiveTrigger(trigger) {
+        triggers.forEach((item) => {
+          const active = item === trigger;
+          item.classList.toggle("is-active", active);
+          item.setAttribute("aria-expanded", String(active));
+        });
+        activeTrigger = trigger;
+      }
+
+      const heightTimeline = gsap
+        .timeline({
+          paused: true,
+          onReverseComplete() {
+            gsap.set(expandedMenu, { height: 0 });
+            activeTrigger?.classList.remove("is-active");
+            activeTrigger = null;
+          },
+        })
+        .to(expandedMenu, {
+          duration: 0.68,
+          height: "auto",
+          ease: "power4.inOut",
+        });
+
+      function openMenu(trigger) {
+        clearTimeout(closeTimer);
+        const key = trigger.dataset.menu;
+
+        if (!isOpen) {
+          isOpen = true;
+          renderMenu(key);
+          setActiveTrigger(trigger);
+          pill.classList.add("is-open");
+          heightTimeline.play();
+          gsap.to(subMenu, {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.42,
+            delay: 0.1,
+            ease: "power3.out",
+          });
+          return;
+        }
+
+        if (activeTrigger === trigger) return;
+        setActiveTrigger(trigger);
+
+        switchTimeline?.kill();
+        switchTimeline = gsap
+          .timeline({ defaults: { overwrite: true } })
+          .to(subMenu, {
+            autoAlpha: 0,
+            y: -6,
+            duration: 0.16,
+            ease: "power2.in",
+          })
+          .call(() => renderMenu(key))
+          .set(subMenu, { y: 8 })
+          .to(subMenu, {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.3,
+            ease: "power3.out",
+          });
+      }
+
+      function closeMenu() {
+        if (!isOpen) return;
+        isOpen = false;
+        switchTimeline?.kill();
+        resetCard(true);
+        pill.classList.remove("is-open");
+        triggers.forEach((item) => item.setAttribute("aria-expanded", "false"));
+        gsap.to(subMenu, {
+          autoAlpha: 0,
+          y: 8,
+          duration: 0.24,
+          ease: "power2.in",
+          overwrite: true,
+        });
+        heightTimeline.reverse();
+      }
+
+      triggers.forEach((trigger) => {
+        trigger.addEventListener("mouseenter", () => openMenu(trigger));
+        trigger.addEventListener("focus", () => openMenu(trigger));
+        trigger.addEventListener("click", () => openMenu(trigger));
+      });
+
+      menuCard.addEventListener("mouseenter", () => cardTimeline.play());
+      menuCard.addEventListener("mouseleave", () => cardTimeline.reverse());
+      menuCard.addEventListener("focus", () => cardTimeline.play());
+      menuCard.addEventListener("blur", () => cardTimeline.reverse());
+
+      pill.addEventListener("mouseenter", () => clearTimeout(closeTimer));
+      pill.addEventListener("mouseleave", () => {
+        closeTimer = setTimeout(closeMenu, 100);
+      });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

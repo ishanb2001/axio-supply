@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card Animation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #000000;
+        --blue: #2f6bff;
+        --pink: #f3c4b5;
+        --ink: #111111;
+        --muted: #8a8a8a;
+        --card-w: min(360px, 78vw);
+        --card-h: min(500px, 78vh);
+        --gap: clamp(16px, 2.5vw, 28px);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: #fff;
+        font-family: "DM Sans", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .spacer {
+        min-height: 65vh;
+        display: grid;
+        place-items: center;
+        padding: 48px 24px;
+        text-align: center;
+      }
+
+      .spacer__label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .spacer__title {
+        margin-top: 12px;
+        font-size: clamp(1.5rem, 3.5vw, 2.3rem);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .scene {
+        position: relative;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        background: var(--bg);
+      }
+
+      .scene__stage {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+
+      .deck {
+        position: relative;
+        width: var(--card-w);
+        height: var(--card-h);
+      }
+
+      .card {
+        position: absolute;
+        inset: 0;
+        border-radius: clamp(32px, 5vw, 48px);
+        overflow: hidden;
+        will-change: transform;
+        transform-origin: center center;
+        backface-visibility: hidden;
+      }
+
+      .card--pink {
+        z-index: 1;
+        background: #111 url("/images/people/unipay.jpg") center / cover no-repeat;
+      }
+
+      .pink__copy {
+        font-size: clamp(1.35rem, 3.2vw, 1.85rem);
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1.15;
+        max-width: 9ch;
+      }
+
+      .pink__digits {
+        margin-top: 28px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .pink__digits span {
+        width: 52px;
+        height: 58px;
+        border-radius: 10px;
+        background: #111;
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .card--blue {
+        z-index: 2;
+        background: var(--blue);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: clamp(28px, 5vw, 40px) clamp(22px, 4vw, 32px);
+      }
+
+      .card--white {
+        z-index: 3;
+        background: #111 url("/images/people/unipay.jpg") center / cover no-repeat;
+      }
+
+      /* —— White / phone —— */
+      .phone {
+        width: min(230px, 62%);
+        aspect-ratio: 9 / 17.2;
+        border: 2.5px solid #111;
+        border-radius: 30px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 24px 14px 16px;
+        background: #fff;
+      }
+
+      .phone__island {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 42%;
+        height: 14px;
+        background: #111;
+        border-radius: 20px;
+      }
+
+      .phone__title {
+        margin-top: 30px;
+        text-align: center;
+        font-size: clamp(0.98rem, 2.5vw, 1.2rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.25;
+      }
+
+      .phone__title .bell {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.15em;
+        height: 1.15em;
+        vertical-align: -0.15em;
+        margin: 0 0.12em;
+        position: relative;
+      }
+
+      .phone__title .bell svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .phone__title .bell::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: -1px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ff2d2d;
+        border: 1.5px solid #fff;
+      }
+
+      .phone__label {
+        margin-top: auto;
+        align-self: flex-start;
+        font-size: 0.7rem;
+        color: var(--muted);
+        font-weight: 500;
+        margin-bottom: 8px;
+        padding-left: 2px;
+      }
+
+      .notice {
+        width: 100%;
+        display: flex;
+        align-items: stretch;
+        background: var(--blue);
+        border-radius: 16px;
+        overflow: hidden;
+        color: #fff;
+      }
+
+      .notice__text {
+        flex: 1;
+        min-width: 0;
+        padding: 11px 10px 11px 12px;
+      }
+
+      .notice__title {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .notice__sub {
+        margin-top: 2px;
+        font-size: 0.5rem;
+        opacity: 0.92;
+        line-height: 1.25;
+      }
+
+      .notice__art {
+        width: 42px;
+        flex-shrink: 0;
+        background: var(--pink);
+        display: grid;
+        place-items: center;
+      }
+
+      .notice__coin {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: conic-gradient(#ff2d2d 0 50%, #111 50% 100%);
+      }
+
+      /* —— Blue card —— */
+      .blue__frame {
+        width: 78%;
+        aspect-ratio: 1 / 1.15;
+        border-radius: 999px 999px 28px 28px;
+        overflow: hidden;
+        background: #1a3fa8;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .blue__frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .blue__title {
+        margin-top: auto;
+        padding-top: 28px;
+        padding-bottom: 8px;
+        font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: #fff;
+        text-align: center;
+      }
+
+      @media (max-width: 640px) {
+        :root {
+          --card-w: min(280px, 78vw);
+          --card-h: min(400px, 70vh);
+        }
+
+        .pink__digits span {
+          width: 42px;
+          height: 48px;
+          font-size: 1.3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="spacer">
+      <div>
+        <p class="spacer__label">Scroll</p>
+        <h1 class="spacer__title">Watch the cards open</h1>
+      </div>
+    </section>
+
+    <section class="scene" id="scene">
+      <div class="scene__stage">
+        <div class="deck" id="deck">
+          <div class="card card--pink" data-card="pink"></div>
+
+          <div class="card card--blue" data-card="blue">
+            <div class="blue__frame">
+              <img
+                src="/images/placeholders/04.jpg"
+                alt=""
+                decoding="async"
+              />
+            </div>
+            <h2 class="blue__title">PAY TOUCH-FREE</h2>
+          </div>
+
+          <div class="card card--white" data-card="white"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="spacer">
+      <div>
+        <p class="spacer__label">Unlocked</p>
+        <h2 class="spacer__title">Keep scrolling</h2>
+      </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(ScrollTrigger, CustomEase);
+      // Soft cubic-bezier used lightly; scrub lag is what keeps motion seamless
+      CustomEase.create("cardEase", "M0,0 C0.4,0 0.2,1 1,1");
+
+      const deck = document.querySelector("#deck");
+      const white = deck.querySelector('[data-card="white"]');
+      const blue = deck.querySelector('[data-card="blue"]');
+      const pink = deck.querySelector('[data-card="pink"]');
+
+      const mobile = () => window.innerWidth < 640;
+
+      function pitch() {
+        const styles = getComputedStyle(document.documentElement);
+        const w = parseFloat(styles.getPropertyValue("--card-w")) || 360;
+        const gap = parseFloat(styles.getPropertyValue("--gap")) || 24;
+        return (w + gap) * (mobile() ? 0.72 : 1);
+      }
+
+      gsap.set([pink, blue, white, deck], {
+        x: 0,
+        y: 0,
+        rotation: 0,
+        scale: 1,
+        force3D: true,
+        transformOrigin: "50% 50%",
+      });
+
+      /*
+        Continuous scroll — no pin, no sticky.
+        Animation is scrubbed to scroll and only starts once the
+        full deck is on screen. Page never locks.
+      */
+      const tl = gsap.timeline({
+        // ease:"none" keeps progress 1:1 with scroll (no snap between phases)
+        defaults: { ease: "none", overwrite: "auto" },
+        scrollTrigger: {
+          trigger: "#deck",
+          // Start as the card is still entering
+          start: "bottom bottom+=20%",
+          // Fully open by the time the cards hit mid-screen
+          end: "center center",
+          scrub: 0.7,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // —— Phase 1: tip (visible immediately at start) ——
+      tl.to(blue, { rotation: -9, duration: 0.7 }, 0);
+      tl.to(pink, { rotation: 9, duration: 0.7 }, 0.03);
+
+      // —— Phase 2: fan open (overlaps tip for a continuous feel) ——
+      const openAt = 0.4;
+
+      tl.to(
+        white,
+        {
+          x: () => -pitch(),
+          rotation: 0,
+          duration: 1.6,
+          ease: "cardEase",
+        },
+        openAt
+      );
+      tl.to(
+        blue,
+        {
+          x: 0,
+          y: 0,
+          rotation: 0,
+          duration: 1.6,
+          ease: "cardEase",
+        },
+        openAt
+      );
+      tl.to(
+        pink,
+        {
+          x: () => pitch(),
+          y: 0,
+          rotation: 0,
+          duration: 1.7,
+          ease: "cardEase",
+        },
+        openAt + 0.06
+      );
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card Frame</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #b9b9b9;
+        font-family: Inter, sans-serif;
+        overflow: hidden;
+      }
+
+      .stage {
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .row {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        height: min(46vh, 360px);
+        will-change: transform;
+      }
+
+      .card-slot {
+        flex: 0 0 auto;
+        height: 100%;
+      }
+
+      .card-stretch {
+        width: 100%;
+        height: 100%;
+      }
+
+      .card {
+        position: relative;
+        width: min(58vw, 820px);
+        height: 100%;
+        padding: 0;
+        border: 0;
+        border-radius: 28px;
+        overflow: hidden;
+        background: #111;
+        cursor: pointer;
+      }
+
+      .card__media {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        pointer-events: none;
+      }
+
+      .frame {
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 28px;
+        pointer-events: none;
+        z-index: 3;
+        background: transparent;
+        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.46);
+      }
+
+      .mock {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #1a1a1a center / cover no-repeat;
+        background-image: url("/images/people/01.jpg");
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 36px 28px 48px;
+      }
+
+      .mock::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.18));
+      }
+
+      .mock > :not(.mock__bar) {
+        position: relative;
+        z-index: 1;
+      }
+
+      .mock small {
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        padding: 4px 10px;
+      }
+
+      .mock h2 {
+        margin: 18px 0 10px;
+        font-size: clamp(28px, 3vw, 44px);
+        font-weight: 800;
+        letter-spacing: -0.045em;
+        line-height: 0.95;
+      }
+
+      .mock p {
+        margin: 0;
+        max-width: 280px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: rgba(255, 255, 255, 0.86);
+      }
+
+      .mock__bar {
+        position: absolute;
+        z-index: 1;
+        left: 18%;
+        right: 18%;
+        bottom: 0;
+        height: 28px;
+        border-radius: 16px 16px 0 0;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      }
+
+      .card-hold {
+        flex: 0 0 auto;
+      }
+
+      .veil {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        opacity: 0;
+        pointer-events: none;
+        background: rgba(70, 70, 70, 0.28);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+      }
+
+      .veil.is-on {
+        pointer-events: auto;
+      }
+
+      .card.is-lifted,
+      .frame.is-lifted {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 6;
+        margin: 0;
+      }
+
+      .frame.is-lifted {
+        z-index: 7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="stage">
+      <div class="row" id="row">
+        <button class="card" type="button" data-index="0">
+          <img class="card__media" src="/images/placeholders/01.jpg" alt="" />
+        </button>
+        <button class="card" type="button" data-index="1">
+          <img class="card__media" src="/images/people/card-frame.jpg" alt="" />
+        </button>
+        <button class="card" type="button" data-index="2">
+          <img class="card__media" src="/images/placeholders/02.jpg" alt="" />
+        </button>
+        <button class="card" type="button" data-index="3">
+          <img class="card__media" src="/images/placeholders/03.jpg" alt="" />
+        </button>
+        <button class="card" type="button" data-index="4">
+          <img class="card__media" src="/images/placeholders/04.jpg" alt="" />
+        </button>
+        <div class="frame" id="frame" aria-hidden="true"></div>
+      </div>
+
+      <div class="veil" id="veil"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("slideEase", "0.77, 0, 0.18, 1");
+      CustomEase.create("leadEase", "0.33, 1.16, 0.45, 1");
+      CustomEase.create("trailEase", "0.16, 1, 0.3, 1");
+      CustomEase.create("settleEase", "0.22, 1, 0.36, 1");
+      CustomEase.create("momentumSettle", "M0,0 C0.14,0.88 0.2,1 1,1");
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const HOLD = 2600;
+      const DURATION = reduced ? 0 : 1.15;
+      const stage = document.getElementById("stage");
+      const row = document.getElementById("row");
+      const frame = document.getElementById("frame");
+      const cards = Array.from(row.querySelectorAll(".card"));
+      const slots = cards.map((card) => {
+        const slot = document.createElement("div");
+        const stretch = document.createElement("div");
+        slot.className = "card-slot";
+        stretch.className = "card-stretch";
+        card.before(slot);
+        slot.append(stretch);
+        stretch.append(card);
+        return { slot, stretch };
+      });
+      const veil = document.getElementById("veil");
+
+      let active = 0;
+      let timer = 0;
+      let travel = null;
+      let lifted = null;
+      let placeholder = null;
+      let closing = false;
+      const edges = { left: 0, right: 0 };
+
+      gsap.set(row, { yPercent: -50 });
+      gsap.set(slots.map(({ slot }) => slot), { force3D: true });
+      gsap.set(slots.map(({ stretch }) => stretch), { force3D: true, transformOrigin: "50% 50%" });
+
+      const spreadTo = slots.map(({ slot }, index) =>
+        gsap.quickTo(slot, "x", {
+          duration: reduced ? 0 : 0.55 + index * 0.06,
+          ease: "momentumSettle",
+        })
+      );
+      const stretchTo = slots.map(({ stretch }, index) =>
+        gsap.quickTo(stretch, "scaleX", {
+          duration: reduced ? 0 : 0.48 + index * 0.05,
+          ease: "momentumSettle",
+        })
+      );
+
+      const settleCards = () => {
+        spreadTo.forEach((move) => move(0));
+        stretchTo.forEach((stretch) => stretch(1));
+      };
+      const settleCall = gsap.delayedCall(0.08, settleCards).pause();
+      let previousRowX = 0;
+
+      const pullCards = () => {
+        const currentX = Number(gsap.getProperty(row, "x"));
+        const delta = currentX - previousRowX;
+        previousRowX = currentX;
+        if (!delta || reduced) return;
+        const pull = gsap.utils.clamp(0, 72, Math.abs(delta) * 3.2);
+        const movingForward = delta < 0;
+        const scale = 1 + (pull / 72) * 0.08;
+        spreadTo.forEach((move, index) => {
+          const distance = movingForward ? index * pull : -(slots.length - 1 - index) * pull;
+          move(distance);
+        });
+        stretchTo.forEach((stretch) => stretch(scale));
+        settleCall.restart(true);
+      };
+
+      const rowXFor = (index) => {
+        const slot = slots[index].slot;
+        return window.innerWidth / 2 - (slot.offsetLeft + slot.offsetWidth / 2);
+      };
+
+      const startX = () => {
+        const inset = Math.round(Math.min(72, Math.max(40, window.innerWidth * 0.05)));
+        return inset - slots[0].slot.offsetLeft;
+      };
+
+      let originX = 0;
+
+      const applyEdges = () => {
+        gsap.set(frame, {
+          x: edges.left,
+          y: cards[0].offsetTop,
+          width: Math.max(48, edges.right - edges.left),
+          height: cards[0].offsetHeight,
+          scale: 1,
+          transformOrigin: "0 0",
+        });
+      };
+
+      const placeFrame = (index) => {
+        const slot = slots[index].slot;
+        edges.left = slot.offsetLeft;
+        edges.right = slot.offsetLeft + slot.offsetWidth;
+        applyEdges();
+      };
+
+      const frameOnCard = (index) => {
+        const slot = slots[index].slot;
+        const x = Number(gsap.getProperty(frame, "x"));
+        const width = Number(gsap.getProperty(frame, "width"));
+        return Math.abs(x - slot.offsetLeft) < 10 && Math.abs(width - slot.offsetWidth) < 12;
+      };
+
+      const arm = () => {
+        window.clearTimeout(timer);
+        if (reduced || lifted) return;
+        timer = window.setTimeout(() => go((active + 1) % cards.length), HOLD);
+      };
+
+      const go = (next, immediate) => {
+        window.clearTimeout(timer);
+        if (travel) travel.kill();
+        const fromSlot = slots[active].slot;
+        const toSlot = slots[next].slot;
+        const wrapping = next < active;
+        const destX = wrapping ? originX : rowXFor(next);
+        if (immediate || reduced || next === active) {
+          active = next;
+          gsap.set(row, { x: next === 0 ? originX : destX });
+          placeFrame(next);
+          settleCards();
+          arm();
+          return;
+        }
+
+        const fromLeft = fromSlot.offsetLeft;
+        const fromRight = fromLeft + fromSlot.offsetWidth;
+        const toLeft = toSlot.offsetLeft;
+        const toRight = toLeft + toSlot.offsetWidth;
+        const forward = !wrapping && toLeft >= fromLeft;
+
+        edges.left = fromLeft;
+        edges.right = fromRight;
+        active = next;
+        previousRowX = Number(gsap.getProperty(row, "x"));
+        travel = gsap.timeline({
+          onUpdate: () => {
+            applyEdges();
+            pullCards();
+          },
+          onComplete: () => {
+            settleCards();
+            placeFrame(wrapping ? 0 : next);
+            if (wrapping) gsap.set(row, { x: originX });
+            arm();
+          },
+        });
+        travel.to(row, { x: destX, duration: 0.9, ease: "slideEase" }, 0);
+        if (wrapping) {
+          travel.to(edges, { left: toLeft, right: toRight, duration: 0.9, ease: "slideEase" }, 0);
+          return;
+        }
+        travel.to(
+          edges,
+          {
+            [forward ? "right" : "left"]: forward ? toRight : toLeft,
+            duration: 0.62,
+            ease: "leadEase",
+          },
+          0
+        );
+        travel.to(
+          edges,
+          {
+            [forward ? "left" : "right"]: forward ? toLeft : toRight,
+            duration: 0.78,
+            ease: "trailEase",
+          },
+          0.16
+        );
+      };
+
+      const settleOnto = (index, then) => {
+        const slot = slots[index].slot;
+        if (travel) travel.kill();
+        gsap.killTweensOf([frame, row, edges]);
+        edges.left = Number(gsap.getProperty(frame, "x"));
+        edges.right = edges.left + Number(gsap.getProperty(frame, "width"));
+        active = index;
+        previousRowX = Number(gsap.getProperty(row, "x"));
+        travel = gsap.timeline({
+          onUpdate: () => {
+            applyEdges();
+            pullCards();
+          },
+          onComplete: () => {
+            travel = null;
+            settleCards();
+            placeFrame(index);
+            then();
+          },
+        });
+        const slotLeft = slot.offsetLeft;
+        const slotRight = slotLeft + slot.offsetWidth;
+        const goingRight = slotLeft >= edges.left;
+        travel.to(
+          edges,
+          {
+            [goingRight ? "right" : "left"]: goingRight ? slotRight : slotLeft,
+            duration: reduced ? 0 : 0.28,
+            ease: "leadEase",
+          },
+          0
+        );
+        travel.to(
+          edges,
+          {
+            [goingRight ? "left" : "right"]: goingRight ? slotLeft : slotRight,
+            duration: reduced ? 0 : 0.34,
+            ease: "trailEase",
+          },
+          reduced ? 0 : 0.08
+        );
+        travel.to(row, { x: index === 0 ? originX : rowXFor(index), duration: reduced ? 0 : 0.4, ease: "settleEase" }, 0);
+      };
+
+      const zoomDuration = reduced ? 0 : 0.85;
+
+      const liftCard = (card) => {
+        const stageBox = stage.getBoundingClientRect();
+        const cardBox = card.getBoundingClientRect();
+        const frameBox = frame.getBoundingClientRect();
+        placeholder = document.createElement("div");
+        placeholder.className = "card-hold";
+        placeholder.style.width = card.offsetWidth + "px";
+        placeholder.style.height = card.offsetHeight + "px";
+        card.before(placeholder);
+        stage.append(card, frame);
+        card.classList.add("is-lifted");
+        frame.classList.add("is-lifted");
+        lifted = card;
+        veil.classList.add("is-on");
+
+        const origin = "0 0";
+        gsap.set(card, {
+          x: cardBox.left - stageBox.left,
+          y: cardBox.top - stageBox.top,
+          width: cardBox.width,
+          height: cardBox.height,
+          scale: 1,
+          transformOrigin: origin,
+        });
+        gsap.set(frame, {
+          x: frameBox.left - stageBox.left,
+          y: frameBox.top - stageBox.top,
+          width: frameBox.width,
+          height: frameBox.height,
+          scale: 1,
+          transformOrigin: origin,
+        });
+
+        const scale = Math.min(680, stageBox.width * 0.7) / cardBox.width;
+        const endW = cardBox.width * scale;
+        const endH = cardBox.height * scale;
+        const endX = (stageBox.width - endW) / 2;
+        const endY = (stageBox.height - endH) / 2;
+        gsap.to(veil, { opacity: 1, duration: zoomDuration, ease: "settleEase" });
+        gsap.to(frame, {
+          x: endX,
+          y: endY,
+          width: endW,
+          height: endH,
+          scale: 1,
+          duration: zoomDuration,
+          ease: "settleEase",
+        });
+        gsap.to(card, {
+          x: endX,
+          y: endY,
+          scale,
+          duration: zoomDuration,
+          ease: "settleEase",
+        });
+      };
+
+      const openFocus = (index) => {
+        if (lifted || closing) return;
+        window.clearTimeout(timer);
+        const card = cards[index];
+        if (!travel && frameOnCard(index)) {
+          active = index;
+          liftCard(card);
+          return;
+        }
+        settleOnto(index, () => liftCard(card));
+      };
+
+      const restoreCard = () => {
+        if (!lifted || !placeholder) return;
+        const card = lifted;
+        const next = (active + 1) % cards.length;
+        gsap.killTweensOf([card, frame, veil]);
+        placeholder.replaceWith(card);
+        row.append(frame);
+        card.classList.remove("is-lifted");
+        frame.classList.remove("is-lifted");
+        veil.classList.remove("is-on");
+        gsap.set(card, { x: 0, y: 0, scale: 1, clearProps: "x,y,scale,width,height,transform" });
+        gsap.set(veil, { opacity: 0 });
+        lifted = null;
+        placeholder = null;
+        closing = false;
+        placeFrame(active);
+        go(next);
+      };
+
+      const closeFocus = () => {
+        if (!lifted || !placeholder || closing) return;
+        closing = true;
+        const card = lifted;
+        const stageBox = stage.getBoundingClientRect();
+        const back = placeholder.getBoundingClientRect();
+        const x = back.left - stageBox.left;
+        const y = back.top - stageBox.top;
+        gsap.killTweensOf([card, frame, veil]);
+        gsap.timeline({ onComplete: restoreCard })
+          .to(veil, { opacity: 0, duration: zoomDuration, ease: "slideEase" }, 0)
+          .to(card, { x, y, scale: 1, duration: zoomDuration, ease: "slideEase" }, 0)
+          .to(
+            frame,
+            {
+              x,
+              y,
+              width: placeholder.offsetWidth,
+              height: placeholder.offsetHeight,
+              scale: 1,
+              duration: zoomDuration,
+              ease: "slideEase",
+            },
+            0
+          );
+      };
+
+      cards.forEach((card, index) => {
+        card.addEventListener("click", () => openFocus(index));
+      });
+
+      veil.addEventListener("click", closeFocus);
+
+      window.addEventListener("resize", () => {
+        originX = startX();
+        go(active, true);
+      });
+      originX = startX();
+      go(0, true);
+    </script>
+  </body>
+</html>

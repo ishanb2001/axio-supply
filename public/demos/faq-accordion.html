@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAQ Accordion</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <style>
+      :root {
+        --bg: #f3f3f3;
+        --ink: #111111;
+        --muted: #5c5c5c;
+        --line: rgba(0, 0, 0, 0.12);
+        --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: clamp(48px, 8vh, 96px) 24px;
+      }
+
+      .faq {
+        width: min(720px, 100%);
+        border-top: 1px solid var(--line);
+      }
+
+      .item {
+        border-bottom: 1px solid var(--line);
+      }
+
+      .item__trigger {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: clamp(18px, 2.4vw, 24px) 2px;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .item__trigger:focus-visible {
+        outline: 2px solid rgba(0, 0, 0, 0.35);
+        outline-offset: 4px;
+        border-radius: 4px;
+      }
+
+      .item__question {
+        font-size: clamp(1rem, 2vw, 1.125rem);
+        font-weight: 510;
+        letter-spacing: -0.02em;
+        line-height: 1.35;
+      }
+
+      .item__icon {
+        position: relative;
+        flex-shrink: 0;
+        width: 14px;
+        height: 14px;
+      }
+
+      .item__icon span {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 1.5px;
+        background: var(--ink);
+        border-radius: 1px;
+        transform: translate(-50%, -50%);
+      }
+
+      .item__icon span:last-child {
+        transform: translate(-50%, -50%) rotate(90deg);
+        transform-origin: center;
+      }
+
+      .item__panel {
+        overflow: hidden;
+        height: 0;
+      }
+
+      .item__answer {
+        padding: 0 2px clamp(20px, 2.6vw, 28px);
+        max-width: 54ch;
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.55;
+        letter-spacing: -0.01em;
+        color: var(--muted);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .item__panel {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="faq" id="faq" role="list">
+        <article class="item" role="listitem" data-item>
+          <button
+            class="item__trigger"
+            type="button"
+            aria-expanded="false"
+            data-trigger
+          >
+            <span class="item__question">How do projects usually start?</span>
+            <span class="item__icon" aria-hidden="true">
+              <span></span><span data-vert></span>
+            </span>
+          </button>
+          <div class="item__panel" data-panel>
+            <p class="item__answer">
+              We begin with a short discovery call to map goals, constraints, and
+              what “done” should feel like — then turn that into a clear scope
+              before any build work starts.
+            </p>
+          </div>
+        </article>
+
+        <article class="item" role="listitem" data-item>
+          <button
+            class="item__trigger"
+            type="button"
+            aria-expanded="false"
+            data-trigger
+          >
+            <span class="item__question">What’s included in a typical engagement?</span>
+            <span class="item__icon" aria-hidden="true">
+              <span></span><span data-vert></span>
+            </span>
+          </button>
+          <div class="item__panel" data-panel>
+            <p class="item__answer">
+              Strategy, design, and frontend implementation in one pass. You’ll
+              get interactive prototypes, production-ready code, and a handoff
+              that’s easy for your team to own.
+            </p>
+          </div>
+        </article>
+
+        <article class="item" role="listitem" data-item>
+          <button
+            class="item__trigger"
+            type="button"
+            aria-expanded="false"
+            data-trigger
+          >
+            <span class="item__question">How long does a build usually take?</span>
+            <span class="item__icon" aria-hidden="true">
+              <span></span><span data-vert></span>
+            </span>
+          </button>
+          <div class="item__panel" data-panel>
+            <p class="item__answer">
+              Most focused product surfaces ship in two to four weeks. Larger
+              systems stretch longer — we’ll share a realistic timeline once the
+              scope is locked.
+            </p>
+          </div>
+        </article>
+
+        <article class="item" role="listitem" data-item>
+          <button
+            class="item__trigger"
+            type="button"
+            aria-expanded="false"
+            data-trigger
+          >
+            <span class="item__question">Can you work with our existing design system?</span>
+            <span class="item__icon" aria-hidden="true">
+              <span></span><span data-vert></span>
+            </span>
+          </button>
+          <div class="item__panel" data-panel>
+            <p class="item__answer">
+              Yes. We plug into your tokens, components, and conventions so new
+              work feels native — not bolted on.
+            </p>
+          </div>
+        </article>
+
+        <article class="item" role="listitem" data-item>
+          <button
+            class="item__trigger"
+            type="button"
+            aria-expanded="false"
+            data-trigger
+          >
+            <span class="item__question">Do you support the product after launch?</span>
+            <span class="item__icon" aria-hidden="true">
+              <span></span><span data-vert></span>
+            </span>
+          </button>
+          <div class="item__panel" data-panel>
+            <p class="item__answer">
+              Optional retainers cover polish, performance passes, and small
+              iterations as real users start giving feedback.
+            </p>
+          </div>
+        </article>
+
+        <article class="item" role="listitem" data-item>
+          <button
+            class="item__trigger"
+            type="button"
+            aria-expanded="false"
+            data-trigger
+          >
+            <span class="item__question">How do we get started?</span>
+            <span class="item__icon" aria-hidden="true">
+              <span></span><span data-vert></span>
+            </span>
+          </button>
+          <div class="item__panel" data-panel>
+            <p class="item__answer">
+              Send a brief or book a call. If it’s a fit, we’ll share a proposal
+              within a few days and reserve the next open slot on the calendar.
+            </p>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <script>
+      gsap.registerPlugin(CustomEase);
+
+      // ≈ cubic-bezier(0.32, 0.72, 0, 1) — fluid open / close
+      CustomEase.create("faqEase", "M0,0 C0.32,0.72 0,1 1,1");
+      // ≈ cubic-bezier(0.22, 1, 0.36, 1) — icon settle
+      CustomEase.create("iconEase", "M0,0 C0.22,1 0.36,1 1,1");
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const items = gsap.utils.toArray("[data-item]");
+      let openItem = null;
+
+      function getParts(item) {
+        return {
+          trigger: item.querySelector("[data-trigger]"),
+          panel: item.querySelector("[data-panel]"),
+          answer: item.querySelector(".item__answer"),
+          vert: item.querySelector("[data-vert]"),
+        };
+      }
+
+      function closeItem(item, animate = true) {
+        if (!item) return;
+        const { trigger, panel, answer, vert } = getParts(item);
+        trigger.setAttribute("aria-expanded", "false");
+
+        if (!animate || reduced) {
+          gsap.set(panel, { height: 0 });
+          gsap.set(answer, { autoAlpha: 0, y: 8 });
+          gsap.set(vert, { rotation: 0 });
+          return;
+        }
+
+        gsap.killTweensOf([panel, answer, vert]);
+        gsap.to(answer, {
+          autoAlpha: 0,
+          y: 6,
+          duration: 0.28,
+          ease: "faqEase",
+        });
+        gsap.to(panel, {
+          height: 0,
+          duration: 0.55,
+          ease: "faqEase",
+        });
+        gsap.to(vert, {
+          rotation: 0,
+          duration: 0.45,
+          ease: "iconEase",
+        });
+      }
+
+      function openItemPanel(item) {
+        const { trigger, panel, answer, vert } = getParts(item);
+        trigger.setAttribute("aria-expanded", "true");
+
+        gsap.killTweensOf([panel, answer, vert]);
+        gsap.set(answer, { autoAlpha: 0, y: 10 });
+
+        if (reduced) {
+          gsap.set(panel, { height: "auto" });
+          gsap.set(answer, { autoAlpha: 1, y: 0 });
+          gsap.set(vert, { rotation: 45 });
+          return;
+        }
+
+        gsap.set(panel, { height: 0 });
+        gsap.to(panel, {
+          height: "auto",
+          duration: 0.62,
+          ease: "faqEase",
+        });
+        gsap.to(answer, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.5,
+          delay: 0.08,
+          ease: "faqEase",
+        });
+        gsap.to(vert, {
+          rotation: 45,
+          duration: 0.5,
+          ease: "iconEase",
+        });
+      }
+
+      items.forEach((item) => {
+        const { trigger, answer, vert } = getParts(item);
+        gsap.set(answer, { autoAlpha: 0, y: 8 });
+        gsap.set(vert, { transformOrigin: "50% 50%" });
+
+        trigger.addEventListener("click", () => {
+          if (openItem === item) {
+            closeItem(item);
+            openItem = null;
+            return;
+          }
+
+          if (openItem) closeItem(openItem);
+          openItemPanel(item);
+          openItem = item;
+        });
+      });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+.magnetic-target {
+  touch-action: manipulation;
+  backface-visibility: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.magnetic-target.is-magnetic-active {
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .magnetic-target.is-magnetic-active {
+    will-change: auto;
+  }
+}

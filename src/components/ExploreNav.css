@@ -1,0 +1,90 @@
+.explore-nav {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(920px, calc(100% - 32px));
+  z-index: 100;
+  letter-spacing: -0.02em;
+  font-size: 14px;
+  font-family: "PP Neue Montreal", "Neue Montreal", sans-serif;
+  color: #111111;
+  will-change: width;
+}
+
+.explore-nav__pill {
+  background: #ffffff;
+  border-radius: 100px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+}
+
+.explore-nav__bar {
+  height: 56px;
+  padding: 0 10px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.explore-nav__logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #000;
+  border: 0;
+  padding: 0;
+  display: block;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.explore-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.explore-nav__btn {
+  border: 0;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.explore-nav__btn--login {
+  background: #e5e5e5;
+  color: #111111;
+}
+
+.explore-nav__btn--login:hover {
+  background: #d8d8d8;
+}
+
+.explore-nav__btn--login:active {
+  background: #c8c8c8;
+}
+
+.explore-nav__btn--join {
+  background: #000000;
+  color: #ffffff;
+}
+
+.explore-nav__btn--join:hover {
+  background: #1a1a1a;
+}
+
+.explore-nav__btn--join:active {
+  background: #000000;
+}
+
+@media (max-width: 640px) {
+  .explore-nav__btn {
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apple UI Mechanics</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/Flip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <style>
+      :root {
+        --page: #f5f5f7;
+        --surface: #ffffff;
+        --ink: #1d1d1f;
+        --muted: #86868b;
+        --line: rgba(0, 0, 0, 0.08);
+        --soft: #f0f0f2;
+        --blue: #0071e3;
+        --blue-soft: rgba(0, 113, 227, 0.12);
+        --danger: #ff3b30;
+        --shadow: 0 2px 12px rgba(0, 0, 0, 0.04), 0 18px 48px rgba(0, 0, 0, 0.06);
+        --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        background: var(--page);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+        padding: clamp(32px, 6vh, 64px) 20px 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+      }
+
+      header {
+        text-align: center;
+        max-width: 560px;
+        margin-bottom: 8px;
+      }
+
+      header h1 {
+        font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+        font-weight: 650;
+        letter-spacing: -0.035em;
+        line-height: 1.1;
+        margin-bottom: 10px;
+      }
+
+      header p {
+        color: var(--muted);
+        font-size: 1.02rem;
+        line-height: 1.45;
+        letter-spacing: -0.01em;
+      }
+
+      .demo-card {
+        width: min(720px, 100%);
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 28px;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      .demo-card h2 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        margin-bottom: 6px;
+      }
+
+      .demo-card .desc {
+        font-size: 0.92rem;
+        color: var(--muted);
+        line-height: 1.45;
+        margin-bottom: 22px;
+        max-width: 54ch;
+      }
+
+      /* —— Tags —— */
+      .tag-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        min-height: 56px;
+        padding: 14px;
+        background: var(--soft);
+        border-radius: 14px;
+        border: 1px solid var(--line);
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px 8px 14px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        cursor: pointer;
+        user-select: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        will-change: transform;
+      }
+
+      .tag:hover {
+        border-color: rgba(0, 113, 227, 0.35);
+      }
+
+      .tag .close-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.06);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1;
+      }
+
+      .tag .close-btn:hover {
+        background: var(--danger);
+        color: #fff;
+      }
+
+      .reset-tags-btn {
+        margin-top: 14px;
+        background: transparent;
+        border: 0;
+        color: var(--blue);
+        font: inherit;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 4px 0;
+      }
+
+      .reset-tags-btn:hover {
+        opacity: 0.75;
+      }
+
+      /* —— Audio —— */
+      .audio-dock {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        padding: 12px 16px;
+        border-radius: 999px;
+      }
+
+      .play-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--ink);
+        color: #fff;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 13px;
+        flex-shrink: 0;
+        transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+
+      .play-btn:hover {
+        transform: scale(1.05);
+      }
+
+      .waveform-canvas {
+        flex-grow: 1;
+        height: 42px;
+        cursor: pointer;
+        min-width: 0;
+      }
+
+      /* —— Breadcrumbs —— */
+      .breadcrumb-wrapper {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .crumb-node {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .crumb-btn {
+        background: var(--soft);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        padding: 8px 14px;
+        border-radius: 10px;
+        font: inherit;
+        font-size: 0.88rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        cursor: pointer;
+      }
+
+      .crumb-btn:hover {
+        background: #e8e8ed;
+      }
+
+      .crumb-btn.is-current {
+        background: #fff;
+        border-color: rgba(0, 113, 227, 0.35);
+        color: var(--blue);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      }
+
+      .crumb-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-6px) scale(0.96);
+        transform-origin: top left;
+        z-index: 10;
+        min-width: 160px;
+      }
+
+      .crumb-menu.is-open {
+        pointer-events: auto;
+      }
+
+      .crumb-menu-item {
+        padding: 8px 12px;
+        font-size: 0.86rem;
+        border-radius: 8px;
+        color: var(--ink);
+        cursor: pointer;
+      }
+
+      .crumb-menu-item:hover {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .separator {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      /* —— Filter pill —— */
+      .filter-pill-bar {
+        position: relative;
+        display: inline-flex;
+        background: var(--soft);
+        padding: 4px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        --mouse-x: 50%;
+        --mouse-y: 50%;
+        background-image: radial-gradient(
+          circle at var(--mouse-x) var(--mouse-y),
+          rgba(255, 255, 255, 0.85) 0%,
+          transparent 55%
+        );
+      }
+
+      .filter-opt {
+        position: relative;
+        z-index: 2;
+        padding: 9px 16px;
+        font: inherit;
+        font-size: 0.88rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        color: var(--muted);
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .filter-opt.active {
+        color: var(--ink);
+      }
+
+      .pill-indicator {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        left: 0;
+        background: #fff;
+        border-radius: 999px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+        z-index: 1;
+        pointer-events: none;
+        will-change: transform, width;
+      }
+
+      /* —— Command palette —— */
+      .cmd-trigger {
+        width: 100%;
+        max-width: 360px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        color: var(--muted);
+        padding: 12px 16px;
+        border-radius: 12px;
+        font: inherit;
+        font-size: 0.92rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        transition: background 0.2s ease, border-color 0.2s ease;
+      }
+
+      .cmd-trigger:hover {
+        background: #e8e8ed;
+        border-color: rgba(0, 0, 0, 0.12);
+      }
+
+      .cmd-trigger kbd {
+        background: #fff;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        padding: 3px 7px;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .cmd-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(245, 245, 247, 0.55);
+        backdrop-filter: blur(22px) saturate(1.2);
+        -webkit-backdrop-filter: blur(22px) saturate(1.2);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 12vh 20px 40px;
+        visibility: hidden;
+        pointer-events: none;
+        z-index: 100;
+      }
+
+      .cmd-overlay.is-open {
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .cmd-dialog {
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        width: min(540px, 100%);
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.14);
+        will-change: transform, opacity;
+      }
+
+      .cmd-search {
+        width: 100%;
+        padding: 18px 20px;
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        color: var(--ink);
+        font: inherit;
+        font-size: 1.05rem;
+        letter-spacing: -0.02em;
+        outline: none;
+      }
+
+      .cmd-search::placeholder {
+        color: var(--muted);
+      }
+
+      .cmd-body {
+        display: grid;
+        grid-template-columns: 1fr 160px;
+        min-height: 220px;
+      }
+
+      .cmd-list {
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .cmd-item {
+        padding: 11px 12px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        color: var(--muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        letter-spacing: -0.01em;
+      }
+
+      .cmd-item.selected,
+      .cmd-item:hover {
+        background: var(--blue-soft);
+        color: var(--ink);
+      }
+
+      .cmd-item kbd {
+        font-size: 0.72rem;
+        color: var(--muted);
+        background: rgba(0, 0, 0, 0.04);
+        padding: 2px 6px;
+        border-radius: 5px;
+      }
+
+      .cmd-preview {
+        border-left: 1px solid var(--line);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: rgba(245, 245, 247, 0.65);
+      }
+
+      .preview-node {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: var(--blue);
+        box-shadow: 0 10px 28px rgba(0, 113, 227, 0.28);
+        will-change: transform;
+      }
+
+      .preview-label {
+        font-size: 0.75rem;
+        color: var(--muted);
+        letter-spacing: 0.02em;
+      }
+
+      @media (max-width: 560px) {
+        .demo-card {
+          padding: 22px 18px;
+        }
+
+        .cmd-body {
+          grid-template-columns: 1fr;
+        }
+
+        .cmd-preview {
+          border-left: 0;
+          border-top: 1px solid var(--line);
+          min-height: 120px;
+        }
+
+        .filter-pill-bar {
+          display: flex;
+          flex-wrap: wrap;
+          border-radius: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>UI Mechanics</h1>
+      <p>
+        Clean Apple-inspired interactions — FLIP tags, scrubbed audio, spatial
+        breadcrumbs, reactive filters, and a command palette.
+      </p>
+    </header>
+
+    <div class="demo-card">
+      <h2>Spring tag manager</h2>
+      <p class="desc">
+        Remove a tag and watch neighbors settle with GSAP Flip. Reset restores
+        the full set with a soft entrance.
+      </p>
+      <div class="tag-container" id="tagContainer">
+        <div class="tag"><span>Animation</span><span class="close-btn">&times;</span></div>
+        <div class="tag"><span>WebGL</span><span class="close-btn">&times;</span></div>
+        <div class="tag"><span>Physics</span><span class="close-btn">&times;</span></div>
+        <div class="tag"><span>GSAP Flip</span><span class="close-btn">&times;</span></div>
+        <div class="tag"><span>Shaders</span><span class="close-btn">&times;</span></div>
+        <div class="tag"><span>Canvas 2D</span><span class="close-btn">&times;</span></div>
+      </div>
+      <button class="reset-tags-btn" id="resetTags" type="button">Reset tags</button>
+    </div>
+
+    <div class="demo-card">
+      <h2>Audio waveform scrubber</h2>
+      <p class="desc">
+        Hover to scrub the spectrum. Bars lift near the cursor and fill as you
+        scrub — play toggles a gentle live pulse.
+      </p>
+      <div class="audio-dock">
+        <button class="play-btn" id="playBtn" type="button" aria-label="Play">▶</button>
+        <canvas class="waveform-canvas" id="waveCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <h2>Spatial breadcrumbs</h2>
+      <p class="desc">
+        Hover a node to peek into sibling routes with a frosted, springy menu.
+      </p>
+      <div class="breadcrumb-wrapper">
+        <div class="crumb-node">
+          <button class="crumb-btn" type="button">Projects</button>
+          <div class="crumb-menu">
+            <div class="crumb-menu-item">Design Systems</div>
+            <div class="crumb-menu-item">Web App Engine</div>
+            <div class="crumb-menu-item">3D Configurator</div>
+          </div>
+        </div>
+        <span class="separator">/</span>
+        <div class="crumb-node">
+          <button class="crumb-btn" type="button">Components</button>
+          <div class="crumb-menu">
+            <div class="crumb-menu-item">Navigation</div>
+            <div class="crumb-menu-item">Audio Players</div>
+            <div class="crumb-menu-item">Modals</div>
+          </div>
+        </div>
+        <span class="separator">/</span>
+        <div class="crumb-node">
+          <button class="crumb-btn is-current" type="button">FLIP Tags</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <h2>Reactive filter pill</h2>
+      <p class="desc">
+        Move across the bar for a soft specular highlight. Click a tab and the
+        white pill springs into place.
+      </p>
+      <div class="filter-pill-bar" id="filterPillBar">
+        <div class="pill-indicator" id="pillIndicator"></div>
+        <button class="filter-opt active" type="button">Overview</button>
+        <button class="filter-opt" type="button">Analytics</button>
+        <button class="filter-opt" type="button">Deployments</button>
+        <button class="filter-opt" type="button">Settings</button>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <h2>Command palette</h2>
+      <p class="desc">
+        Open with the button or <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>K</kbd>.
+        Hover commands to tint the preview node.
+      </p>
+      <button class="cmd-trigger" id="cmdTrigger" type="button">
+        <span>Search commands…</span>
+        <kbd>⌘K</kbd>
+      </button>
+    </div>
+
+    <div class="cmd-overlay" id="cmdOverlay" aria-hidden="true">
+      <div class="cmd-dialog" role="dialog" aria-modal="true" aria-label="Command palette">
+        <input
+          type="text"
+          class="cmd-search"
+          placeholder="Type a command or search…"
+          id="cmdInput"
+        />
+        <div class="cmd-body">
+          <div class="cmd-list" id="cmdList">
+            <div class="cmd-item selected" data-color="#0071e3">
+              <span>Deploy Project</span><kbd>↵</kbd>
+            </div>
+            <div class="cmd-item" data-color="#34c759">
+              <span>Export Canvas Shader</span><kbd>↵</kbd>
+            </div>
+            <div class="cmd-item" data-color="#ff9f0a">
+              <span>Toggle Appearance</span><kbd>↵</kbd>
+            </div>
+            <div class="cmd-item" data-color="#af52de">
+              <span>Inspect Component</span><kbd>↵</kbd>
+            </div>
+          </div>
+          <div class="cmd-preview">
+            <div class="preview-node" id="previewNode"></div>
+            <div class="preview-label">Preview</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      gsap.registerPlugin(Flip, CustomEase);
+      CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+      CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      /* —— Page entrance —— */
+      gsap.to(".demo-card", {
+        opacity: 1,
+        y: 0,
+        duration: reduced ? 0.01 : 0.75,
+        stagger: reduced ? 0 : 0.08,
+        ease: "osmoSettle",
+        delay: 0.05,
+      });
+
+      /* —— 1. Tags + Flip —— */
+      const tagContainer = document.getElementById("tagContainer");
+      const initialTagsHTML = tagContainer.innerHTML;
+
+      tagContainer.addEventListener("click", (e) => {
+        if (!e.target.classList.contains("close-btn")) return;
+        const tag = e.target.closest(".tag");
+        const state = Flip.getState(tagContainer.querySelectorAll(".tag"));
+
+        gsap.to(tag, {
+          opacity: 0,
+          scale: 0.85,
+          duration: 0.22,
+          ease: "osmo",
+          onComplete: () => {
+            tag.remove();
+            Flip.from(state, {
+              duration: 0.55,
+              ease: "osmoSettle",
+              absolute: false,
+            });
+          },
+        });
+      });
+
+      document.getElementById("resetTags").addEventListener("click", () => {
+        const state = Flip.getState(tagContainer.querySelectorAll(".tag"));
+        tagContainer.innerHTML = initialTagsHTML;
+        Flip.from(state, {
+          duration: 0.55,
+          ease: "osmoSettle",
+          targets: tagContainer.querySelectorAll(".tag"),
+          onEnter: (elements) =>
+            gsap.fromTo(
+              elements,
+              { opacity: 0, scale: 0.85 },
+              { opacity: 1, scale: 1, duration: 0.4, ease: "osmoSettle" }
+            ),
+        });
+      });
+
+      /* —— 2. Waveform —— */
+      const canvas = document.getElementById("waveCanvas");
+      const ctx = canvas.getContext("2d");
+      let isPlaying = false;
+      let mouseX = -1;
+
+      function resizeCanvas() {
+        canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+        canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      }
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      const barsCount = 48;
+      const barHeights = Array.from(
+        { length: barsCount },
+        () => Math.random() * 0.65 + 0.25
+      );
+
+      function renderWaveform() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const width = canvas.width;
+        const height = canvas.height;
+        const gap = 3 * window.devicePixelRatio;
+        const barWidth = (width - (barsCount - 1) * gap) / barsCount;
+        const normMouseX = mouseX / canvas.offsetWidth;
+
+        for (let i = 0; i < barsCount; i++) {
+          const x = i * (barWidth + gap);
+          const normI = i / barsCount;
+          let proximity = 1;
+          if (mouseX >= 0) {
+            const dist = Math.abs(normI - normMouseX);
+            proximity = Math.max(1, 2.1 - dist * 4);
+          }
+
+          const time = Date.now() * 0.005;
+          const wave = isPlaying ? Math.sin(time + i * 0.3) * 0.18 : 0;
+          const barH =
+            Math.min(1, (barHeights[i] + wave) * proximity) * (height * 0.78);
+          const y = (height - barH) / 2;
+          const isPassed = mouseX >= 0 && normI <= normMouseX;
+
+          ctx.fillStyle = isPassed
+            ? "#0071e3"
+            : "rgba(29, 29, 31, 0.18)";
+          ctx.beginPath();
+          ctx.roundRect(x, y, barWidth, barH, 3 * window.devicePixelRatio);
+          ctx.fill();
+        }
+
+        requestAnimationFrame(renderWaveform);
+      }
+      renderWaveform();
+
+      canvas.addEventListener("mousemove", (e) => {
+        mouseX = e.clientX - canvas.getBoundingClientRect().left;
+      });
+      canvas.addEventListener("mouseleave", () => {
+        mouseX = -1;
+      });
+
+      document.getElementById("playBtn").addEventListener("click", (e) => {
+        isPlaying = !isPlaying;
+        e.currentTarget.textContent = isPlaying ? "⏸" : "▶";
+        e.currentTarget.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
+        gsap.fromTo(
+          e.currentTarget,
+          { scale: 0.92 },
+          { scale: 1, duration: 0.35, ease: "osmoSettle" }
+        );
+      });
+
+      /* —— 3. Breadcrumbs —— */
+      document.querySelectorAll(".crumb-node").forEach((node) => {
+        const menu = node.querySelector(".crumb-menu");
+        if (!menu) return;
+
+        gsap.set(menu, { opacity: 0, y: -6, scale: 0.96 });
+
+        node.addEventListener("pointerenter", () => {
+          menu.classList.add("is-open");
+          gsap.to(menu, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.35,
+            ease: "osmoSettle",
+            overwrite: true,
+          });
+        });
+
+        node.addEventListener("pointerleave", () => {
+          gsap.to(menu, {
+            opacity: 0,
+            y: -6,
+            scale: 0.96,
+            duration: 0.22,
+            ease: "osmo",
+            overwrite: true,
+            onComplete: () => menu.classList.remove("is-open"),
+          });
+        });
+      });
+
+      /* —— 4. Filter pill —— */
+      const filterPillBar = document.getElementById("filterPillBar");
+      const pillIndicator = document.getElementById("pillIndicator");
+      const filterOpts = filterPillBar.querySelectorAll(".filter-opt");
+
+      filterPillBar.addEventListener("mousemove", (e) => {
+        const rect = filterPillBar.getBoundingClientRect();
+        filterPillBar.style.setProperty(
+          "--mouse-x",
+          `${((e.clientX - rect.left) / rect.width) * 100}%`
+        );
+        filterPillBar.style.setProperty(
+          "--mouse-y",
+          `${((e.clientY - rect.top) / rect.height) * 100}%`
+        );
+      });
+
+      function updatePillPosition(element) {
+        const rect = element.getBoundingClientRect();
+        const parentRect = filterPillBar.getBoundingClientRect();
+        gsap.to(pillIndicator, {
+          x: rect.left - parentRect.left - 4,
+          width: rect.width,
+          duration: 0.48,
+          ease: "osmoSettle",
+        });
+      }
+
+      updatePillPosition(filterPillBar.querySelector(".filter-opt.active"));
+      window.addEventListener("resize", () => {
+        const active = filterPillBar.querySelector(".filter-opt.active");
+        if (active) updatePillPosition(active);
+      });
+
+      filterOpts.forEach((opt) => {
+        opt.addEventListener("click", () => {
+          filterOpts.forEach((o) => o.classList.remove("active"));
+          opt.classList.add("active");
+          updatePillPosition(opt);
+        });
+      });
+
+      /* —— 5. Command palette —— */
+      const cmdTrigger = document.getElementById("cmdTrigger");
+      const cmdOverlay = document.getElementById("cmdOverlay");
+      const cmdDialog = cmdOverlay.querySelector(".cmd-dialog");
+      const cmdInput = document.getElementById("cmdInput");
+      const cmdItems = document.querySelectorAll(".cmd-item");
+      const previewNode = document.getElementById("previewNode");
+      let cmdOpen = false;
+
+      gsap.set(cmdOverlay, { autoAlpha: 0 });
+      gsap.set(cmdDialog, { autoAlpha: 0, y: 18, scale: 0.96 });
+
+      function openCommandPalette() {
+        if (cmdOpen) return;
+        cmdOpen = true;
+        cmdOverlay.classList.add("is-open");
+        cmdOverlay.setAttribute("aria-hidden", "false");
+        gsap
+          .timeline({ defaults: { ease: "osmoSettle" } })
+          .to(cmdOverlay, { autoAlpha: 1, duration: 0.35 }, 0)
+          .to(cmdDialog, { autoAlpha: 1, y: 0, scale: 1, duration: 0.5 }, 0.04);
+        cmdInput.focus();
+      }
+
+      function closeCommandPalette() {
+        if (!cmdOpen) return;
+        gsap
+          .timeline({
+            defaults: { ease: "osmo" },
+            onComplete: () => {
+              cmdOpen = false;
+              cmdOverlay.classList.remove("is-open");
+              cmdOverlay.setAttribute("aria-hidden", "true");
+            },
+          })
+          .to(cmdDialog, { autoAlpha: 0, y: 12, scale: 0.97, duration: 0.28 }, 0)
+          .to(cmdOverlay, { autoAlpha: 0, duration: 0.3 }, 0);
+      }
+
+      cmdTrigger.addEventListener("click", openCommandPalette);
+      cmdOverlay.addEventListener("click", (e) => {
+        if (e.target === cmdOverlay) closeCommandPalette();
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+          e.preventDefault();
+          cmdOpen ? closeCommandPalette() : openCommandPalette();
+        }
+        if (e.key === "Escape") closeCommandPalette();
+      });
+
+      cmdItems.forEach((item) => {
+        item.addEventListener("mouseenter", () => {
+          cmdItems.forEach((i) => i.classList.remove("selected"));
+          item.classList.add("selected");
+          const color = item.getAttribute("data-color");
+          gsap.to(previewNode, {
+            backgroundColor: color,
+            boxShadow: `0 12px 32px ${color}55`,
+            scale: 1.08,
+            duration: 0.4,
+            ease: "osmoSettle",
+          });
+        });
+
+        item.addEventListener("mouseleave", () => {
+          gsap.to(previewNode, {
+            scale: 1,
+            duration: 0.35,
+            ease: "osmo",
+          });
+        });
+      });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

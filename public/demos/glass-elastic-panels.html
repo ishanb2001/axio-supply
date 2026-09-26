@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glass Pill Nav</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        font-family: Inter, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        color: #111111;
+        background:
+          radial-gradient(1100px 680px at 16% 18%, #cfe0ff 0%, transparent 55%),
+          radial-gradient(900px 620px at 84% 76%, #ffd0b8 0%, transparent 52%),
+          linear-gradient(180deg, #f4f4f6 0%, #e8e8eb 100%);
+      }
+
+      .stage {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 40px 20px;
+      }
+
+      .glass-nav {
+        position: relative;
+        width: min(420px, 100%);
+        height: 64px;
+        border-radius: 999px;
+        overflow: hidden;
+        isolation: isolate;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .glass-nav__canvas {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .glass-nav__ui {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        height: 100%;
+        padding: 8px;
+      }
+
+      .glass-nav__logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 48px;
+        padding: 0 14px 0 10px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .glass-nav__mark {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(17, 17, 17, 0.88);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+      }
+
+      .glass-nav__word {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+      }
+
+      .glass-nav__divider {
+        width: 1px;
+        height: 18px;
+        margin: 0 4px;
+        background: rgba(17, 17, 17, 0.14);
+      }
+
+      .glass-nav__links {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin: 0;
+        margin-left: auto;
+        padding: 0;
+        list-style: none;
+      }
+
+      .glass-nav__btn {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: #111111;
+        cursor: pointer;
+      }
+
+      .glass-nav__btn svg {
+        position: relative;
+        z-index: 1;
+        width: 18px;
+        height: 18px;
+      }
+
+      .glass-nav__ghost {
+        position: absolute;
+        inset: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.38);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        opacity: 0;
+        transform: scale(0.86);
+        pointer-events: none;
+      }
+
+      .glass-nav__btn.is-active .glass-nav__ghost,
+      .glass-nav__btn:hover .glass-nav__ghost,
+      .glass-nav__btn:focus-visible .glass-nav__ghost {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .glass-nav__btn:focus-visible {
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <nav class="glass-nav" aria-label="Primary">
+        <canvas class="glass-nav__canvas" id="scene" aria-hidden="true"></canvas>
+
+        <div class="glass-nav__ui">
+          <button class="glass-nav__logo" type="button" aria-label="Home">
+            <span class="glass-nav__mark">N</span>
+            <span class="glass-nav__word">north</span>
+          </button>
+
+          <span class="glass-nav__divider" aria-hidden="true"></span>
+
+          <ul class="glass-nav__links">
+            <li>
+              <button class="glass-nav__btn is-active" type="button" aria-label="Search" aria-pressed="true">
+                <span class="glass-nav__ghost" aria-hidden="true"></span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M16.2 16.2 20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+              </button>
+            </li>
+            <li>
+              <button class="glass-nav__btn" type="button" aria-label="Library" aria-pressed="false">
+                <span class="glass-nav__ghost" aria-hidden="true"></span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="4" y="5" width="16" height="14" rx="2.5" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M8 9h8M8 12h8M8 15h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+              </button>
+            </li>
+            <li>
+              <button class="glass-nav__btn" type="button" aria-label="Profile" aria-pressed="false">
+                <span class="glass-nav__ghost" aria-hidden="true"></span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="9" r="3.2" stroke="currentColor" stroke-width="1.8" />
+                  <path
+                    d="M5.8 18.2c1.5-2.4 3.6-3.6 6.2-3.6s4.7 1.2 6.2 3.6"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script type="module">
+      import * as THREE from "three";
+      import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const CAMERA_Z = 5;
+      const BG = "#e8ecf2";
+      const INK = "#111111";
+
+      const root = document.querySelector(".glass-nav");
+      const canvas = document.getElementById("scene");
+
+      function glassMaterial(overrides = {}) {
+        return new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 0,
+          transmission: 1,
+          thickness: 1.8,
+          ior: 1.5,
+          dispersion: 8,
+          envMapIntensity: 2.1,
+          clearcoat: 1,
+          clearcoatRoughness: 0.02,
+          specularIntensity: 1,
+          specularColor: 0xffffff,
+          attenuationColor: 0xffffff,
+          attenuationDistance: 2.5,
+          toneMapped: false,
+          ...overrides,
+        });
+      }
+
+      function createPillGeometry() {
+        const shape = new THREE.Shape();
+        const w = 3.15;
+        const h = 0.72;
+        const r = h;
+        shape.moveTo(-w + r, -h);
+        shape.lineTo(w - r, -h);
+        shape.quadraticCurveTo(w, -h, w, -h + r);
+        shape.lineTo(w, h - r);
+        shape.quadraticCurveTo(w, h, w - r, h);
+        shape.lineTo(-w + r, h);
+        shape.quadraticCurveTo(-w, h, -w, h - r);
+        shape.lineTo(-w, -h + r);
+        shape.quadraticCurveTo(-w, -h, -w + r, -h);
+
+        const geometry = new THREE.ExtrudeGeometry(shape, {
+          depth: 0.42,
+          bevelEnabled: true,
+          bevelSegments: 10,
+          steps: 1,
+          bevelSize: 0.12,
+          bevelThickness: 0.14,
+          curveSegments: 18,
+        });
+        geometry.center();
+        return geometry;
+      }
+
+      function drawBackdrop(width, height, dpr) {
+        const source = document.createElement("canvas");
+        source.width = Math.max(2, Math.round(width * dpr));
+        source.height = Math.max(2, Math.round(height * dpr));
+        const ctx = source.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const grad = ctx.createLinearGradient(0, 0, width, height);
+        grad.addColorStop(0, "#d7e4ff");
+        grad.addColorStop(0.45, BG);
+        grad.addColorStop(1, "#ffd8c4");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.fillStyle = INK;
+        ctx.globalAlpha = 0.08;
+        ctx.font = `700 ${Math.min(height * 0.42, 28)}px Inter, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("north", width * 0.28, height * 0.52);
+        ctx.globalAlpha = 1;
+        return source;
+      }
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true,
+        powerPreference: "high-performance",
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setClearColor(0x000000, 0);
+      renderer.toneMapping = THREE.NoToneMapping;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+      camera.position.z = CAMERA_Z;
+
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
+      pmrem.dispose();
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+      const key = new THREE.DirectionalLight(0xffffff, 1.35);
+      key.position.set(2.4, 3.2, 4.5);
+      scene.add(key);
+      const rim = new THREE.DirectionalLight(0xb8d4ff, 0.65);
+      rim.position.set(-3, -1.5, 2);
+      scene.add(rim);
+
+      let backdropMap = null;
+      const backdrop = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({ toneMapped: false })
+      );
+      backdrop.position.z = -0.85;
+      scene.add(backdrop);
+
+      const pill = new THREE.Mesh(createPillGeometry(), glassMaterial());
+      pill.position.z = 1.35;
+      pill.rotation.set(-0.04, 0.06, 0);
+      scene.add(pill);
+
+      const pointer = { x: 0, y: 0 };
+      const pointerSmooth = { x: 0, y: 0 };
+      let hovered = false;
+
+      root.addEventListener("pointerenter", () => {
+        hovered = true;
+      });
+      root.addEventListener("pointerleave", () => {
+        hovered = false;
+      });
+      root.addEventListener("pointermove", (event) => {
+        if (!hovered) return;
+        const rect = root.getBoundingClientRect();
+        pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        pointer.y = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+      });
+
+      const clock = new THREE.Clock();
+      let frame = 0;
+
+      function resize() {
+        const width = Math.max(1, root.clientWidth);
+        const height = Math.max(1, root.clientHeight);
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+
+        const visibleHeight =
+          2 * CAMERA_Z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        const visibleWidth = visibleHeight * camera.aspect;
+        backdrop.scale.set(visibleWidth * 1.08, visibleHeight * 1.08, 1);
+
+        const fit = Math.min(visibleWidth * 1.02, visibleHeight * 2.05);
+        pill.scale.setScalar(fit / 3.2);
+
+        backdropMap?.dispose();
+        backdropMap = new THREE.CanvasTexture(
+          drawBackdrop(width, height, Math.min(window.devicePixelRatio, 2))
+        );
+        backdropMap.colorSpace = THREE.SRGBColorSpace;
+        backdrop.material.map = backdropMap;
+        backdrop.material.needsUpdate = true;
+      }
+
+      function render() {
+        const time = clock.getElapsedTime();
+        const targetX = hovered ? pointer.x : 0;
+        const targetY = hovered ? pointer.y : 0;
+        const ease = hovered ? 0.14 : 0.07;
+        pointerSmooth.x += (targetX - pointerSmooth.x) * ease;
+        pointerSmooth.y += (targetY - pointerSmooth.y) * ease;
+
+        if (!reduced) {
+          pill.rotation.x =
+            -0.04 + Math.sin(time * 0.45) * 0.025 + pointerSmooth.y * 0.06;
+          pill.rotation.y =
+            0.06 + Math.cos(time * 0.35) * 0.03 + pointerSmooth.x * 0.08;
+          pill.rotation.z = Math.sin(time * 0.28) * 0.015;
+        }
+
+        renderer.render(scene, camera);
+        frame = requestAnimationFrame(render);
+      }
+
+      const observer = new ResizeObserver(resize);
+      observer.observe(root);
+      resize();
+      if (reduced) renderer.render(scene, camera);
+      else frame = requestAnimationFrame(render);
+
+      const buttons = [...document.querySelectorAll(".glass-nav__btn")];
+      buttons.forEach((button) => {
+        const ghost = button.querySelector(".glass-nav__ghost");
+        gsap.set(ghost, {
+          opacity: button.classList.contains("is-active") ? 1 : 0,
+          scale: 1,
+        });
+
+        button.addEventListener("click", () => {
+          buttons.forEach((other) => {
+            const isActive = other === button;
+            other.classList.toggle("is-active", isActive);
+            other.setAttribute("aria-pressed", isActive ? "true" : "false");
+            gsap.to(other.querySelector(".glass-nav__ghost"), {
+              opacity: isActive ? 1 : 0,
+              scale: isActive ? 1 : 0.86,
+              duration: reduced ? 0 : 0.35,
+              ease: "power2.out",
+              overwrite: "auto",
+            });
+          });
+        });
+      });
+
+      window.addEventListener("beforeunload", () => {
+        cancelAnimationFrame(frame);
+        observer.disconnect();
+        backdropMap?.dispose();
+        backdrop.geometry.dispose();
+        backdrop.material.dispose();
+        pill.geometry.dispose();
+        pill.material.dispose();
+        scene.environment?.dispose?.();
+        renderer.dispose();
+      });
+    </script>
+  </body>
+</html>

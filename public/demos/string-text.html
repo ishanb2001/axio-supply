@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>String Text</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <style>
+      :root {
+        --bg: #000000;
+        --ink: #ffffff;
+        --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+        cursor: default;
+      }
+
+      .stage {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .title {
+        position: relative;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        font-size: clamp(3.2rem, 11vw, 7.5rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      .char {
+        display: inline-block;
+        position: relative;
+        will-change: transform, filter;
+        transform: translateZ(0);
+      }
+
+      .char--space {
+        width: 0.32em;
+      }
+
+      .hint {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%);
+        font-size: 11px;
+        font-weight: 510;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.28);
+        pointer-events: none;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .char {
+          will-change: auto;
+          filter: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="stage" id="stage">
+      <h1 class="title" id="title" aria-label="Hey people"></h1>
+    </main>
+    <p class="hint">Move</p>
+
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("stringEase", "M0,0 C0.16,1 0.3,1 1,1");
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const phrase = "Hey people";
+      const title = document.getElementById("title");
+      const stage = document.getElementById("stage");
+
+      // Split into individual characters for staggered lag.
+      const chars = [...phrase].map((glyph) => {
+        const el = document.createElement("span");
+        el.className = glyph === " " ? "char char--space" : "char";
+        el.textContent = glyph === " " ? "\u00A0" : glyph;
+        title.append(el);
+        return el;
+      });
+
+      // Each letter trails the pointer with increasing delay (string inertia).
+      const moveX = chars.map((char, index) =>
+        gsap.quickTo(char, "x", {
+          duration: reduced ? 0 : 0.35 + index * 0.055,
+          ease: "stringEase",
+        })
+      );
+      const moveY = chars.map((char, index) =>
+        gsap.quickTo(char, "y", {
+          duration: reduced ? 0 : 0.42 + index * 0.06,
+          ease: "stringEase",
+        })
+      );
+
+      const state = {
+        pointerX: 0,
+        pointerY: 0,
+        targetX: 0,
+        targetY: 0,
+        hasPointer: false,
+        demoPhase: 0,
+      };
+
+      const maxTravelX = () => Math.min(window.innerWidth * 0.22, 180);
+      const maxTravelY = () => Math.min(window.innerHeight * 0.1, 56);
+
+      function setPointerFromEvent(event) {
+        const rect = stage.getBoundingClientRect();
+        const nx = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const ny = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+        state.pointerX = gsap.utils.clamp(-1, 1, nx);
+        state.pointerY = gsap.utils.clamp(-1, 1, ny);
+        state.hasPointer = true;
+      }
+
+      stage.addEventListener("pointermove", setPointerFromEvent, { passive: true });
+      stage.addEventListener(
+        "pointerleave",
+        () => {
+          state.hasPointer = false;
+        },
+        { passive: true }
+      );
+
+      // Soft idle oscillation so the string effect stays visible without input.
+      if (!reduced) {
+        gsap.to(state, {
+          demoPhase: Math.PI * 2,
+          duration: 3.6,
+          ease: "none",
+          repeat: -1,
+          modifiers: {
+            demoPhase: (v) => Number(v) % (Math.PI * 2),
+          },
+        });
+      }
+
+      let prevTargetX = 0;
+
+      gsap.ticker.add(() => {
+        const travelX = maxTravelX();
+        const travelY = maxTravelY();
+
+        let goalX;
+        let goalY;
+
+        if (reduced) {
+          goalX = 0;
+          goalY = 0;
+        } else if (state.hasPointer) {
+          goalX = state.pointerX * travelX;
+          goalY = state.pointerY * travelY;
+        } else {
+          // Figure-eight-ish idle path recreates the GIF’s continuous pull.
+          const t = state.demoPhase;
+          goalX = Math.sin(t) * travelX * 0.85;
+          goalY = Math.sin(t * 2) * travelY * 0.35;
+        }
+
+        // Ease the shared target so the whole string feels heavy.
+        state.targetX += (goalX - state.targetX) * (reduced ? 1 : 0.12);
+        state.targetY += (goalY - state.targetY) * (reduced ? 1 : 0.1);
+
+        const velocity = state.targetX - prevTargetX;
+        prevTargetX = state.targetX;
+
+        moveX.forEach((move) => move(state.targetX));
+        moveY.forEach((move) => move(state.targetY));
+
+        // Stretch + blur scale with speed — the ghosted look from the GIF.
+        const speed = Math.min(1, Math.abs(velocity) / 4.5);
+        const blur = speed * 7;
+        const scaleX = 1 + speed * 0.12;
+
+        chars.forEach((char, index) => {
+          if (char.classList.contains("char--space")) return;
+          // Later letters keep blur a beat longer (string lag).
+          const lag = index / Math.max(1, chars.length - 1);
+          const localBlur = blur * (0.65 + lag * 0.55);
+          const localScale = 1 + (scaleX - 1) * (0.7 + lag * 0.45);
+          gsap.set(char, {
+            filter: localBlur > 0.08 ? `blur(${localBlur.toFixed(2)}px)` : "none",
+            scaleX: localScale,
+            transformOrigin: velocity >= 0 ? "0% 50%" : "100% 50%",
+          });
+        });
+      });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

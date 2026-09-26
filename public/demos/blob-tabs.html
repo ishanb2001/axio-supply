@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blob Tabs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #f4f4f5;
+        color: #111111;
+        font-family: Inter, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .stage {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        padding: 40px 20px;
+      }
+
+      .feature-filter {
+        position: relative;
+        width: fit-content;
+        max-width: 100%;
+        padding: 5px;
+        overflow: visible;
+        border-radius: 999px;
+        background: #f2f2f2;
+      }
+
+      .feature-filter__hover,
+      .feature-filter__backdrop {
+        position: absolute;
+        top: 5px;
+        left: 0;
+        width: 0;
+        height: 0;
+        border-radius: 999px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .feature-filter__hover {
+        background-color: #e8e8ea;
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .feature-filter__backdrop {
+        background-color: #000000;
+        will-change: left, width, height, top, background-color;
+        transition: background-color 0.16s cubic-bezier(0.7, 0, 0.3, 1);
+      }
+
+      .feature-filter__backdrop.is-pressed {
+        background-color: #1a1a1a;
+      }
+
+      .feature-filter__list {
+        list-style: none;
+        display: flex;
+        width: max-content;
+        margin: 0;
+        padding: 0;
+      }
+
+      .feature-filter__item {
+        position: relative;
+        z-index: 1;
+        padding: 10px 28px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .feature-filter__title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 500;
+        color: #8a8a8a;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        white-space: nowrap;
+      }
+
+      .feature-filter__item.is-active .feature-filter__title {
+        font-weight: 600;
+        color: #ffffff;
+      }
+
+      .feature-filter--classic .feature-filter__backdrop {
+        background-color: #ffffff;
+      }
+
+      .feature-filter--classic .feature-filter__backdrop.is-pressed {
+        background-color: #f6f6f6;
+      }
+
+      .feature-filter--classic .feature-filter__item.is-active .feature-filter__title {
+        color: #111111;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="feature-filter feature-filter--blob" id="tabs">
+        <div class="feature-filter__hover" aria-hidden="true"></div>
+        <div class="feature-filter__backdrop" aria-hidden="true"></div>
+        <ul class="feature-filter__list" role="tablist" aria-label="Blob tabs">
+          <li class="feature-filter__item is-active" data-id="all" role="tab">
+            <h3 class="feature-filter__title">All</h3>
+          </li>
+          <li class="feature-filter__item" data-id="free" role="tab">
+            <h3 class="feature-filter__title">Free</h3>
+          </li>
+          <li class="feature-filter__item" data-id="pro" role="tab">
+            <h3 class="feature-filter__title">Pro</h3>
+          </li>
+        </ul>
+      </div>
+      <div class="feature-filter feature-filter--classic" id="classic">
+        <div class="feature-filter__backdrop" aria-hidden="true"></div>
+        <ul class="feature-filter__list" role="tablist" aria-label="Classic tabs">
+          <li class="feature-filter__item is-active" data-id="all" role="tab">
+            <h3 class="feature-filter__title">All</h3>
+          </li>
+          <li class="feature-filter__item" data-id="free" role="tab">
+            <h3 class="feature-filter__title">Free</h3>
+          </li>
+          <li class="feature-filter__item" data-id="pro" role="tab">
+            <h3 class="feature-filter__title">Pro</h3>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("tabLeadEase", "0.65, 0, 0.35, 1");
+      CustomEase.create("tabSnapEase", "0.76, 0, 0.24, 1");
+      CustomEase.create("tabSquishEase", "0.65, 0, 0.35, 1");
+
+      const REST_TOP = 5;
+      const HOVER_BG = "#e8e8ea";
+      const PRESS_BG = "#d4d4d8";
+      const HOVER_EASE_LEAD = "cubic-bezier(0.22, 1, 0.36, 1)";
+      const HOVER_EASE_SNAP = "cubic-bezier(0.34, 1.25, 0.64, 1)";
+      const activeColor = "#ffffff";
+      const inactiveColor = "#8a8a8a";
+      const hoverColor = "#444444";
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      const root = document.getElementById("tabs");
+      const tabItems = gsap.utils.toArray(".feature-filter__item", root);
+      const backdrop = root.querySelector(".feature-filter__backdrop");
+      const hoverEl = root.querySelector(".feature-filter__hover");
+      const bgPos = { left: 0, right: 0 };
+      const hoverPos = { left: 0, right: 0 };
+      const size = { height: 0, top: REST_TOP };
+      let moveTl;
+      let hoveredItem = null;
+      let hoverHeight = 0;
+      let hideHoverTimer = null;
+      let activating = false;
+
+      const renderBackdrop = () => {
+        gsap.set(backdrop, {
+          left: bgPos.left,
+          width: Math.max(0, bgPos.right - bgPos.left),
+          height: size.height,
+          top: size.top,
+        });
+      };
+
+      const renderHover = () => {
+        gsap.set(hoverEl, {
+          left: hoverPos.left,
+          width: Math.max(0, hoverPos.right - hoverPos.left),
+          height: hoverHeight,
+          top: REST_TOP,
+        });
+      };
+
+      const hideHover = (duration = 0.22, delay = 0) => {
+        gsap.to(hoverEl, {
+          autoAlpha: 0,
+          backgroundColor: HOVER_BG,
+          duration: reduced ? 0 : duration,
+          delay: reduced ? 0 : delay,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+      };
+
+      const moveHoverTo = (item, { pressed = false } = {}) => {
+        if (hideHoverTimer) {
+          clearTimeout(hideHoverTimer);
+          hideHoverTimer = null;
+        }
+
+        const targetLeft = item.offsetLeft;
+        const targetRight = targetLeft + item.offsetWidth;
+        hoverHeight = item.offsetHeight;
+        const visible = Number(gsap.getProperty(hoverEl, "opacity")) > 0.05;
+
+        gsap.to(hoverEl, {
+          autoAlpha: 1,
+          backgroundColor: pressed ? PRESS_BG : HOVER_BG,
+          duration: reduced ? 0 : 0.2,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+
+        if (reduced || !visible) {
+          hoverPos.left = targetLeft;
+          hoverPos.right = targetRight;
+          renderHover();
+          return;
+        }
+
+        const isMovingRight = targetLeft > hoverPos.left;
+        gsap.killTweensOf(hoverPos);
+
+        if (isMovingRight) {
+          gsap.to(hoverPos, {
+            right: targetRight,
+            duration: 0.26,
+            ease: HOVER_EASE_LEAD,
+            onUpdate: renderHover,
+            overwrite: "auto",
+          });
+          gsap.to(hoverPos, {
+            left: targetLeft,
+            duration: 0.38,
+            ease: HOVER_EASE_SNAP,
+            onUpdate: renderHover,
+            overwrite: "auto",
+          });
+          return;
+        }
+
+        gsap.to(hoverPos, {
+          left: targetLeft,
+          duration: 0.26,
+          ease: HOVER_EASE_LEAD,
+          onUpdate: renderHover,
+          overwrite: "auto",
+        });
+        gsap.to(hoverPos, {
+          right: targetRight,
+          duration: 0.38,
+          ease: HOVER_EASE_SNAP,
+          onUpdate: renderHover,
+          overwrite: "auto",
+        });
+      };
+
+      const paintTitlesFromCoverage = () => {
+        tabItems.forEach((item) => {
+          const title = item.querySelector(".feature-filter__title");
+          const itemLeft = item.offsetLeft;
+          const itemRight = itemLeft + item.offsetWidth;
+          const overlap = Math.max(
+            0,
+            Math.min(bgPos.right, itemRight) - Math.max(bgPos.left, itemLeft)
+          );
+          const coverage = gsap.utils.clamp(0, 1, overlap / item.offsetWidth);
+          const blend = coverage * coverage * (3 - 2 * coverage);
+          const restingColor =
+            item === hoveredItem && !item.classList.contains("is-active")
+              ? hoverColor
+              : inactiveColor;
+          gsap.set(title, {
+            color: gsap.utils.interpolate(restingColor, activeColor, blend),
+          });
+        });
+      };
+
+      const sync = (item) => {
+        bgPos.left = item.offsetLeft;
+        bgPos.right = item.offsetLeft + item.offsetWidth;
+        size.height = item.offsetHeight;
+        size.top = REST_TOP;
+        renderBackdrop();
+        gsap.set(backdrop, { scaleY: 1, transformOrigin: "50% 50%" });
+      };
+
+      const moveTo = (targetItem) => {
+        if (reduced) {
+          sync(targetItem);
+          return;
+        }
+
+        const targetLeft = targetItem.offsetLeft;
+        const targetRight = targetLeft + targetItem.offsetWidth;
+        const startLeft = bgPos.left;
+        const startRight = bgPos.right;
+
+        if (Math.abs(targetLeft - startLeft) < 1 && Math.abs(targetRight - startRight) < 1) {
+          activating = false;
+          sync(targetItem);
+          return;
+        }
+
+        const restH = targetItem.offsetHeight || size.height;
+        const isMovingRight = targetLeft > startLeft;
+
+        moveTl?.kill();
+        gsap.killTweensOf(bgPos);
+        gsap.killTweensOf(size);
+        size.height = restH;
+        size.top = REST_TOP;
+
+        moveTl = gsap.timeline({
+          defaults: { overwrite: "auto" },
+          onUpdate: () => {
+            renderBackdrop();
+            paintTitlesFromCoverage();
+          },
+          onComplete: () => {
+            activating = false;
+            sync(targetItem);
+            paintTitlesFromCoverage();
+          },
+        });
+
+        moveTl.to(
+          backdrop,
+          { scaleY: 0.88, transformOrigin: "50% 50%", duration: 0.22, ease: "tabSquishEase" },
+          0
+        );
+        moveTl.to(backdrop, { scaleY: 1, duration: 0.38, ease: "tabSquishEase" }, 0.18);
+
+        if (isMovingRight) {
+          moveTl.to(bgPos, { right: targetRight, duration: 0.46, ease: "tabLeadEase" }, 0);
+          moveTl.to(bgPos, { left: targetLeft, duration: 0.58, ease: "tabSnapEase" }, 0.06);
+        } else {
+          moveTl.to(bgPos, { left: targetLeft, duration: 0.46, ease: "tabLeadEase" }, 0);
+          moveTl.to(bgPos, { right: targetRight, duration: 0.58, ease: "tabSnapEase" }, 0.06);
+        }
+      };
+
+      const setActiveClass = (target) => {
+        tabItems.forEach((el) => el.classList.toggle("is-active", el === target));
+        if (hoveredItem === target) hoveredItem = null;
+      };
+
+      sync(tabItems[0]);
+
+      tabItems.forEach((item) => {
+        const title = item.querySelector(".feature-filter__title");
+
+        item.addEventListener("click", () => {
+          if (!item.classList.contains("is-active")) {
+            activating = true;
+            moveHoverTo(item, { pressed: true });
+            hideHover(0.28, 0.08);
+          }
+          setActiveClass(item);
+          moveTo(item);
+        });
+
+        item.addEventListener("pointerdown", () => {
+          backdrop.classList.add("is-pressed");
+          if (!item.classList.contains("is-active")) moveHoverTo(item, { pressed: true });
+        });
+        item.addEventListener("pointerup", () => backdrop.classList.remove("is-pressed"));
+        item.addEventListener("pointercancel", () => backdrop.classList.remove("is-pressed"));
+        item.addEventListener("pointerleave", () => backdrop.classList.remove("is-pressed"));
+
+        item.addEventListener("pointerenter", () => {
+          if (item.classList.contains("is-active")) {
+            hideHover();
+            return;
+          }
+          hoveredItem = item;
+          moveHoverTo(item);
+          gsap.to(title, {
+            color: hoverColor,
+            duration: reduced ? 0 : 0.24,
+            ease: "power2.out",
+            overwrite: "auto",
+          });
+        });
+
+        item.addEventListener("pointerleave", () => {
+          if (hoveredItem === item) hoveredItem = null;
+          if (!item.classList.contains("is-active")) {
+            gsap.to(title, {
+              color: inactiveColor,
+              duration: reduced ? 0 : 0.28,
+              ease: "power2.out",
+              overwrite: "auto",
+            });
+          }
+          if (!activating) {
+            hideHoverTimer = window.setTimeout(() => hideHover(), 40);
+          }
+        });
+      });
+
+      window.addEventListener("resize", () => {
+        const active = tabItems.find((el) => el.classList.contains("is-active")) || tabItems[0];
+        sync(active);
+      });
+
+      CustomEase.create("tabPillEase", "M0,0 C0.7,0 0.3,1 1,1");
+      const classicRoot = document.getElementById("classic");
+      const classicItems = gsap.utils.toArray(".feature-filter__item", classicRoot);
+      const classicBackdrop = classicRoot.querySelector(".feature-filter__backdrop");
+      const classicPos = { left: 0, right: 0 };
+      const classicSize = { height: 0, top: REST_TOP };
+      const classicActive = "#111111";
+      const classicIdle = "#8a8a8a";
+      const classicEase = "tabPillEase";
+
+      const renderClassic = () => {
+        gsap.set(classicBackdrop, {
+          left: classicPos.left,
+          width: Math.max(0, classicPos.right - classicPos.left),
+          height: classicSize.height,
+          top: classicSize.top,
+        });
+      };
+
+      const syncClassic = (item) => {
+        classicPos.left = item.offsetLeft;
+        classicPos.right = item.offsetLeft + item.offsetWidth;
+        classicSize.height = item.offsetHeight;
+        classicSize.top = REST_TOP;
+        renderClassic();
+      };
+
+      const paintClassic = (target) => {
+        classicItems.forEach((el) => {
+          const title = el.querySelector(".feature-filter__title");
+          gsap.to(title, {
+            color: el === target ? classicActive : classicIdle,
+            duration: reduced ? 0 : 0.38,
+            ease: classicEase,
+            overwrite: "auto",
+          });
+        });
+      };
+
+      const moveClassic = (targetItem) => {
+        if (reduced) {
+          syncClassic(targetItem);
+          return;
+        }
+
+        const targetLeft = targetItem.offsetLeft;
+        const targetRight = targetLeft + targetItem.offsetWidth;
+        const isMovingRight = targetLeft > classicPos.left;
+        gsap.killTweensOf(classicPos);
+        classicSize.height = targetItem.offsetHeight;
+        classicSize.top = REST_TOP;
+
+        if (isMovingRight) {
+          gsap.to(classicPos, {
+            right: targetRight,
+            duration: 0.42,
+            ease: classicEase,
+            onUpdate: renderClassic,
+            overwrite: "auto",
+          });
+          gsap.to(classicPos, {
+            left: targetLeft,
+            duration: 0.55,
+            ease: classicEase,
+            onUpdate: renderClassic,
+            overwrite: "auto",
+          });
+        } else {
+          gsap.to(classicPos, {
+            left: targetLeft,
+            duration: 0.42,
+            ease: classicEase,
+            onUpdate: renderClassic,
+            overwrite: "auto",
+          });
+          gsap.to(classicPos, {
+            right: targetRight,
+            duration: 0.55,
+            ease: classicEase,
+            onUpdate: renderClassic,
+            overwrite: "auto",
+          });
+        }
+      };
+
+      syncClassic(classicItems[0]);
+      paintClassic(classicItems[0]);
+
+      classicItems.forEach((item) => {
+        item.addEventListener("click", () => {
+          classicItems.forEach((el) => el.classList.toggle("is-active", el === item));
+          paintClassic(item);
+          moveClassic(item);
+        });
+        item.addEventListener("pointerdown", () => classicBackdrop.classList.add("is-pressed"));
+        item.addEventListener("pointerup", () => classicBackdrop.classList.remove("is-pressed"));
+        item.addEventListener("pointercancel", () => classicBackdrop.classList.remove("is-pressed"));
+        item.addEventListener("pointerleave", () => classicBackdrop.classList.remove("is-pressed"));
+      });
+
+      window.addEventListener("resize", () => {
+        const active =
+          classicItems.find((el) => el.classList.contains("is-active")) || classicItems[0];
+        syncClassic(active);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Careers — Image Side</title>
+    <style>
+      :root {
+        --bg: #000;
+        --ink: #ffffff;
+        --muted: rgba(255, 255, 255, 0.72);
+        --accent: #7c3aed;
+        --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        background: var(--bg);
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .spacer {
+        min-height: 55vh;
+        display: flex;
+        align-items: flex-end;
+        padding: 0 clamp(24px, 5vw, 64px) 40px;
+      }
+
+      .spacer p,
+      .bridge p {
+        max-width: 36ch;
+        font-size: 15px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.02em;
+      }
+
+      .bridge {
+        padding: clamp(64px, 12vh, 120px) clamp(24px, 5vw, 64px);
+      }
+
+      .bridge h2 {
+        font-size: clamp(24px, 3.5vw, 36px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 12px;
+      }
+
+      /* Normal-flow section — scrolls with the page, never pins or holds */
+      .scene {
+        position: relative;
+        height: 100vh;
+        width: 100%;
+        background: #000;
+      }
+
+      .stage {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        background: #000;
+        transform: translateZ(0);
+      }
+
+      /* —— Slide section (clip from right) —— */
+      .media--slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #111;
+        will-change: clip-path;
+        /* Explicit none = true full-bleed (avoids inset(0 0% …) quirks) */
+        clip-path: none;
+      }
+
+      /* —— Scale section (shrink toward left) —— */
+      .media--scale {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #111;
+        transform-origin: left center;
+        will-change: transform;
+      }
+
+      .media__img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 35%;
+        display: block;
+        user-select: none;
+        pointer-events: none;
+        will-change: transform;
+        transform-origin: center center;
+      }
+
+      .copy {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(42%, 520px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: clamp(32px, 6vw, 72px) clamp(28px, 4vw, 56px)
+          clamp(32px, 6vw, 72px) clamp(20px, 3vw, 40px);
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .copy--scale {
+        width: min(40%, 480px);
+      }
+
+      .copy__inner {
+        max-width: 420px;
+        pointer-events: auto;
+      }
+
+      .copy__eyebrow {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 22px;
+      }
+
+      .copy__title {
+        font-size: clamp(28px, 3.4vw, 44px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.12;
+        margin-bottom: 20px;
+        color: #fff;
+      }
+
+      .copy__body {
+        font-size: clamp(15px, 1.35vw, 18px);
+        font-weight: 400;
+        line-height: 1.55;
+        color: var(--muted);
+        max-width: 34ch;
+        margin-bottom: 28px;
+      }
+
+      .copy__cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: #fff;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      .copy__cta:hover .copy__cta-icon {
+        transform: translateX(3px);
+      }
+
+      .copy__cta-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        background: var(--accent);
+        display: grid;
+        place-items: center;
+        transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+
+      .copy__cta-icon svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .outro {
+        padding: clamp(80px, 16vh, 140px) clamp(24px, 5vw, 64px) 120px;
+        max-width: 720px;
+      }
+
+      .outro h2 {
+        font-size: clamp(28px, 4vw, 40px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 14px;
+      }
+
+      .outro p {
+        font-size: 17px;
+        font-weight: 400;
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.5);
+        max-width: 40ch;
+      }
+
+      @media (max-width: 800px) {
+        .copy,
+        .copy--scale {
+          width: min(48%, 360px);
+          padding-left: 16px;
+          padding-right: 20px;
+        }
+
+        .copy__title {
+          font-size: clamp(22px, 5.5vw, 32px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .media--slide,
+        .media--scale,
+        .media__img {
+          will-change: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="spacer">
+      <p>Scroll — image stays full-bleed, then opens as the section scrolls by</p>
+    </div>
+
+    <!-- 1) SLIDE
+    <section class="scene" id="scene-slide">
+      <div class="stage">
+        <div class="media media--slide" id="media-slide">
+          <img
+            class="media__img"
+            id="img-slide"
+            src="https://images.pexels.com/photos/27086545/pexels-photo-27086545.jpeg?auto=compress&cs=tinysrgb&w=2000"
+            alt="Man smiling while looking at his phone"
+            width="2000"
+            height="1333"
+            decoding="async"
+            fetchpriority="high"
+          />
+        </div>
+
+        <div class="copy">
+          <div class="copy__inner">
+            <span class="copy__eyebrow" data-fade-slide>Careers</span>
+            <h2 class="copy__title" data-fade-slide>
+              Build a career that’s as exciting as the world we’re shaping
+            </h2>
+            <p class="copy__body" data-fade-slide>
+              Grow personally and professionally in a global company that helps
+              you unlock your full potential.
+            </p>
+            <a class="copy__cta" data-fade-slide href="#">
+              Join us
+              <span class="copy__cta-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    -->
+
+    <div class="bridge">
+      <h2>Same idea, different motion</h2>
+      <p>Next, the image scales smaller toward the left as it scrolls into place.</p>
+    </div>
+
+    <!-- 2) SCALE -->
+    <section class="scene" id="scene-scale">
+      <div class="stage">
+        <div class="media media--scale" id="media-scale">
+          <img
+            class="media__img"
+            id="img-scale"
+            src="https://images.pexels.com/photos/27086545/pexels-photo-27086545.jpeg?auto=compress&cs=tinysrgb&w=2000"
+            alt="Man smiling while looking at his phone"
+            width="2000"
+            height="1333"
+            decoding="async"
+          />
+        </div>
+
+        <div class="copy copy--scale">
+          <div class="copy__inner">
+            <span class="copy__eyebrow" data-fade-scale>Careers</span>
+            <h2 class="copy__title" data-fade-scale>
+              Build a career that’s as exciting as the world we’re shaping
+            </h2>
+            <p class="copy__body" data-fade-scale>
+              Grow personally and professionally in a global company that helps
+              you unlock your full potential.
+            </p>
+            <a class="copy__cta" data-fade-scale href="#">
+              Join us
+              <span class="copy__cta-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="outro">
+      <h2>Open roles worldwide</h2>
+      <p>
+        Two treatments of the same reveal — slide vs scale — both animate while
+        the page keeps scrolling past them.
+      </p>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      (function () {
+        gsap.registerPlugin(ScrollTrigger, CustomEase);
+
+        // cubic-bezier(0.4, 0, 0.2, 1) — seamless image motion
+        CustomEase.create("imageEase", "M0,0 C0.4,0 0.2,1 1,1");
+        // cubic-bezier(0.22, 1, 0.36, 1) — soft text settle
+        CustomEase.create("textEase", "M0,0 C0.22,1 0.36,1 1,1");
+
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const scrub = reduced ? true : 1.75;
+
+        /**
+         * Continuous scroll — no pin / sticky.
+         * Long runway + heavy scrub = slower, seamless image open;
+         * text follows later with a softer cubic-bezier.
+         */
+        function setupSlide() {
+          const media = document.getElementById("media-slide");
+          const img = document.getElementById("img-slide");
+          const fades = gsap.utils.toArray("[data-fade-slide]");
+
+          gsap.set(media, {
+            force3D: true,
+            clipPath: "inset(0 0% 0 0)",
+          });
+          gsap.set(img, { force3D: true, scale: 1.08 });
+          gsap.set(fades, { autoAlpha: 0, y: 36 });
+
+          const tl = gsap.timeline({
+            defaults: { ease: "imageEase" },
+            scrollTrigger: {
+              trigger: "#scene-slide",
+              start: "top 88%",
+              end: "center 28%",
+              scrub,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          // Slow image open across most of the scrub
+          tl.to(
+            media,
+            { clipPath: "inset(0 46% 0 0)", duration: 1.4 },
+            0.15
+          );
+          tl.to(img, { scale: 1, duration: 1.4 }, 0.15);
+
+          // Text in later, slower, softer
+          tl.to(
+            fades,
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 1.1,
+              stagger: 0.22,
+              ease: "textEase",
+            },
+            0.85
+          );
+        }
+
+        function setupScale() {
+          const media = document.getElementById("media-scale");
+          const img = document.getElementById("img-scale");
+          const fades = gsap.utils.toArray("[data-fade-scale]");
+
+          gsap.set(media, {
+            force3D: true,
+            transformOrigin: "left center",
+            scale: 1,
+          });
+          gsap.set(img, { force3D: true, scale: 1.08 });
+          gsap.set(fades, { autoAlpha: 0, y: 36 });
+
+          const tl = gsap.timeline({
+            defaults: { ease: "imageEase" },
+            scrollTrigger: {
+              trigger: "#scene-scale",
+              start: "top 88%",
+              end: "center 28%",
+              scrub,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          tl.to(media, { scale: 0.54, duration: 1.4 }, 0.15);
+          tl.to(img, { scale: 1, duration: 1.4 }, 0.15);
+
+          tl.to(
+            fades,
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 1.1,
+              stagger: 0.22,
+              ease: "textEase",
+            },
+            0.85
+          );
+        }
+
+        setupSlide();
+        setupScale();
+
+        gsap.utils.toArray(".media__img").forEach((img) => {
+          if (!img.complete) {
+            img.addEventListener("load", () => ScrollTrigger.refresh(), {
+              once: true,
+            });
+          }
+        });
+      })();
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

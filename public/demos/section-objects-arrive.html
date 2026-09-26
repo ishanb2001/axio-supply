@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Objects Arrive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --page: #ffffff;
+        --ink: #111111;
+        --muted: #9a9a9a;
+        --phone-w: min(270px, 40vw);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--page);
+        color: var(--ink);
+        font-family: "DM Sans", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .spacer {
+        min-height: 70vh;
+        display: grid;
+        place-items: center;
+        padding: 48px 24px;
+        text-align: center;
+      }
+
+      .spacer__label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .spacer__title {
+        margin-top: 12px;
+        font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .arrive {
+        position: relative;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        background: var(--page);
+      }
+
+      .arrive__stage {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+
+      /* —— Phone —— */
+      .phone {
+        position: relative;
+        z-index: 2;
+        width: var(--phone-w);
+        aspect-ratio: 9 / 19.3;
+        border-radius: 38px;
+        background: #0a0a0a;
+        padding: 9px;
+        box-shadow:
+          0 28px 70px rgba(0, 0, 0, 0.16),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        will-change: transform;
+      }
+
+      .phone__screen {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 30px;
+        overflow: hidden;
+        background: #f3f2f0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .phone__notch {
+        position: absolute;
+        top: 9px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36%;
+        height: 17px;
+        background: #0a0a0a;
+        border-radius: 20px;
+        z-index: 5;
+      }
+
+      .phone__header {
+        background: #161616;
+        padding: 34px 12px 14px;
+      }
+
+      .wallet {
+        position: relative;
+        background: #efe6dc;
+        border-radius: 18px;
+        padding: 14px;
+        overflow: hidden;
+      }
+
+      .wallet::before,
+      .wallet::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+      }
+
+      .wallet::before {
+        left: 0;
+        background: linear-gradient(180deg, #f5d76e, #e8b923);
+        border-radius: 18px 0 0 18px;
+      }
+
+      .wallet::after {
+        right: 0;
+        background: linear-gradient(180deg, #f5d76e, #e8b923);
+        border-radius: 0 18px 18px 0;
+      }
+
+      .wallet__blob {
+        position: absolute;
+        top: -16px;
+        left: 8px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #ff9ec0, #e65a93);
+      }
+
+      .wallet__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+      }
+
+      .wallet__balance {
+        font-size: 1.3rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .toggle {
+        width: 26px;
+        height: 15px;
+        border-radius: 999px;
+        background: #2a2a2a;
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .toggle::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #fff;
+      }
+
+      .wallet__meta {
+        margin-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 0.52rem;
+        color: #666;
+        position: relative;
+      }
+
+      .phone__actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .phone__actions button {
+        border: 0;
+        border-radius: 999px;
+        background: #2a2a2a;
+        color: #fff;
+        font: inherit;
+        font-size: 0.6rem;
+        font-weight: 500;
+        padding: 10px 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+
+      .phone__body {
+        flex: 1;
+        padding: 14px 12px 0;
+        min-height: 0;
+      }
+
+      .phone__section-title {
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .activity {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .activity li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 8px;
+      }
+
+      .activity__icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+
+      .activity__icon svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .activity__meta {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .activity__name {
+        font-size: 0.6rem;
+        font-weight: 600;
+      }
+
+      .activity__date {
+        font-size: 0.48rem;
+        color: var(--muted);
+      }
+
+      .activity__amount {
+        font-size: 0.6rem;
+        font-weight: 600;
+      }
+
+      .is-pos {
+        color: #16a34a;
+      }
+
+      .phone__nav {
+        margin-top: auto;
+        background: #161616;
+        border-radius: 20px 20px 0 0;
+        padding: 12px 24px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: #fff;
+      }
+
+      .phone__nav svg {
+        width: 16px;
+        height: 16px;
+        opacity: 0.9;
+      }
+
+      .phone__fab {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #3b6cff;
+        display: grid;
+        place-items: center;
+        margin-top: -22px;
+        box-shadow: 0 8px 20px rgba(59, 108, 255, 0.4);
+        font-size: 1.25rem;
+        font-weight: 400;
+        line-height: 1;
+      }
+
+      /* —— Floating assets —— */
+      .float {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        z-index: 1;
+        will-change: transform;
+        pointer-events: none;
+      }
+
+      /* Transaction row cards — match screenshot */
+      .tx {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 236px;
+        background: #fff;
+        border-radius: 18px;
+        padding: 14px 16px;
+        box-shadow:
+          0 10px 28px rgba(0, 0, 0, 0.07),
+          0 1px 3px rgba(0, 0, 0, 0.04);
+      }
+
+      .tx__icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+
+      .tx__icon svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+      }
+
+      .tx__meta {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .tx__name {
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+      }
+
+      .tx__date {
+        margin-top: 2px;
+        font-size: 0.68rem;
+        color: var(--muted);
+        letter-spacing: -0.01em;
+      }
+
+      .tx__amount {
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        white-space: nowrap;
+      }
+
+      /* Credit cards */
+      .paycard {
+        position: relative;
+        width: 210px;
+        border-radius: 20px;
+        padding: 18px 16px 16px;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
+      }
+
+      .paycard--blue {
+        background: #2f6bff;
+        color: #fff;
+      }
+
+      .paycard--yellow {
+        background: #f5c518;
+        color: #111;
+      }
+
+      .paycard__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+        z-index: 1;
+      }
+
+      .paycard__balance {
+        font-size: 1.45rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+
+      .paycard--blue .toggle {
+        background: rgba(0, 0, 0, 0.35);
+      }
+
+      .paycard--yellow .toggle {
+        background: #222;
+      }
+
+      .paycard__meta {
+        margin-top: 36px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 0.58rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+        letter-spacing: 0.01em;
+      }
+
+      .paycard__wave {
+        position: absolute;
+        left: -10%;
+        right: -10%;
+        bottom: 28%;
+        height: 42px;
+        border: none;
+        border-top: 3px solid #111;
+        border-radius: 50%;
+        opacity: 0.85;
+        pointer-events: none;
+      }
+
+      .paycard__deco {
+        position: absolute;
+        top: -8px;
+        left: -6px;
+        width: 64px;
+        height: 64px;
+        pointer-events: none;
+      }
+
+      .paycard__deco .blob-w {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #fff;
+        top: 10px;
+        left: 8px;
+      }
+
+      .paycard__deco .blob-b {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #3b6cff;
+        top: 28px;
+        left: 30px;
+      }
+
+      /* Chart */
+      .chart {
+        width: 168px;
+        background: #efeeec;
+        border-radius: 18px;
+        padding: 16px 14px 12px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.07);
+      }
+
+      .chart__bars {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        height: 78px;
+        gap: 8px;
+        padding: 0 2px;
+      }
+
+      .chart__bars span {
+        flex: 1;
+        border-radius: 3px 3px 1px 1px;
+        background: #171717;
+      }
+
+      .chart__labels {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.58rem;
+        color: var(--muted);
+        padding: 0 1px;
+      }
+
+      .chart__labels .is-active {
+        background: #171717;
+        color: #fff;
+        border-radius: 999px;
+        padding: 2px 7px;
+        font-weight: 500;
+      }
+
+      .bg-mail {
+        background: #ffe01b;
+      }
+      .bg-dribbble {
+        background: #ea4c89;
+        color: #fff;
+      }
+      .bg-adobe {
+        background: #111;
+        color: #fff;
+      }
+      .bg-youtube {
+        background: #ff0033;
+        color: #fff;
+      }
+      .bg-upwork {
+        background: #14a800;
+        color: #fff;
+      }
+
+      @media (max-width: 760px) {
+        .tx {
+          width: 168px;
+          padding: 10px 12px;
+          gap: 8px;
+        }
+
+        .tx__icon {
+          width: 28px;
+          height: 28px;
+        }
+
+        .tx__name,
+        .tx__amount {
+          font-size: 0.68rem;
+        }
+
+        .tx__date {
+          font-size: 0.56rem;
+        }
+
+        .paycard {
+          width: 150px;
+          padding: 14px 12px;
+        }
+
+        .paycard__balance {
+          font-size: 1.1rem;
+        }
+
+        .paycard__meta {
+          margin-top: 24px;
+          font-size: 0.5rem;
+        }
+
+        .chart {
+          width: 120px;
+          padding: 12px 10px 10px;
+        }
+
+        .chart__bars {
+          height: 56px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="spacer">
+      <div>
+        <p class="spacer__label">Scroll</p>
+        <h1 class="spacer__title">Watch the interface assemble</h1>
+      </div>
+    </section>
+
+    <section class="arrive" id="arrive">
+      <div class="arrive__stage">
+        <!-- LEFT -->
+        <div class="float" data-x="-340" data-y="-200">
+          <div class="tx">
+            <div class="tx__icon bg-mail" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="#111">
+                <circle cx="12" cy="10" r="5.5" />
+                <ellipse cx="8.2" cy="7.2" rx="2.2" ry="3.2" />
+                <ellipse cx="15.8" cy="7.2" rx="2.2" ry="3.2" />
+                <path
+                  d="M9 12.5c.8 1.2 2 1.8 3 1.8s2.2-.6 3-1.8"
+                  fill="none"
+                  stroke="#111"
+                  stroke-width="1.2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+            <div class="tx__meta">
+              <div class="tx__name">Mailchimp</div>
+              <div class="tx__date">22 March 2023</div>
+            </div>
+            <div class="tx__amount">-$350,00</div>
+          </div>
+        </div>
+
+        <div class="float" data-x="-360" data-y="-10">
+          <div class="paycard paycard--blue">
+            <div class="paycard__wave" aria-hidden="true"></div>
+            <div class="paycard__top">
+              <div class="paycard__balance">$830.45</div>
+              <div class="toggle" aria-hidden="true"></div>
+            </div>
+            <div class="paycard__meta">
+              <span>Credit .... .... 2131</span>
+              <span>EXP date 05/26</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="float" data-x="-310" data-y="155">
+          <div class="chart">
+            <div class="chart__bars" aria-hidden="true">
+              <span style="height: 42%"></span>
+              <span style="height: 68%"></span>
+              <span style="height: 52%"></span>
+              <span style="height: 92%"></span>
+              <span style="height: 58%"></span>
+              <span style="height: 74%"></span>
+            </div>
+            <div class="chart__labels">
+              <span>Mar</span>
+              <span>Apr</span>
+              <span class="is-active">May</span>
+              <span>Jun</span>
+              <span>Jul</span>
+              <span>Aug</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="float" data-x="-300" data-y="275">
+          <div class="tx">
+            <div class="tx__icon bg-upwork" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="#fff">
+                <path
+                  d="M18.5 7.2c-1.6 0-2.9.9-3.6 2.3V7.5h-2.7v9.8h2.8v-5.2c0-1.5.9-2.5 2.2-2.5s1.9.9 1.9 2.4v5.3H22v-5.6c0-2.6-1.6-4.5-3.5-4.5zM8.8 10.2c-.9-1.1-2.2-1.7-3.7-1.7C2.7 8.5 1 10.3 1 13.1S2.7 17.7 5.1 17.7c1.4 0 2.6-.6 3.5-1.6v1.3h2.7V7.5H8.8v2.7zm-1.4 3.6c0 1.4-1.1 2.4-2.4 2.4s-2.4-1.1-2.4-2.5 1.1-2.5 2.4-2.5 2.4 1.1 2.4 2.6z"
+                />
+              </svg>
+            </div>
+            <div class="tx__meta">
+              <div class="tx__name">Upwork</div>
+              <div class="tx__date">28 March 2023</div>
+            </div>
+            <div class="tx__amount is-pos">+$560,80</div>
+          </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="float" data-x="320" data-y="-215">
+          <div class="tx">
+            <div class="tx__icon bg-dribbble" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="#fff">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="#fff" stroke-width="1.8" />
+                <path
+                  d="M12 3c2.2 3.8 3 8 2.6 12.2M4.2 8.5c3.6 0 7.4.4 11.3 2.2M5.2 17.8c2.6-2.4 5.8-3.8 9.8-4.2"
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+            <div class="tx__meta">
+              <div class="tx__name">Dribbble</div>
+              <div class="tx__date">12 February 2023</div>
+            </div>
+            <div class="tx__amount">-$15,00</div>
+          </div>
+        </div>
+
+        <div class="float" data-x="340" data-y="-55">
+          <div class="tx">
+            <div class="tx__icon bg-adobe" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="#fff">
+                <path d="M13.5 4h5.2L12 20 5.3 4h5.3l1.4 3.6L13.5 4z" />
+              </svg>
+            </div>
+            <div class="tx__meta">
+              <div class="tx__name">Adobe</div>
+              <div class="tx__date">24 March 2023</div>
+            </div>
+            <div class="tx__amount">-$11,99</div>
+          </div>
+        </div>
+
+        <div class="float" data-x="330" data-y="95">
+          <div class="tx">
+            <div class="tx__icon bg-youtube" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="#fff">
+                <path
+                  d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 5 12 5 12 5s-6 0-7.7.3A2.7 2.7 0 0 0 2.4 7.2 28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9C6 19 12 19 12 19s6 0 7.7-.3a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8zM10 15.2V8.8L15.2 12 10 15.2z"
+                />
+              </svg>
+            </div>
+            <div class="tx__meta">
+              <div class="tx__name">YouTube</div>
+              <div class="tx__date">24 March 2023</div>
+            </div>
+            <div class="tx__amount is-pos">+$140,45</div>
+          </div>
+        </div>
+
+        <div class="float" data-x="310" data-y="255">
+          <div class="paycard paycard--yellow">
+            <div class="paycard__deco" aria-hidden="true">
+              <span class="blob-w"></span>
+              <span class="blob-b"></span>
+            </div>
+            <div class="paycard__top">
+              <div class="paycard__balance">$2,486.12</div>
+              <div class="toggle" aria-hidden="true"></div>
+            </div>
+            <div class="paycard__meta">
+              <span>Credit .... .... 1214</span>
+              <span>EXP date 04/26</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phone -->
+        <div class="phone" id="phone">
+          <div class="phone__screen">
+            <div class="phone__notch"></div>
+            <div class="phone__header">
+              <div class="wallet">
+                <div class="wallet__blob"></div>
+                <div class="wallet__top">
+                  <div class="wallet__balance">$ 1,240.86</div>
+                  <div class="toggle" aria-hidden="true"></div>
+                </div>
+                <div class="wallet__meta">
+                  <span>Credit .... .... 8383</span>
+                  <span>EXP date 03/26</span>
+                </div>
+              </div>
+              <div class="phone__actions">
+                <button type="button">
+                  <span aria-hidden="true">↗</span> Withdraw
+                </button>
+                <button type="button">
+                  <span aria-hidden="true">↙</span> Deposit
+                </button>
+              </div>
+            </div>
+            <div class="phone__body">
+              <h2 class="phone__section-title">Recent Activity</h2>
+              <ul class="activity">
+                <li>
+                  <div class="activity__icon bg-dribbble">
+                    <svg viewBox="0 0 24 24" fill="#fff">
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="9"
+                        fill="none"
+                        stroke="#fff"
+                        stroke-width="1.8"
+                      />
+                      <path
+                        d="M12 3c2.2 3.8 3 8 2.6 12.2M4.2 8.5c3.6 0 7.4.4 11.3 2.2M5.2 17.8c2.6-2.4 5.8-3.8 9.8-4.2"
+                        fill="none"
+                        stroke="#fff"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </div>
+                  <div class="activity__meta">
+                    <div class="activity__name">Dribbble</div>
+                    <div class="activity__date">12 February 2023</div>
+                  </div>
+                  <div class="activity__amount">-$15,00</div>
+                </li>
+                <li>
+                  <div class="activity__icon bg-mail">
+                    <svg viewBox="0 0 24 24" fill="#111">
+                      <circle cx="12" cy="10" r="5.5" />
+                      <ellipse cx="8.2" cy="7.2" rx="2.2" ry="3.2" />
+                      <ellipse cx="15.8" cy="7.2" rx="2.2" ry="3.2" />
+                    </svg>
+                  </div>
+                  <div class="activity__meta">
+                    <div class="activity__name">Mailchimp</div>
+                    <div class="activity__date">22 March 2023</div>
+                  </div>
+                  <div class="activity__amount">-$350,00</div>
+                </li>
+                <li>
+                  <div class="activity__icon bg-youtube">
+                    <svg viewBox="0 0 24 24" fill="#fff">
+                      <path
+                        d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 5 12 5 12 5s-6 0-7.7.3A2.7 2.7 0 0 0 2.4 7.2 28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9C6 19 12 19 12 19s6 0 7.7-.3a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8zM10 15.2V8.8L15.2 12 10 15.2z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="activity__meta">
+                    <div class="activity__name">YouTube</div>
+                    <div class="activity__date">24 March 2023</div>
+                  </div>
+                  <div class="activity__amount is-pos">+$140,45</div>
+                </li>
+              </ul>
+            </div>
+            <div class="phone__nav">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 3 4 9v12h5v-7h6v7h5V9l-8-6z" />
+              </svg>
+              <div class="phone__fab">+</div>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="spacer">
+      <div>
+        <p class="spacer__label">Unlocked</p>
+        <h2 class="spacer__title">Keep scrolling — the scene has caught up</h2>
+      </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(ScrollTrigger, CustomEase);
+
+      CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+      CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+      const floats = gsap.utils.toArray(".float");
+      const phone = document.querySelector("#phone");
+      const mobile = () => window.matchMedia("(max-width: 760px)").matches;
+
+      function offset(el, axis) {
+        const value = parseFloat(el.dataset[axis]) || 0;
+        return mobile() ? value * 0.52 : value;
+      }
+
+      // Fully opaque from the start — only depth/scale hides them behind the phone
+      gsap.set(floats, {
+        xPercent: -50,
+        yPercent: -50,
+        x: 0,
+        y: 0,
+        scale: 0.28,
+        force3D: true,
+      });
+
+      gsap.set(phone, { force3D: true });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#arrive",
+          start: "top top",
+          end: "+=280%",
+          pin: true,
+          scrub: 1.4,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // Shared, even motion — no stagger jitter, no fade, no rotation
+      tl.to(
+        floats,
+        {
+          x: (_, el) => offset(el, "x"),
+          y: (_, el) => offset(el, "y"),
+          scale: 1,
+          duration: 1,
+          ease: "osmo",
+          stagger: {
+            each: 0.018,
+            from: "center",
+          },
+        },
+        0
+      );
+
+      tl.fromTo(
+        phone,
+        { scale: 0.985 },
+        { scale: 1, duration: 1, ease: "osmo" },
+        0
+      );
+
+      // Hold the final frame before release
+      tl.to({}, { duration: 0.35 });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

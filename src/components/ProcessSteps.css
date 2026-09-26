@@ -1,0 +1,147 @@
+.process-steps {
+  width: min(920px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: clamp(48px, 8vh, 80px) 0 clamp(64px, 10vh, 96px);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #ffffff;
+  color: #000000;
+  font-family: "PP Neue Montreal", "Neue Montreal", sans-serif;
+}
+
+.process-steps__title {
+  max-width: 12ch;
+  margin: 0 auto clamp(36px, 5vh, 56px);
+  text-align: center;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  color: #000000;
+}
+
+.process-steps__stage {
+  position: relative;
+  width: 100%;
+  height: clamp(300px, 44vw, 380px);
+  overflow: hidden;
+  border-radius: 28px;
+}
+
+.process-card {
+  --card: #f3c4b5;
+  --card-ink: #1d1d1f;
+  --card-muted: #6e6e73;
+  --card-soft: #86868b;
+  position: absolute;
+  top: 32px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--card);
+  border: 0;
+  border-radius: 28px;
+  padding: clamp(28px, 3.5vw, 40px) clamp(28px, 3.8vw, 44px)
+    clamp(30px, 3.8vw, 44px);
+  color: var(--card-ink);
+  transform-origin: 50% 0%;
+  will-change: transform;
+  overflow: hidden;
+}
+
+.process-card--tone-1 {
+  --card: #f3c4b5;
+}
+
+.process-card--tone-2 {
+  --card: #ffffff;
+}
+
+.process-card--tone-3 {
+  --card: #2f6bff;
+  --card-ink: #ffffff;
+  --card-muted: rgba(255, 255, 255, 0.72);
+  --card-soft: rgba(255, 255, 255, 0.45);
+}
+
+.process-card--tone-4 {
+  --card: #f3c4b5;
+}
+
+.process-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: clamp(22px, 3vw, 32px);
+}
+
+.process-card__title {
+  font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  max-width: 14ch;
+}
+
+.process-card__title .quiet {
+  color: var(--card-muted);
+  font-weight: 500;
+}
+
+.process-card__num {
+  flex-shrink: 0;
+  font-size: clamp(2.4rem, 5.5vw, 3.5rem);
+  font-weight: 510;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  color: var(--card-soft);
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.process-card__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(20px, 3vw, 40px);
+}
+
+.process-card__label {
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--card-ink);
+}
+
+.process-card__body {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  color: var(--card-muted);
+  max-width: 28ch;
+}
+
+@media (max-width: 720px) {
+  .process-steps__stage {
+    height: clamp(360px, 92vw, 440px);
+  }
+
+  .process-card__grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .process-card__title {
+    max-width: 12ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .process-card {
+    will-change: auto;
+  }
+}

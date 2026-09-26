@@ -1,0 +1,192 @@
+.services-section {
+  --services-bg: #ffffff;
+  --services-text: #0a0a0a;
+  --services-muted: #a0a0a0;
+  --services-border: #ededed;
+  --services-indicator: #000000;
+  --services-hover: #f4f4f6;
+  --services-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  width: 100%;
+  background: var(--services-bg);
+  color: var(--services-text);
+  padding: clamp(64px, 10vh, 120px) clamp(24px, 5vw, 64px);
+  font-family: "PP Neue Montreal", "Neue Montreal", sans-serif;
+  letter-spacing: -0.03em;
+  -webkit-font-smoothing: antialiased;
+}
+
+.services-container {
+  width: 100%;
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+.services-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 50px;
+}
+
+.services-title {
+  margin: 0;
+  overflow: hidden;
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--services-text);
+}
+
+.services-title .scroll-reveal,
+.services-tag .scroll-reveal {
+  display: block;
+  overflow: hidden;
+}
+
+.services-title .scroll-reveal__inner,
+.services-tag .scroll-reveal__inner {
+  display: block;
+}
+
+.services-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--services-text);
+  text-transform: uppercase;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 70px;
+  align-items: center;
+}
+
+.services-menu-wrapper {
+  position: relative;
+  padding-left: 20px;
+}
+
+.hover-backdrop {
+  position: absolute;
+  left: 12px;
+  right: 0;
+  top: 0;
+  height: 0;
+  background-color: var(--services-hover);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 0;
+  will-change: top, height;
+}
+
+.active-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 0;
+  background-color: var(--services-indicator);
+  border-radius: 4px;
+  z-index: 2;
+  will-change: top, height, width;
+}
+
+.services-list {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-item {
+  position: relative;
+  padding: 24px 20px;
+  border: 0;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 12px;
+  outline: none;
+}
+
+.service-item__content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  will-change: transform;
+}
+
+.service-item__number {
+  font-size: 0.8rem;
+  color: var(--services-muted);
+  font-weight: 400;
+  transition: color 0.28s var(--services-ease);
+}
+
+.service-item__title {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+  font-weight: 600;
+  color: var(--services-muted);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  transition: color 0.28s var(--services-ease);
+}
+
+.service-item.is-active .service-item__title,
+.service-item.is-active .service-item__number {
+  color: var(--services-text);
+}
+
+.image-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3.2;
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: #000;
+}
+
+.image-strip {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+.image-slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.image-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1.06);
+  will-change: transform;
+}
+
+@media (max-width: 868px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .image-stage {
+    order: -1;
+    aspect-ratio: 16 / 10;
+  }
+}

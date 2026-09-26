@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wind Row</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html.has-scroll-smooth {
+        overflow: hidden;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #f7f7f7;
+        font-family: Inter, sans-serif;
+      }
+
+      [data-scroll-container] {
+        min-height: 100vh;
+      }
+
+      .gallery {
+        display: inline-block;
+        height: 100vh;
+        vertical-align: top;
+        perspective: 1100px;
+      }
+
+      .track {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        width: max-content;
+        gap: 36px;
+        padding: 0 12vw;
+        transform-style: preserve-3d;
+      }
+
+      .tilt {
+        flex: 0 0 auto;
+        perspective: 700px;
+      }
+
+      .card {
+        width: min(24vw, 250px);
+        height: min(62vh, 460px);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #ddd;
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+
+      .card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        pointer-events: none;
+      }
+
+      .poster {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 28px 22px;
+      }
+
+      .poster--ink {
+        background: #111;
+        color: #fff;
+      }
+
+      .poster--paper {
+        background: #e6e4dc;
+        color: #111;
+      }
+
+      .poster strong {
+        font-size: clamp(28px, 3vw, 42px);
+        letter-spacing: -0.04em;
+        line-height: 0.95;
+      }
+
+      .poster span {
+        margin-top: 10px;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-scroll-container>
+      <section class="gallery" data-scroll-section>
+        <div class="track">
+          <div class="tilt"><article class="card">
+            <div class="poster poster--ink">
+              <strong>North</strong>
+              <span>Issue 12</span>
+            </div>
+          </article></div>
+          <div class="tilt"><article class="card">
+            <img src="/images/placeholders/01.jpg" alt="" />
+          </article></div>
+          <div class="tilt"><article class="card">
+            <div class="poster poster--paper">
+              <strong>Better Off</strong>
+              <span>January</span>
+            </div>
+          </article></div>
+          <div class="tilt"><article class="card">
+            <img src="/images/placeholders/03.jpg" alt="" />
+          </article></div>
+          <div class="tilt"><article class="card">
+            <img src="/images/placeholders/02.jpg" alt="" />
+          </article></div>
+          <div class="tilt"><article class="card">
+            <div class="poster poster--ink">
+              <strong>Sora</strong>
+              <span>Studio</span>
+            </div>
+          </article></div>
+          <div class="tilt"><article class="card">
+            <img src="/images/placeholders/04.jpg" alt="" />
+          </article></div>
+        </div>
+      </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("windEase", "0.22, 1, 0.36, 1");
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const cards = Array.from(document.querySelectorAll(".card"));
+
+      gsap.set(cards, { transformOrigin: "50% 50%", force3D: true });
+
+      const tiltTo = gsap.quickTo(cards, "rotationY", {
+        duration: reduced ? 0 : 0.18,
+        ease: "windEase",
+      });
+
+      const locoScroll = new LocomotiveScroll({
+        el: document.querySelector("[data-scroll-container]"),
+        smooth: !reduced,
+        multiplier: 1,
+        lerp: reduced ? 1 : 0.12,
+        getDirection: true,
+        direction: "horizontal",
+        gestureDirection: "both",
+        smartphone: {
+          smooth: !reduced,
+          direction: "horizontal",
+          gestureDirection: "both",
+        },
+        tablet: {
+          smooth: !reduced,
+          direction: "horizontal",
+          gestureDirection: "both",
+        },
+      });
+
+      let previousX = 0;
+      let velocity = 0;
+
+      locoScroll.on("scroll", (instance) => {
+        const currentX = instance.scroll.x;
+        velocity += (currentX - previousX - velocity) * 0.65;
+        previousX = currentX;
+      });
+
+      gsap.ticker.add(() => {
+        if (reduced) return;
+        velocity *= 0.86;
+        const turn = gsap.utils.clamp(-18, 18, velocity * 0.72);
+        tiltTo(Math.abs(turn) < 0.4 ? 0 : turn);
+      });
+    </script>
+  </body>
+</html>

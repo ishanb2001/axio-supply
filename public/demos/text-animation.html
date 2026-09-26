@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kinetic Typography</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #000000;
+        --active: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--active);
+        font-family: Inter, "SF Pro Display", Geist, Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      .kinetic {
+        width: 100%;
+        height: 100vh;
+        display: grid;
+        place-items: center;
+      }
+
+      .kinetic__viewport {
+        position: relative;
+        width: min(92vw, 52rem);
+        height: clamp(13rem, 34vw, 19rem);
+        overflow: hidden;
+        padding: 0.35em 0;
+      }
+
+      .kinetic__word {
+        --mask-dir: to bottom;
+        --mask-a: 1;
+        --mask-b: 1;
+        --mask-c: 1;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: max-content;
+        max-width: 100%;
+        margin: 0;
+        padding: 0.18em 0.08em;
+        text-align: center;
+        font-size: clamp(2.8rem, 8.5vw, 5.75rem);
+        font-weight: 600;
+        letter-spacing: -0.055em;
+        line-height: 1.2;
+        white-space: nowrap;
+        color: var(--active);
+        transform: translate(-50%, -50%);
+        will-change: transform, opacity;
+        user-select: none;
+        pointer-events: none;
+        /* Persistent mask — never removed; strength animated via CSS vars */
+        -webkit-mask-image: linear-gradient(
+          var(--mask-dir),
+          rgb(0 0 0 / var(--mask-a)) 0%,
+          rgb(0 0 0 / var(--mask-b)) 42%,
+          rgb(0 0 0 / var(--mask-c)) 100%
+        );
+        mask-image: linear-gradient(
+          var(--mask-dir),
+          rgb(0 0 0 / var(--mask-a)) 0%,
+          rgb(0 0 0 / var(--mask-b)) 42%,
+          rgb(0 0 0 / var(--mask-c)) 100%
+        );
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: 100% 100%;
+        mask-size: 100% 100%;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="kinetic" aria-label="Kinetic word showcase">
+      <div class="kinetic__viewport">
+        <p class="kinetic__word" data-slot="-2"></p>
+        <p class="kinetic__word" data-slot="-1"></p>
+        <p class="kinetic__word" data-slot="0"></p>
+        <p class="kinetic__word" data-slot="1"></p>
+        <p class="kinetic__word" data-slot="2"></p>
+      </div>
+      <span class="visually-hidden" data-live></span>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+      CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+      const WORDS = [
+        "Innovative",
+        "Creative",
+        "Curious",
+        "Bold",
+        "Thoughtful",
+        "Precise",
+        "Human",
+      ];
+
+      const HOLD = 3;
+      const EASE = "osmo";
+      const DURATION = 1.05;
+
+      const Y = {
+        exit: -150,
+        prev: -72,
+        active: 0,
+        next: 72,
+        enter: 150,
+      };
+
+      const SCALE = {
+        exit: 0.28,
+        prev: 0.36,
+        active: 1,
+        next: 0.36,
+        enter: 0.28,
+      };
+
+      const OPACITY = {
+        exit: 0,
+        prev: 0.12,
+        active: 1,
+        next: 0.12,
+        enter: 0,
+      };
+
+      // Mask strengths travel with each word — never toggled off
+      const MASK = {
+        exit: { dir: "to top", a: 1, b: 0.35, c: 0 },
+        prev: { dir: "to top", a: 1, b: 0.55, c: 0 },
+        active: { dir: "to bottom", a: 1, b: 1, c: 1 },
+        next: { dir: "to bottom", a: 1, b: 0.55, c: 0 },
+        enter: { dir: "to bottom", a: 1, b: 0.35, c: 0 },
+      };
+
+      const slots = gsap.utils.toArray(".kinetic__word");
+      const live = document.querySelector("[data-live]");
+      let index = 0;
+      let busy = false;
+
+      function wordAt(offset) {
+        return WORDS[(index + offset + WORDS.length * 20) % WORDS.length];
+      }
+
+      function roleFromSlot(slot) {
+        if (slot === -2) return "exit";
+        if (slot === -1) return "prev";
+        if (slot === 0) return "active";
+        if (slot === 1) return "next";
+        return "enter";
+      }
+
+      function maskStops(role) {
+        const m = MASK[role];
+        return {
+          "--mask-a": m.a,
+          "--mask-b": m.b,
+          "--mask-c": m.c,
+        };
+      }
+
+      function setMaskDir(el, role) {
+        gsap.set(el, { "--mask-dir": MASK[role].dir });
+      }
+
+      function place(el, role, immediate = false) {
+        setMaskDir(el, role);
+        const vars = {
+          x: 0,
+          y: Y[role],
+          xPercent: -50,
+          yPercent: -50,
+          scale: SCALE[role],
+          opacity: OPACITY[role],
+          zIndex: role === "active" ? 5 : role === "exit" || role === "enter" ? 0 : 2,
+          ...maskStops(role),
+          duration: immediate ? 0 : DURATION,
+          ease: immediate ? "none" : EASE,
+          overwrite: "auto",
+        };
+        immediate ? gsap.set(el, vars) : gsap.to(el, vars);
+      }
+
+      function syncTexts() {
+        slots.forEach((el) => {
+          el.textContent = wordAt(Number(el.dataset.slot));
+        });
+        live.textContent = wordAt(0);
+      }
+
+      function paint() {
+        slots.forEach((el) => {
+          const slot = Number(el.dataset.slot);
+          el.textContent = wordAt(slot);
+          place(el, roleFromSlot(slot), true);
+        });
+        live.textContent = wordAt(0);
+      }
+
+      function advance() {
+        if (busy) return;
+        busy = true;
+
+        const bySlot = Object.fromEntries(
+          slots.map((el) => [Number(el.dataset.slot), el])
+        );
+
+        // Direction flips instantly (invisible while stops are fully opaque);
+        // gradient stops always interpolate — mask never removed.
+        setMaskDir(bySlot[-1], "exit");
+        setMaskDir(bySlot[-2], "exit");
+        setMaskDir(bySlot[0], "prev");
+        setMaskDir(bySlot[1], "active");
+        setMaskDir(bySlot[2], "next");
+
+        const tl = gsap.timeline({
+          defaults: { ease: EASE, duration: DURATION, overwrite: "auto" },
+          onComplete() {
+            bySlot[-2].dataset.slot = "2";
+            bySlot[-1].dataset.slot = "-2";
+            bySlot[0].dataset.slot = "-1";
+            bySlot[1].dataset.slot = "0";
+            bySlot[2].dataset.slot = "1";
+
+            index = (index + 1) % WORDS.length;
+            syncTexts();
+
+            slots.forEach((el) => {
+              place(el, roleFromSlot(Number(el.dataset.slot)), true);
+            });
+            busy = false;
+          },
+        });
+
+        tl.to(
+          bySlot[-1],
+          {
+            y: Y.exit,
+            scale: SCALE.exit,
+            opacity: OPACITY.exit,
+            ...maskStops("exit"),
+          },
+          0
+        );
+        tl.to(
+          bySlot[-2],
+          {
+            y: Y.exit - 40,
+            scale: 0.22,
+            opacity: 0,
+            ...maskStops("exit"),
+          },
+          0
+        );
+        tl.to(
+          bySlot[0],
+          {
+            y: Y.prev,
+            scale: SCALE.prev,
+            opacity: OPACITY.prev,
+            ...maskStops("prev"),
+          },
+          0
+        );
+        tl.to(
+          bySlot[1],
+          {
+            y: Y.active,
+            scale: SCALE.active,
+            opacity: OPACITY.active,
+            ...maskStops("active"),
+          },
+          0
+        );
+        tl.to(
+          bySlot[2],
+          {
+            y: Y.next,
+            scale: SCALE.next,
+            opacity: OPACITY.next,
+            ...maskStops("next"),
+          },
+          0
+        );
+      }
+
+      slots.forEach((el) => {
+        setMaskDir(el, "active");
+        gsap.set(el, maskStops("active"));
+      });
+      paint();
+
+      gsap.delayedCall(HOLD, function loop() {
+        advance();
+        gsap.delayedCall(HOLD, loop);
+      });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

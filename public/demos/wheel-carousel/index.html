@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vertical Wheel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="stage">
+      <header class="stage__header">
+        <p class="stage__eyebrow">Selected work</p>
+        <h1 class="stage__title">Vertical wheel</h1>
+      </header>
+
+      <div class="wheel" id="wheel" tabindex="0" aria-roledescription="carousel">
+        <ul class="wheel__track" id="track"></ul>
+        <div class="wheel__fade wheel__fade--top" aria-hidden="true"></div>
+        <div class="wheel__fade wheel__fade--bottom" aria-hidden="true"></div>
+      </div>
+
+      <p class="stage__status" id="status" aria-live="polite"></p>
+      <p class="stage__hint">Scroll, drag, or use the arrow keys</p>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/Observer.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

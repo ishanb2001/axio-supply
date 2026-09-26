@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pill Slide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #111;
+        font-family: Inter, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .slider {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        background: #111;
+      }
+
+      .slider__track {
+        display: flex;
+        height: 100%;
+        will-change: transform;
+      }
+
+      .slider__slide {
+        flex: 0 0 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+      }
+
+      .slider__nav {
+        position: absolute;
+        left: 50%;
+        bottom: 8%;
+        z-index: 2;
+        width: max-content;
+        max-width: calc(100% - 48px);
+        transform: translateX(-50%);
+      }
+
+      .slider__pills {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        will-change: transform;
+      }
+
+      .pill {
+        position: relative;
+        z-index: 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 0;
+        padding: 12px 32px 12px 12px;
+        border: 0;
+        border-radius: 999px;
+        overflow: hidden;
+        background: #111111;
+        color: #ffffff;
+        font: inherit;
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+        box-shadow: none;
+      }
+
+      .pill.is-active {
+        color: #ffffff;
+      }
+
+      .pill__glass {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        pointer-events: none;
+        display: block;
+      }
+
+      .pill__mark {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #1c1c1e;
+      }
+
+      .pill__photo,
+      .pill__glyph {
+        position: absolute;
+        inset: 0;
+      }
+
+      .pill__photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .pill.is-active .pill__photo {
+        opacity: 0;
+      }
+
+      .pill__glyph {
+        display: grid;
+        place-items: center;
+        color: #ffffff;
+        opacity: 0;
+      }
+
+      .pill.is-active .pill__glyph {
+        opacity: 1;
+      }
+
+      .pill__glyph svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+      }
+
+      @media (max-width: 720px) {
+        .slider__nav {
+          bottom: 6%;
+        }
+
+        .pill {
+          font-size: 18px;
+          padding: 10px 22px 10px 10px;
+        }
+
+        .pill__mark {
+          width: 48px;
+          height: 48px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slider" id="slider">
+      <div class="slider__track" id="track">
+        <div class="slider__slide" style="background-image: url('./immersion.jpg')"></div>
+        <div class="slider__slide" style="background-image: url('./strategy.jpg')"></div>
+        <div class="slider__slide" style="background-image: url('./verbal.jpg')"></div>
+        <div class="slider__slide" style="background-image: url('./visual.jpg')"></div>
+      </div>
+
+      <div class="slider__nav">
+        <div class="slider__pills" id="pills" role="tablist" aria-label="Slides">
+        <button class="pill is-active" type="button" role="tab" aria-selected="true" data-index="0">
+          <canvas class="pill__glass"></canvas>
+          <span class="pill__mark">
+            <img class="pill__photo" src="./immersion.jpg" alt="" />
+            <span class="pill__glyph" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none">
+                <path d="M4 12 12 4M6.5 4H12v5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </span>
+          Business Immersion
+        </button>
+        <button class="pill" type="button" role="tab" aria-selected="false" data-index="1">
+          <canvas class="pill__glass"></canvas>
+          <span class="pill__mark">
+            <img class="pill__photo" src="./strategy.jpg" alt="" />
+            <span class="pill__glyph" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none">
+                <path d="M4 12 12 4M6.5 4H12v5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </span>
+          Brand Strategy
+        </button>
+        <button class="pill" type="button" role="tab" aria-selected="false" data-index="2">
+          <canvas class="pill__glass"></canvas>
+          <span class="pill__mark">
+            <img class="pill__photo" src="./verbal.jpg" alt="" />
+            <span class="pill__glyph" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none">
+                <path d="M4 12 12 4M6.5 4H12v5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </span>
+          Verbal Identity
+        </button>
+        <button class="pill" type="button" role="tab" aria-selected="false" data-index="3">
+          <canvas class="pill__glass"></canvas>
+          <span class="pill__mark">
+            <img class="pill__photo" src="./visual.jpg" alt="" />
+            <span class="pill__glyph" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none">
+                <path d="M4 12 12 4M6.5 4H12v5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </span>
+          Visual Identity
+        </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("slideEase", "0.77, 0, 0.18, 1");
+
+      const slider = document.getElementById("slider");
+      const track = document.getElementById("track");
+      const pillsRow = document.getElementById("pills");
+      const pills = Array.from(pillsRow.querySelectorAll(".pill"));
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const HOLD = 2800;
+      let active = 0;
+      let timer = 0;
+
+      const step = () => {
+        const first = pills[0];
+        const styles = getComputedStyle(pillsRow);
+        const gap = parseFloat(styles.columnGap || styles.gap) || 0;
+        return first.getBoundingClientRect().width + gap;
+      };
+
+      const paint = (index, duration) => {
+        pills.forEach((pill, i) => {
+          const on = i === index;
+          const gone = i < index;
+          pill.classList.toggle("is-active", on);
+          pill.setAttribute("aria-selected", on ? "true" : "false");
+          pill.style.pointerEvents = gone ? "none" : "auto";
+          gsap.to(pill, {
+            opacity: gone ? 0 : 1,
+            color: "#ffffff",
+            duration,
+            ease: "slideEase",
+            overwrite: "auto",
+          });
+        });
+      };
+
+      const go = (index, { loop = false } = {}) => {
+        const duration = reduced ? 0 : 1.05;
+        const width = slider.clientWidth;
+
+        if (loop) {
+          gsap.to(track, {
+            x: 0,
+            duration,
+            ease: "slideEase",
+            overwrite: "auto",
+          });
+          gsap.to(pillsRow, {
+            x: 0,
+            duration,
+            ease: "slideEase",
+            overwrite: "auto",
+          });
+          paint(0, duration);
+          active = 0;
+          return;
+        }
+
+        if (index === active || index < 0 || index >= pills.length) return;
+
+        gsap.to(track, {
+          x: -index * width,
+          duration,
+          ease: "slideEase",
+          overwrite: "auto",
+        });
+        gsap.to(pillsRow, {
+          x: -index * step(),
+          duration,
+          ease: "slideEase",
+          overwrite: "auto",
+        });
+        paint(index, duration);
+        active = index;
+      };
+
+      const arm = () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(advance, HOLD);
+      };
+
+      const advance = () => {
+        if (active >= pills.length - 1) go(0, { loop: true });
+        else go(active + 1);
+        arm();
+      };
+
+      pills.forEach((pill) => {
+        pill.addEventListener("click", () => {
+          const index = Number(pill.dataset.index);
+          if (index === 0 && active === pills.length - 1) go(0, { loop: true });
+          else go(index);
+          arm();
+        });
+      });
+
+      window.addEventListener("resize", () => {
+        gsap.set(track, { x: -active * slider.clientWidth });
+        gsap.set(pillsRow, { x: -active * step() });
+      });
+
+      arm();
+    </script>
+    <script type="module">
+      import * as THREE from "three";
+      import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+      function extrudeShape(shape, depth) {
+        const geometry = new THREE.ExtrudeGeometry(shape, {
+          depth,
+          bevelEnabled: true,
+          bevelSegments: 8,
+          steps: 1,
+          bevelSize: 0.14,
+          bevelThickness: 0.18,
+          curveSegments: 16,
+        });
+        geometry.center();
+        return geometry;
+      }
+
+      function createPillGeometry(aspect) {
+        const height = 1.15;
+        const width = Math.max(height, height * aspect);
+        const radius = height / 2;
+        const shape = new THREE.Shape();
+        const hw = width / 2;
+        const hh = height / 2;
+        shape.moveTo(-hw + radius, -hh);
+        shape.lineTo(hw - radius, -hh);
+        shape.absarc(hw - radius, 0, radius, -Math.PI / 2, Math.PI / 2, false);
+        shape.lineTo(-hw + radius, hh);
+        shape.absarc(-hw + radius, 0, radius, Math.PI / 2, -Math.PI / 2, false);
+        return extrudeShape(shape, 0.62);
+      }
+
+      function mountPill(canvas) {
+        const pill = canvas.closest(".pill");
+        const photoEl = pill.querySelector(".pill__photo");
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const renderer = new THREE.WebGLRenderer({
+          canvas,
+          antialias: true,
+          alpha: false,
+          preserveDrawingBuffer: true,
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.toneMapping = THREE.NoToneMapping;
+        renderer.setClearColor(0x111111, 1);
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x111111);
+        const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+        camera.position.z = 5;
+
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
+        pmrem.dispose();
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        const key = new THREE.DirectionalLight(0xffffff, 1.35);
+        key.position.set(2.4, 3.2, 4.5);
+        scene.add(key);
+        const rim = new THREE.DirectionalLight(0xb8d4ff, 0.65);
+        rim.position.set(-3, -1.5, 2);
+        scene.add(rim);
+
+        const backdrop = new THREE.Mesh(
+          new THREE.PlaneGeometry(1, 1),
+          new THREE.MeshBasicMaterial({ toneMapped: false })
+        );
+        scene.add(backdrop);
+
+        const glass = new THREE.Mesh(
+          createPillGeometry(3),
+          new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            metalness: 0,
+            roughness: 0,
+            transmission: 1,
+            thickness: 1.8,
+            ior: 1.5,
+            dispersion: 8,
+            envMapIntensity: 2.1,
+            clearcoat: 1,
+            clearcoatRoughness: 0.02,
+            specularIntensity: 1,
+            specularColor: 0xffffff,
+            attenuationColor: 0xffffff,
+            attenuationDistance: 2.5,
+            toneMapped: false,
+          })
+        );
+        glass.rotation.set(-0.22, 0.28, 0.02);
+        glass.position.z = 1.15;
+        scene.add(glass);
+
+        let map = null;
+        const paint = (width, height) => {
+          const source = document.createElement("canvas");
+          const dpr = renderer.getPixelRatio();
+          source.width = Math.max(2, Math.round(width * dpr));
+          source.height = Math.max(2, Math.round(height * dpr));
+          const ctx = source.getContext("2d");
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.fillStyle = "#161616";
+          ctx.fillRect(0, 0, width, height);
+          if (photoEl && photoEl.complete && photoEl.naturalWidth) {
+            const scale = Math.max(width / photoEl.naturalWidth, height / photoEl.naturalHeight);
+            const dw = photoEl.naturalWidth * scale;
+            const dh = photoEl.naturalHeight * scale;
+            ctx.drawImage(photoEl, (width - dw) / 2, (height - dh) / 2, dw, dh);
+          }
+          map?.dispose();
+          map = new THREE.CanvasTexture(source);
+          map.colorSpace = THREE.SRGBColorSpace;
+          backdrop.material.map = map;
+          backdrop.material.needsUpdate = true;
+        };
+
+        const resize = () => {
+          const width = Math.max(1, canvas.clientWidth || pill.clientWidth || 220);
+          const height = Math.max(1, canvas.clientHeight || pill.clientHeight || 84);
+          renderer.setSize(width, height, false);
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+          const visibleH = 2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+          const visibleW = visibleH * camera.aspect;
+          backdrop.scale.set(visibleW * 1.08, visibleH * 1.08, 1);
+          glass.geometry.dispose();
+          glass.geometry = createPillGeometry(Math.max(1.6, width / height));
+          glass.scale.setScalar((visibleH * 0.86) / 1.15);
+          paint(width, height);
+        };
+
+        const start = () => resize();
+        if (photoEl && !photoEl.complete) photoEl.addEventListener("load", start, { once: true });
+        resize();
+        new ResizeObserver(resize).observe(pill);
+
+        const clock = new THREE.Clock();
+        const render = () => {
+          const t = clock.getElapsedTime();
+          glass.rotation.x = -0.22 + (reduced ? 0 : Math.sin(t * 0.4) * 0.03);
+          glass.rotation.y = 0.28 + (reduced ? 0 : Math.cos(t * 0.33) * 0.04);
+          renderer.render(scene, camera);
+          if (!reduced) requestAnimationFrame(render);
+        };
+        render();
+      }
+
+      document.querySelectorAll(".pill__glass").forEach(mountPill);
+    </script>
+  </body>
+</html>

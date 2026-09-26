@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Morphing Navbar</title>
+    <style>
+      :root {
+        --page: #ffffff;
+        --pill: #f7f7f7;
+        --ink: #171717;
+        --muted: #918d8b;
+        --orange: #ff3d00;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        background: var(--page);
+        font-family: Arial, Helvetica, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .navbar {
+        position: relative;
+        width: 440px;
+        height: 72px;
+        overflow: hidden;
+        border-radius: 100px;
+        background: var(--pill);
+        will-change: height, border-radius, background-color;
+      }
+
+      .navbar__links,
+      .navbar__identity {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .navbar__links {
+        justify-content: center;
+        gap: 30px;
+      }
+
+      .navbar__link,
+      .navbar__active {
+        border: 0;
+        background: transparent;
+        padding: 6px 0;
+        color: var(--muted);
+        font-size: 31px;
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: -0.035em;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .navbar__link {
+        transition: color 180ms ease;
+      }
+
+      .navbar__link:hover,
+      .navbar__link:focus-visible {
+        color: var(--ink);
+        outline: none;
+      }
+
+      .navbar__identity {
+        gap: 22px;
+        padding: 0 48px;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .navbar__brand {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        min-width: 0;
+        flex: 0 0 auto;
+      }
+
+      .navbar__mark {
+        position: relative;
+        width: 28px;
+        height: 24px;
+        flex: 0 0 28px;
+        border: 0;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .navbar__mark::before,
+      .navbar__mark::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        width: 28px;
+        height: 11px;
+        border-radius: 4px;
+        background: var(--orange);
+      }
+
+      .navbar__mark::before {
+        top: 0;
+        width: 25px;
+        left: 2px;
+      }
+
+      .navbar__mark::after {
+        bottom: 0;
+      }
+
+      .navbar__name {
+        color: var(--ink);
+        font-size: 31px;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        white-space: nowrap;
+      }
+
+      .navbar__caret {
+        width: 0;
+        height: 0;
+        border-top: 7px solid transparent;
+        border-bottom: 7px solid transparent;
+        border-left: 10px solid var(--muted);
+        border-radius: 3px;
+        flex: 0 0 auto;
+      }
+
+      .navbar__active {
+        margin-left: 8px;
+      }
+
+      .navbar__active:hover,
+      .navbar__active:focus-visible {
+        color: var(--ink);
+        outline: none;
+      }
+
+      @media (max-width: 520px) {
+        .navbar {
+          transform: scale(0.8);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar" aria-label="Primary navigation" aria-expanded="false">
+      <div class="navbar__links">
+        <button class="navbar__link" type="button">About</button>
+        <button class="navbar__link" type="button">Playground</button>
+        <button class="navbar__link" type="button">Projects</button>
+      </div>
+
+      <div class="navbar__identity" aria-hidden="true">
+        <div class="navbar__brand">
+          <button class="navbar__mark" type="button" aria-label="Return to navigation"></button>
+          <span class="navbar__name">Caleb Wu</span>
+        </div>
+        <span class="navbar__caret" aria-hidden="true"></span>
+        <button class="navbar__active" type="button">About</button>
+      </div>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+      CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+      const navbar = document.querySelector(".navbar");
+      const linksWrap = document.querySelector(".navbar__links");
+      const links = gsap.utils.toArray(".navbar__link");
+      const identity = document.querySelector(".navbar__identity");
+      const identityItems = gsap.utils.toArray(
+        ".navbar__mark, .navbar__name, .navbar__caret, .navbar__active"
+      );
+      const brand = document.querySelector(".navbar__brand");
+      const caret = document.querySelector(".navbar__caret");
+      const activeLabel = document.querySelector(".navbar__active");
+      const mark = document.querySelector(".navbar__mark");
+      const MIN_WIDTH = 440;
+      let expandedWidth = MIN_WIDTH;
+      let isOpen = false;
+
+      function measureLinksWidth() {
+        const gap = parseFloat(getComputedStyle(linksWrap).columnGap) || 0;
+        const contentWidth = links.reduce(
+          (total, link) => total + link.getBoundingClientRect().width,
+          0
+        );
+        return Math.ceil(contentWidth + gap * (links.length - 1) + 64);
+      }
+
+      function measureIdentityWidth() {
+        const identityStyle = getComputedStyle(identity);
+        const gap = parseFloat(identityStyle.columnGap) || 0;
+        const horizontalPadding =
+          parseFloat(identityStyle.paddingLeft) +
+          parseFloat(identityStyle.paddingRight);
+        const activeMargin = parseFloat(getComputedStyle(activeLabel).marginLeft) || 0;
+
+        return Math.ceil(
+          horizontalPadding +
+            brand.getBoundingClientRect().width +
+            caret.getBoundingClientRect().width +
+            activeLabel.getBoundingClientRect().width +
+            gap * 2 +
+            activeMargin
+        );
+      }
+
+      const originalWidth = Math.max(MIN_WIDTH, measureLinksWidth());
+      gsap.set(navbar, { width: originalWidth });
+      gsap.set(identity, { autoAlpha: 0 });
+      gsap.set(identityItems, { autoAlpha: 0, y: 10 });
+
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: {
+          ease: "osmo",
+        },
+        onStart() {
+          identity.setAttribute("aria-hidden", "false");
+          navbar.setAttribute("aria-expanded", "true");
+        },
+        onReverseComplete() {
+          identity.setAttribute("aria-hidden", "true");
+          navbar.setAttribute("aria-expanded", "false");
+        },
+      });
+
+      tl.to(
+        links,
+        {
+          autoAlpha: 0,
+          y: -8,
+          duration: 0.3,
+          stagger: 0.035,
+        },
+        0
+      )
+        .to(
+          navbar,
+          {
+            width: () => expandedWidth,
+            height: 88,
+            borderRadius: 44,
+            backgroundColor: "#f7f7f7",
+            duration: 0.7,
+          },
+          0
+        )
+        .set(linksWrap, { pointerEvents: "none" }, 0.25)
+        .set(identity, { autoAlpha: 1, pointerEvents: "auto" }, 0.18)
+        .to(
+          identityItems,
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.5,
+            stagger: 0.055,
+          },
+          0.2
+        );
+
+      function openNavbar(label) {
+        activeLabel.textContent = label;
+        expandedWidth = Math.max(MIN_WIDTH, measureIdentityWidth());
+        isOpen = true;
+        tl.invalidate().restart();
+      }
+
+      function closeNavbar() {
+        if (!isOpen) return;
+        isOpen = false;
+        tl.reverse();
+      }
+
+      links.forEach((link) => {
+        link.addEventListener("click", () => openNavbar(link.textContent));
+      });
+
+      mark.addEventListener("click", closeNavbar);
+      activeLabel.addEventListener("click", closeNavbar);
+
+      navbar.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeNavbar();
+          links[0].focus();
+        }
+      });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

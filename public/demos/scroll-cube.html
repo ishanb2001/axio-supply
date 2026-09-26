@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scroll Cube</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --stage: #f3f3f5;
+        --ink: #111111;
+        --muted: #8a8a8a;
+        --font: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+        --cube-h: 100vh;
+        --cube-d: 50vh;
+        --ease: cubic-bezier(0.76, 0, 0.24, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        background: var(--stage);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .intro,
+      .after {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: clamp(72px, 14vh, 140px) clamp(24px, 5vw, 48px);
+      }
+
+      .intro h1,
+      .after h2 {
+        font-size: clamp(32px, 5vw, 48px);
+        font-weight: 600;
+        letter-spacing: -0.05em;
+        line-height: 1.05;
+        margin-bottom: 16px;
+      }
+
+      .intro p,
+      .after p {
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.5;
+        max-width: 40ch;
+      }
+
+      .cube-scroll {
+        position: relative;
+        height: 280vh;
+        background: var(--stage);
+      }
+
+      .cube-stage {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow: hidden;
+        background: var(--stage);
+      }
+
+      .cube {
+        height: 100%;
+        transform-origin: 50% 50%;
+        transition: transform 0.55s var(--ease);
+        will-change: transform;
+      }
+
+      .cube.is-scaled {
+        transform: scale(0.94);
+      }
+
+      .cube-scene {
+        height: 100%;
+        perspective: calc(var(--cube-h) * 2.4);
+        perspective-origin: 50% 50%;
+        transform-style: preserve-3d;
+      }
+
+      .cube-rig {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        transform-style: preserve-3d;
+        transform-origin: 50% 50%;
+        will-change: transform;
+      }
+
+      .face {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+
+      .face--front {
+        background: #ffffff;
+        transform: translateZ(var(--cube-d));
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: clamp(40px, 8vh, 72px) clamp(24px, 5vw, 56px) clamp(28px, 5vh, 48px);
+      }
+
+      .face--next {
+        background: #000000;
+        color: #ffffff;
+        transform: rotateX(-90deg) translateZ(var(--cube-d));
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: clamp(40px, 7vh, 72px) clamp(24px, 5vw, 56px);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: max-content;
+        padding: 6px 12px 6px 10px;
+        border-radius: 100px;
+        background: #3b82f6;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+
+      .face--front h2 {
+        margin: 28px 0 0;
+        font-size: clamp(36px, 6vw, 72px);
+        font-weight: 600;
+        letter-spacing: -0.06em;
+        line-height: 1.05;
+      }
+
+      .face--front .row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-top: 36px;
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 8px;
+        background: #000000;
+        color: #ffffff;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+
+      .lede {
+        margin: 0;
+        max-width: 34ch;
+        text-align: right;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.4;
+      }
+
+      .tiles {
+        display: flex;
+        gap: 16px;
+        margin-top: 40px;
+        overflow: hidden;
+        mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+      }
+
+      .tile {
+        flex: 1 0 28%;
+        height: clamp(120px, 18vh, 180px);
+        border-radius: 22px;
+        background: #ececee;
+      }
+
+      .face--next h2 {
+        margin: 0 0 clamp(28px, 4vh, 44px);
+        font-size: clamp(28px, 4.4vw, 48px);
+        font-weight: 600;
+        letter-spacing: -0.055em;
+        line-height: 0.98;
+      }
+
+      .face--next h2 span {
+        display: block;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .card {
+        min-height: min(34vh, 280px);
+        padding: 22px 22px 24px;
+        border-radius: 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: clamp(22px, 2.2vw, 34px);
+        font-weight: 600;
+        letter-spacing: -0.045em;
+      }
+
+      .card--motion {
+        background: #3f7ff6;
+        color: #ffffff;
+      }
+
+      .card--components {
+        background: #ffffff;
+        color: #000000;
+      }
+
+      .card--systems {
+        background: #fd5e09;
+        color: #ffffff;
+      }
+
+      .icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .card--components .icon {
+        background: rgba(0, 0, 0, 0.08);
+      }
+
+      .icon svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      @media (max-width: 720px) {
+        .face--front .row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .lede {
+          text-align: left;
+        }
+
+        .cards {
+          grid-template-columns: 1fr;
+        }
+
+        .card {
+          min-height: 180px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .cube-scroll {
+          height: auto;
+        }
+
+        .cube-stage {
+          position: relative;
+          height: auto;
+        }
+
+        .cube,
+        .cube-scene,
+        .cube-rig,
+        .face {
+          transform: none !important;
+          perspective: none;
+        }
+
+        .face {
+          position: relative;
+          inset: auto;
+        }
+
+        .cube.is-scaled {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="intro">
+      <h1>Scroll the cube.</h1>
+      <p>
+        A full-viewport 3D page flip. The first scroll scales the block, then
+        it rotates onto the next face and settles flat.
+      </p>
+    </section>
+
+    <section class="cube-scroll" id="cube-scroll">
+      <div class="cube-stage" id="cube-stage">
+        <div class="cube" id="cube">
+          <div class="cube-scene" id="cube-scene">
+            <div class="cube-rig" id="cube-rig">
+              <section class="face face--front">
+                <div>
+                  <p class="eyebrow">Scroll cube</p>
+                  <h2>One platform.<br />Built for every layer.</h2>
+                  <div class="row">
+                    <span class="cta">Explore the Library</span>
+                    <p class="lede">
+                      Preview live motion, components, and systems — then pick
+                      the ones that fit what you’re building.
+                    </p>
+                  </div>
+                </div>
+                <div class="tiles" aria-hidden="true">
+                  <div class="tile"></div>
+                  <div class="tile"></div>
+                  <div class="tile"></div>
+                </div>
+              </section>
+
+              <section class="face face--next">
+                <h2>
+                  <span>One platform.</span>
+                  <span>every layer of the build.</span>
+                </h2>
+                <div class="cards">
+                  <article class="card card--motion">
+                    <span class="icon" aria-hidden="true">
+                      <svg viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.5" />
+                        <path d="M10 3.5v2.2M10 14.3v2.2M3.5 10h2.2M14.3 10h2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                      </svg>
+                    </span>
+                    <h3>motion</h3>
+                  </article>
+                  <article class="card card--components">
+                    <span class="icon" aria-hidden="true">
+                      <svg viewBox="0 0 20 20" fill="none">
+                        <rect x="3.5" y="4" width="8" height="8" rx="1.6" stroke="currentColor" stroke-width="1.5" />
+                        <rect x="8.5" y="8" width="8" height="8" rx="1.6" stroke="currentColor" stroke-width="1.5" />
+                      </svg>
+                    </span>
+                    <h3>components</h3>
+                  </article>
+                  <article class="card card--systems">
+                    <span class="icon" aria-hidden="true">
+                      <svg viewBox="0 0 20 20" fill="none">
+                        <rect x="3.2" y="3.2" width="5.4" height="5.4" rx="1.1" stroke="currentColor" stroke-width="1.5" />
+                        <rect x="11.4" y="3.2" width="5.4" height="5.4" rx="1.1" stroke="currentColor" stroke-width="1.5" />
+                        <rect x="3.2" y="11.4" width="5.4" height="5.4" rx="1.1" stroke="currentColor" stroke-width="1.5" />
+                        <rect x="11.4" y="11.4" width="5.4" height="5.4" rx="1.1" stroke="currentColor" stroke-width="1.5" />
+                      </svg>
+                    </span>
+                    <h3>systems</h3>
+                  </article>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="after">
+      <h2>Back to the page.</h2>
+      <p>
+        After the second face lands, scrolling continues normally. Scroll back
+        up to reverse the flip.
+      </p>
+    </section>
+
+    <script>
+      (function () {
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduced) return;
+
+        const PRE = 0.08;
+        const ROTATE = 0.66;
+        const ROTATE_END = PRE + ROTATE;
+        const SCRUB = 0.22;
+
+        const scrollEl = document.getElementById("cube-scroll");
+        const stage = document.getElementById("cube-stage");
+        const cube = document.getElementById("cube");
+        const scene = document.getElementById("cube-scene");
+        const rig = document.getElementById("cube-rig");
+        if (!scrollEl || !stage || !cube || !scene || !rig) return;
+
+        let rendered = 0;
+        let snapTimer = 0;
+        let snapping = false;
+
+        const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+        function layout() {
+          const height = stage.offsetHeight || window.innerHeight;
+          const depth = height / 2;
+          stage.style.setProperty("--cube-h", height + "px");
+          stage.style.setProperty("--cube-d", depth + "px");
+          cube.style.setProperty("--cube-h", height + "px");
+          cube.style.setProperty("--cube-d", depth + "px");
+          scene.style.setProperty("--cube-h", height + "px");
+          scene.style.setProperty("--cube-d", depth + "px");
+          scene.style.perspective = Math.round(height * 2.4) + "px";
+        }
+
+        function rawProgress() {
+          const total = scrollEl.offsetHeight - window.innerHeight;
+          if (total <= 0) return 0;
+          const scrolled = clamp(-scrollEl.getBoundingClientRect().top, 0, total);
+          return scrolled / total;
+        }
+
+        function rotateAmount(progress) {
+          if (progress <= PRE) return 0;
+          if (progress >= ROTATE_END) return 1;
+          return (progress - PRE) / ROTATE;
+        }
+
+        function apply(progress) {
+          const amount = rotateAmount(progress);
+          const height = stage.offsetHeight || window.innerHeight;
+          const depth = height / 2;
+          const theta = amount * (Math.PI / 2);
+          const z = -depth * (Math.sin(theta) + Math.cos(theta));
+          rig.style.transform =
+            "translateZ(" + z + "px) rotateX(" + amount * 90 + "deg)";
+
+          const atRest = progress <= 0.004 || progress >= ROTATE_END - 0.004;
+          cube.classList.toggle("is-scaled", !atRest);
+        }
+
+        function snapTo(progress) {
+          const total = scrollEl.offsetHeight - window.innerHeight;
+          const top =
+            scrollEl.getBoundingClientRect().top + window.scrollY + progress * total;
+          snapping = true;
+          window.scrollTo({ top: top, behavior: "smooth" });
+          window.setTimeout(function () {
+            snapping = false;
+          }, 700);
+        }
+
+        function maybeSnap() {
+          if (snapping) return;
+          const progress = rawProgress();
+          if (progress >= ROTATE_END) return;
+          const mid = (PRE + ROTATE_END) / 2;
+          const target = progress < mid ? 0 : ROTATE_END;
+          if (Math.abs(progress - target) < 0.02) return;
+          snapTo(target);
+        }
+
+        function tick() {
+          const next = rawProgress();
+          rendered += (next - rendered) * SCRUB;
+          if (Math.abs(next - rendered) < 0.0004) rendered = next;
+          apply(rendered);
+          requestAnimationFrame(tick);
+        }
+
+        layout();
+        apply(0);
+        requestAnimationFrame(tick);
+
+        window.addEventListener("resize", layout);
+
+        window.addEventListener(
+          "scroll",
+          function () {
+            window.clearTimeout(snapTimer);
+            snapTimer = window.setTimeout(maybeSnap, 90);
+          },
+          { passive: true }
+        );
+      })();
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Feature Accordion</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <style>
+      :root {
+        --bg: #000000;
+        --ink: #f5f5f7;
+        --muted: rgba(255, 255, 255, 0.55);
+        --pill: rgba(255, 255, 255, 0.08);
+        --pill-hover: rgba(255, 255, 255, 0.12);
+        --panel: rgba(40, 40, 43, 0.72);
+        --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+      }
+
+      .stage {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(320px, 42%) 1fr;
+        align-items: center;
+        padding: clamp(24px, 4vw, 48px) clamp(20px, 4vw, 56px);
+        gap: clamp(20px, 4vw, 48px);
+      }
+
+      .close {
+        position: fixed;
+        top: 22px;
+        right: 26px;
+        z-index: 20;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        opacity: 0.85;
+      }
+
+      .close:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .close svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* —— Left: features —— */
+      .features {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 18px;
+        max-width: 460px;
+        z-index: 2;
+      }
+
+      .nav-arrows {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-top: 6px;
+        flex-shrink: 0;
+      }
+
+      .nav-arrows button {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 0;
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        transition: background 0.25s ease, transform 0.25s ease;
+      }
+
+      .nav-arrows button:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.16);
+        transform: scale(1.05);
+      }
+
+      .nav-arrows button:disabled {
+        opacity: 0.28;
+        cursor: default;
+      }
+
+      .nav-arrows svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .feature-list {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+        align-items: flex-start;
+      }
+
+      /* One shared shell: label + description */
+      .feature {
+        width: fit-content;
+        max-width: 100%;
+        background: var(--pill);
+        border-radius: 999px;
+        overflow: hidden;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        will-change: border-radius, background-color;
+        transition: background 0.3s ease;
+      }
+
+      .feature:hover {
+        background: var(--pill-hover);
+      }
+
+      .feature.is-open {
+        width: min(100%, 340px);
+        background: var(--panel);
+        backdrop-filter: blur(18px) saturate(1.2);
+        -webkit-backdrop-filter: blur(18px) saturate(1.2);
+      }
+
+      .feature__header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        font: inherit;
+        font-size: 0.98rem;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        padding: 11px 18px 11px 12px;
+        cursor: pointer;
+        text-align: left;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .feature.is-open .feature__header {
+        padding-bottom: 8px;
+      }
+
+      .feature__icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(255, 255, 255, 0.55);
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        position: relative;
+      }
+
+      .feature__icon::before,
+      .feature__icon::after {
+        content: "";
+        position: absolute;
+        background: #fff;
+        border-radius: 1px;
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+          opacity 0.4s ease;
+      }
+
+      .feature__icon::before {
+        width: 10px;
+        height: 1.5px;
+      }
+
+      .feature__icon::after {
+        width: 1.5px;
+        height: 10px;
+      }
+
+      .feature.is-open .feature__icon {
+        background: #fff;
+        border-color: #fff;
+      }
+
+      .feature.is-open .feature__icon::before,
+      .feature.is-open .feature__icon::after {
+        background: #111;
+        opacity: 0;
+        transform: scale(0.4);
+      }
+
+      .feature__body {
+        overflow: hidden;
+        height: 0;
+        opacity: 0;
+        will-change: height, opacity;
+      }
+
+      .feature__body-inner {
+        padding: 0 20px 18px 52px;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.98rem;
+        line-height: 1.45;
+        letter-spacing: -0.015em;
+      }
+
+      .feature__body-inner strong {
+        color: #fff;
+        font-weight: 650;
+      }
+
+      /* —— Right: exploded phone —— */
+      .visual {
+        position: relative;
+        height: min(78vh, 720px);
+        display: grid;
+        place-items: center;
+        perspective: 1400px;
+        user-select: none;
+      }
+
+      .phone-scene {
+        position: relative;
+        width: min(92%, 620px);
+        aspect-ratio: 16 / 11;
+        transform-style: preserve-3d;
+        transform: rotateY(-28deg) rotateX(8deg);
+      }
+
+      .layer {
+        position: absolute;
+        inset: 8% 18% 8% 22%;
+        border-radius: 36px;
+        transform-style: preserve-3d;
+        will-change: transform, opacity, filter;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      }
+
+      .layer--back {
+        background:
+          radial-gradient(circle at 72% 18%, #3a4a6a 0%, transparent 28%),
+          linear-gradient(145deg, #1c2a44 0%, #0d1524 55%, #152033 100%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .layer--camera {
+        inset: 10% 20% 42% 48%;
+        border-radius: 28px;
+        background: linear-gradient(160deg, #243552, #101826);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .lens {
+        position: absolute;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 35% 30%, #6a7fa5, #1a2436 45%, #0a101a 70%);
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+      }
+
+      .lens--a {
+        width: 38%;
+        aspect-ratio: 1;
+        top: 14%;
+        left: 14%;
+      }
+
+      .lens--b {
+        width: 38%;
+        aspect-ratio: 1;
+        top: 14%;
+        right: 14%;
+      }
+
+      .lens--c {
+        width: 28%;
+        aspect-ratio: 1;
+        bottom: 16%;
+        left: 36%;
+      }
+
+      .layer--chassis {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 30%),
+          linear-gradient(135deg, #2a3d5c, #152033 60%, #1a2a44);
+        border: 1px solid rgba(140, 170, 220, 0.18);
+      }
+
+      .layer--board {
+        inset: 14% 24% 14% 28%;
+        border-radius: 22px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            rgba(80, 200, 120, 0.08) 0 2px,
+            transparent 2px 10px
+          ),
+          linear-gradient(160deg, #1a2430, #0d1218);
+        border: 1px solid rgba(100, 180, 140, 0.15);
+      }
+
+      .chip {
+        position: absolute;
+        border-radius: 6px;
+        background: linear-gradient(145deg, #3a4658, #1c2430);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+
+      .chip--main {
+        width: 34%;
+        height: 22%;
+        top: 28%;
+        left: 33%;
+      }
+
+      .chip--side {
+        width: 18%;
+        height: 12%;
+        top: 58%;
+        left: 22%;
+      }
+
+      .layer--display {
+        background:
+          linear-gradient(160deg, #0a0f18 0%, #121a28 40%, #0b1018 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+
+      .layer--display::after {
+        content: "";
+        position: absolute;
+        inset: 3%;
+        border-radius: 30px;
+        background:
+          radial-gradient(circle at 30% 20%, rgba(120, 160, 255, 0.18), transparent 40%),
+          linear-gradient(180deg, #152033, #0a1018);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+      }
+
+      .layer--frame {
+        inset: 6% 16% 6% 20%;
+        background: transparent;
+        border: 2px solid rgba(170, 190, 220, 0.35);
+        border-radius: 40px;
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.4),
+          0 30px 60px rgba(0, 0, 0, 0.5);
+        pointer-events: none;
+      }
+
+      .glow {
+        position: absolute;
+        width: 55%;
+        height: 55%;
+        right: 8%;
+        top: 22%;
+        background: radial-gradient(
+          circle,
+          rgba(80, 120, 200, 0.22),
+          transparent 68%
+        );
+        filter: blur(20px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      @media (max-width: 960px) {
+        body {
+          overflow: auto;
+        }
+
+        .stage {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+          min-height: 100%;
+          height: auto;
+          padding-top: 64px;
+        }
+
+        .visual {
+          height: 48vh;
+          order: -1;
+        }
+
+        .phone-scene {
+          transform: rotateY(-18deg) rotateX(6deg) scale(0.92);
+        }
+
+        .feature.is-open {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button class="close" type="button" aria-label="Close" id="closeBtn">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M1 1l12 12M13 1L1 13" stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <main class="stage">
+      <section class="features" aria-label="Product features">
+        <div class="nav-arrows">
+          <button type="button" id="prevBtn" aria-label="Previous feature">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M2 8l4-4 4 4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <button type="button" id="nextBtn" aria-label="Next feature">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M2 4l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="feature-list" id="featureList"></div>
+      </section>
+
+      <section class="visual" aria-hidden="true">
+        <div class="glow" id="glow"></div>
+        <div class="phone-scene" id="phoneScene">
+          <div class="layer layer--back" data-layer="back"></div>
+          <div class="layer layer--camera" data-layer="camera">
+            <div class="lens lens--a"></div>
+            <div class="lens lens--b"></div>
+            <div class="lens lens--c"></div>
+          </div>
+          <div class="layer layer--chassis" data-layer="chassis"></div>
+          <div class="layer layer--board" data-layer="board">
+            <div class="chip chip--main"></div>
+            <div class="chip chip--side"></div>
+          </div>
+          <div class="layer layer--display" data-layer="display"></div>
+          <div class="layer layer--frame" data-layer="frame"></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+      CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+      const FEATURES = [
+        {
+          title: "Colors",
+          body: "<strong>Aluminum unibody.</strong> Optimized for performance and battery. Aluminum alloy is remarkably light and has exceptional thermal conductivity.",
+          focus: ["back", "frame"],
+          explode: 1,
+        },
+        {
+          title: "Vapor chamber",
+          body: "<strong>Advanced thermal system.</strong> A vapor chamber spreads heat across the chassis so sustained performance stays cool under load.",
+          focus: ["board", "chassis"],
+          explode: 1.15,
+        },
+        {
+          title: "Ceramic Shield",
+          body: "<strong>Tougher front cover.</strong> Ceramic Shield is tougher than any smartphone glass, engineered for drop performance.",
+          focus: ["display", "frame"],
+          explode: 0.85,
+        },
+        {
+          title: "Immersive pro display",
+          body: "<strong>ProMotion everywhere.</strong> A bright, precise OLED with adaptive refresh for buttery scrolling and cinematic contrast.",
+          focus: ["display"],
+          explode: 0.7,
+        },
+        {
+          title: "Camera Control",
+          body: "<strong>Lightly press to launch.</strong> A capacitive Camera Control lets you zoom, expose, and capture without opening the app first.",
+          focus: ["camera", "frame"],
+          explode: 1.05,
+        },
+        {
+          title: "Action button",
+          body: "<strong>Your shortcut, remapped.</strong> Jump into Focus, camera, flashlight, or a shortcut — one press, no menus.",
+          focus: ["frame", "chassis"],
+          explode: 0.9,
+        },
+      ];
+
+      const list = document.getElementById("featureList");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const layers = gsap.utils.toArray("[data-layer]");
+      const glow = document.getElementById("glow");
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const dur = reduced ? 0.01 : 0.7;
+      const durFast = reduced ? 0.01 : 0.55;
+
+      let active = -1;
+      let animating = false;
+      let switchTl = null;
+
+      const items = FEATURES.map((feature, index) => {
+        const el = document.createElement("article");
+        el.className = "feature";
+        el.dataset.index = String(index);
+        el.setAttribute("aria-expanded", "false");
+        el.innerHTML = `
+          <button class="feature__header" type="button" aria-expanded="false">
+            <span class="feature__icon" aria-hidden="true"></span>
+            <span>${feature.title}</span>
+          </button>
+          <div class="feature__body" aria-hidden="true">
+            <div class="feature__body-inner">${feature.body}</div>
+          </div>
+        `;
+        list.appendChild(el);
+        return el;
+      });
+
+      const bodies = items.map((item) => item.querySelector(".feature__body"));
+      const inners = items.map((item) => item.querySelector(".feature__body-inner"));
+      const headers = items.map((item) => item.querySelector(".feature__header"));
+
+      function measureBody(index) {
+        const body = bodies[index];
+        const prev = body.style.height;
+        body.style.height = "auto";
+        const height = body.scrollHeight;
+        body.style.height = prev;
+        return height;
+      }
+
+      function baseLayerOffsets(explode = 1) {
+        return {
+          back: { x: -70 * explode, z: -120 * explode, y: 8 },
+          camera: { x: -28 * explode, z: -40 * explode, y: -18 },
+          chassis: { x: 8 * explode, z: 10 * explode, y: 0 },
+          board: { x: 48 * explode, z: 70 * explode, y: 6 },
+          display: { x: 95 * explode, z: 140 * explode, y: -4 },
+          frame: { x: 130 * explode, z: 190 * explode, y: 0 },
+        };
+      }
+
+      function setExploded(explode = 1, immediate = false) {
+        const map = baseLayerOffsets(explode);
+        layers.forEach((layer) => {
+          const key = layer.dataset.layer;
+          const pose = map[key] || { x: 0, y: 0, z: 0 };
+          const vars = {
+            x: pose.x,
+            y: pose.y,
+            z: pose.z,
+            rotateY: 0,
+            duration: reduced ? 0.01 : 0.9,
+            ease: "osmoSettle",
+          };
+          if (immediate) gsap.set(layer, vars);
+          else gsap.to(layer, vars);
+        });
+      }
+
+      function focusLayers(names) {
+        layers.forEach((layer) => {
+          const on = names.includes(layer.dataset.layer);
+          gsap.to(layer, {
+            opacity: on ? 1 : 0.28,
+            filter: on ? "brightness(1.08)" : "brightness(0.72)",
+            duration: reduced ? 0.01 : 0.65,
+            ease: "osmo",
+          });
+        });
+
+        gsap.to(glow, {
+          opacity: 0.85,
+          scale: 1.05,
+          duration: 0.5,
+          ease: "osmo",
+          yoyo: true,
+          repeat: 1,
+        });
+      }
+
+      function openItem(index, at = 0) {
+        const item = items[index];
+        const body = bodies[index];
+        const inner = inners[index];
+        const height = measureBody(index);
+
+        item.classList.add("is-open");
+        item.setAttribute("aria-expanded", "true");
+        headers[index].setAttribute("aria-expanded", "true");
+        body.setAttribute("aria-hidden", "false");
+
+        const tl = gsap.timeline({ defaults: { ease: "osmoSettle" } });
+
+        // Shell rounds from pill → card while content grows
+        tl.fromTo(
+          item,
+          { borderRadius: 999 },
+          { borderRadius: 22, duration: dur, ease: "osmo" },
+          at
+        );
+
+        // Height opens first; copy fades in as space settles
+        tl.fromTo(
+          body,
+          { height: 0, opacity: 0 },
+          { height, opacity: 1, duration: dur, ease: "osmoSettle" },
+          at
+        );
+
+        tl.fromTo(
+          inner,
+          { y: 14, opacity: 0 },
+          { y: 0, opacity: 1, duration: durFast, ease: "osmoSettle" },
+          at + (reduced ? 0 : 0.22)
+        );
+
+        return tl;
+      }
+
+      function closeItem(index, at = 0) {
+        const item = items[index];
+        const body = bodies[index];
+        const inner = inners[index];
+
+        const tl = gsap.timeline({
+          defaults: { ease: "osmo" },
+          onComplete: () => {
+            item.classList.remove("is-open");
+            item.setAttribute("aria-expanded", "false");
+            headers[index].setAttribute("aria-expanded", "false");
+            body.setAttribute("aria-hidden", "true");
+            gsap.set(item, { clearProps: "borderRadius" });
+            gsap.set(body, { height: 0, opacity: 0 });
+            gsap.set(inner, { clearProps: "y,opacity" });
+          },
+        });
+
+        tl.to(inner, { y: 8, opacity: 0, duration: durFast * 0.7 }, at);
+        tl.to(
+          body,
+          { height: 0, opacity: 0, duration: durFast, ease: "osmo" },
+          at + (reduced ? 0 : 0.04)
+        );
+        tl.to(
+          item,
+          { borderRadius: 999, duration: durFast, ease: "osmo" },
+          at
+        );
+
+        return tl;
+      }
+
+      function setActive(next, { initial = false } = {}) {
+        if (animating && !initial) return;
+        if (next === active && !initial) return;
+        if (next < 0 || next >= FEATURES.length) return;
+
+        animating = true;
+        if (switchTl) switchTl.kill();
+
+        const prev = active;
+        active = next;
+
+        prevBtn.disabled = active === 0;
+        nextBtn.disabled = active === FEATURES.length - 1;
+
+        const feature = FEATURES[active];
+        switchTl = gsap.timeline({
+          onComplete: () => {
+            animating = false;
+            // Lock measured height so resize stays clean
+            gsap.set(bodies[active], { height: "auto" });
+          },
+        });
+
+        if (!initial && prev >= 0 && prev !== active) {
+          switchTl.add(closeItem(prev), 0);
+          switchTl.add(openItem(active), reduced ? 0 : 0.12);
+        } else {
+          // Collapse everything else instantly on first open
+          items.forEach((_, i) => {
+            if (i !== active) {
+              gsap.set(bodies[i], { height: 0, opacity: 0 });
+              items[i].classList.remove("is-open");
+            }
+          });
+          switchTl.add(openItem(active), 0);
+        }
+
+        switchTl.add(() => {
+          setExploded(feature.explode, initial);
+          focusLayers(feature.focus);
+        }, initial ? 0 : 0.08);
+      }
+
+      items.forEach((item, index) => {
+        const open = () => setActive(index);
+        item.addEventListener("click", open);
+        headers[index].addEventListener("click", (e) => {
+          e.stopPropagation();
+          open();
+        });
+      });
+
+      prevBtn.addEventListener("click", () => setActive(active - 1));
+      nextBtn.addEventListener("click", () => setActive(active + 1));
+
+      document.getElementById("closeBtn").addEventListener("click", () => {
+        gsap.to(".stage, .close", {
+          autoAlpha: 0,
+          y: 10,
+          duration: 0.45,
+          ease: "osmo",
+          stagger: 0.03,
+        });
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+          e.preventDefault();
+          setActive(active + 1);
+        }
+        if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+          e.preventDefault();
+          setActive(active - 1);
+        }
+      });
+
+      // Intro
+      gsap.set(layers, { opacity: 0, x: 0, z: 0, y: 40 });
+      gsap.set([".features", ".close"], { autoAlpha: 0, y: 16 });
+
+      const intro = gsap.timeline({
+        defaults: { ease: "osmoSettle" },
+        onComplete: () => setActive(0, { initial: true }),
+      });
+
+      intro
+        .to(".close", { autoAlpha: 1, y: 0, duration: 0.5 }, 0.1)
+        .to(".features", { autoAlpha: 1, y: 0, duration: 0.65 }, 0.16)
+        .to(
+          layers,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            stagger: 0.05,
+          },
+          0.2
+        );
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

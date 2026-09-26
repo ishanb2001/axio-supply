@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chroma Word Wipe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #ffffff;
+        color: #000000;
+        font-family: Inter, sans-serif;
+      }
+
+      .stage {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 40px;
+      }
+
+      .line {
+        margin: 0;
+        font-size: clamp(40px, 6vw, 88px);
+        font-weight: 600;
+        letter-spacing: -0.06em;
+        line-height: 1.06;
+      }
+
+      .rotating-text {
+        display: inline-grid;
+        position: relative;
+        vertical-align: baseline;
+        align-items: baseline;
+        justify-items: start;
+        box-sizing: content-box;
+        white-space: nowrap;
+        overflow-x: visible;
+        overflow-y: clip;
+        padding-right: 0.08em;
+      }
+
+      .rotating-text__sizer {
+        grid-area: 1 / 1;
+        visibility: hidden;
+        white-space: nowrap;
+        pointer-events: none;
+        line-height: inherit;
+      }
+
+      .rotating-text__word {
+        grid-area: 1 / 1;
+        white-space: nowrap;
+        line-height: inherit;
+        width: max-content;
+        will-change: transform, opacity;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <p class="line">
+        We create an
+        <span class="rotating-text" id="rotating">
+          <span class="rotating-text__sizer" aria-hidden="true">environment</span>
+          <span class="rotating-text__word">environment</span>
+          <span class="rotating-text__word">atmosphere</span>
+          <span class="rotating-text__word">ecosystem</span>
+        </span>
+      </p>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script>
+      const WORDS = ["environment", "atmosphere", "ecosystem"];
+      const SLIDE_EASE = "power4.inOut";
+
+      const root = document.getElementById("rotating");
+      const sizer = root.querySelector(".rotating-text__sizer");
+      const wordEls = gsap.utils.toArray(".rotating-text__word", root);
+
+      const measure = (text) => {
+        const prev = sizer.textContent;
+        sizer.textContent = text;
+        const width = Math.ceil(sizer.scrollWidth);
+        sizer.textContent = prev;
+        return width;
+      };
+
+      const fitWidth = (text) => {
+        gsap.set(root, { width: measure(text) });
+      };
+
+      let activeIndex = 0;
+      sizer.textContent = WORDS[0];
+      gsap.set(wordEls, { yPercent: 110, autoAlpha: 0 });
+      gsap.set(wordEls[0], { yPercent: 0, autoAlpha: 1 });
+      fitWidth(WORDS[0]);
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduced) {
+        const hold = 2.4;
+        const inDuration = 0.75;
+        const outDuration = 0.6;
+
+        const showNext = () => {
+          const nextIndex = (activeIndex + 1) % wordEls.length;
+          const prev = wordEls[activeIndex];
+          const next = wordEls[nextIndex];
+
+          const tl = gsap.timeline({
+            onComplete: () => {
+              activeIndex = nextIndex;
+              sizer.textContent = WORDS[activeIndex];
+              fitWidth(WORDS[activeIndex]);
+              gsap.delayedCall(hold, showNext);
+            },
+          });
+
+          tl.to(prev, {
+            yPercent: -110,
+            autoAlpha: 0,
+            duration: outDuration,
+            ease: SLIDE_EASE,
+          });
+
+          tl.fromTo(
+            next,
+            { yPercent: 110, autoAlpha: 0 },
+            {
+              yPercent: 0,
+              autoAlpha: 1,
+              duration: inDuration,
+              ease: SLIDE_EASE,
+            },
+            0
+          );
+
+          tl.to(
+            root,
+            {
+              width: measure(WORDS[nextIndex]),
+              duration: inDuration,
+              ease: SLIDE_EASE,
+            },
+            0
+          );
+        };
+
+        gsap.delayedCall(hold, showNext);
+      }
+    </script>
+  </body>
+</html>

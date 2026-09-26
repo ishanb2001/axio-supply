@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TRYING — CTA Banner</title>
+    <style>
+      :root {
+        --bg: #000;
+        --ink: #f5f5f5;
+        --muted: #8a8a8a;
+        --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        background: var(--bg);
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* —— Intro content above CTA —— */
+      .intro {
+        position: relative;
+        z-index: 1;
+        background: #000;
+        padding: clamp(72px, 14vh, 140px) clamp(24px, 6vw, 80px)
+          clamp(56px, 10vh, 100px);
+        max-width: 920px;
+        margin: 0 auto;
+      }
+
+      .intro__eyebrow {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 18px;
+      }
+
+      .intro h1 {
+        font-size: clamp(40px, 7vw, 72px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        margin-bottom: 20px;
+      }
+
+      .intro p {
+        font-size: clamp(17px, 2.1vw, 21px);
+        font-weight: 400;
+        line-height: 1.55;
+        color: var(--muted);
+        max-width: 38ch;
+      }
+
+      /* —— Sticky CTA stage —— */
+      .cta-scroll {
+        position: relative;
+        height: 220vh;
+        background: #000;
+      }
+
+      .cta-stage {
+        position: sticky;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 100%;
+        overflow: hidden;
+        background: #000;
+      }
+
+      .cta-frame {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .cta-banner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border-radius: 0;
+        transform-origin: center center;
+        will-change: transform, border-radius;
+        background: #111;
+        cursor: pointer;
+        isolation: isolate;
+      }
+
+      .cta-banner__media {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 30%;
+        display: block;
+        pointer-events: none;
+        user-select: none;
+        transform: scale(1.02);
+      }
+
+      .cta-banner__shade {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.35) 0%,
+          transparent 45%
+        );
+        pointer-events: none;
+      }
+
+      .cta-banner__title {
+        position: absolute;
+        left: clamp(20px, 4vw, 56px);
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+        margin: 0;
+        font-family: var(--font);
+        font-weight: 800;
+        font-size: clamp(64px, 14vw, 160px);
+        line-height: 0.9;
+        letter-spacing: -0.02em;
+        color: #fff;
+        text-transform: uppercase;
+        filter: url(#ink-distress);
+        text-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
+        pointer-events: none;
+      }
+
+      /* —— Content below —— */
+      .after {
+        position: relative;
+        z-index: 1;
+        background: #000;
+        padding: clamp(80px, 16vh, 160px) clamp(24px, 6vw, 80px) 120px;
+        max-width: 920px;
+        margin: 0 auto;
+      }
+
+      .after h2 {
+        font-family: var(--font);
+        font-size: clamp(36px, 6vw, 56px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 20px;
+      }
+
+      .after p {
+        font-size: clamp(16px, 2vw, 20px);
+        font-weight: 400;
+        line-height: 1.6;
+        color: var(--muted);
+        max-width: 42ch;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .cta-banner,
+        .cta-frame {
+          will-change: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" aria-hidden="true" style="position: absolute">
+      <defs>
+        <filter id="ink-distress">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.9"
+            numOctaves="2"
+            result="noise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="1.4"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </defs>
+    </svg>
+
+    <section class="intro">
+      <span class="intro__eyebrow">Apple TV+</span>
+      <h1>A comedy about getting it almost right.</h1>
+      <p>
+        Follow Nikki and Jason as they figure out work, family, and everything
+        in between — one imperfect day at a time.
+      </p>
+    </section>
+
+    <section class="cta-scroll" id="cta-scroll">
+      <div class="cta-stage" id="cta-stage" aria-label="TRYING featured banner">
+        <div class="cta-frame" id="cta-frame">
+          <a
+            class="cta-banner"
+            id="cta-banner"
+            href="#"
+            aria-label="Watch Trying"
+          >
+            <img
+              class="cta-banner__media"
+              src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1800&q=80"
+              alt="Friends together outdoors"
+              width="1800"
+              height="1200"
+              decoding="async"
+              fetchpriority="high"
+            />
+            <div class="cta-banner__shade" aria-hidden="true"></div>
+            <h1 class="cta-banner__title">Trying</h1>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="after">
+      <h2>New episodes every Friday</h2>
+      <p>
+        Stream the latest season on Apple TV+. Scroll back up to watch the
+        banner settle into its card form.
+      </p>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      (function () {
+        gsap.registerPlugin(ScrollTrigger, CustomEase);
+        CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+        CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+        const scrollSection = document.getElementById("cta-scroll");
+        const banner = document.getElementById("cta-banner");
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        gsap.set(banner, { force3D: true, transformOrigin: "50% 50%", autoAlpha: 0, y: 28, scale: 0.96 });
+
+        gsap.to(banner, {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          duration: 1.05,
+          ease: "osmoSettle",
+          delay: 0.08,
+        });
+
+        gsap
+          .timeline({
+            defaults: { ease: "osmo" },
+            scrollTrigger: {
+              trigger: scrollSection,
+              start: "top top",
+              end: "bottom bottom",
+              scrub: reduced ? true : 1.1,
+              invalidateOnRefresh: true,
+            },
+          })
+          .to(
+            banner,
+            {
+              scale: 0.84,
+              borderRadius: 28,
+              duration: 1,
+            },
+            0
+          )
+          .to(
+            ".cta-banner__media",
+            {
+              scale: 1.04,
+              duration: 1,
+            },
+            0
+          );
+
+        const media = banner.querySelector(".cta-banner__media");
+        if (media && !media.complete) {
+          media.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
+        }
+      })();
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glass Star Hero</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;900&display=swap"
+      rel="stylesheet"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      :root {
+        --bg: #2a1a6e;
+        --ink: #ffffff;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Inter Tight", system-ui, sans-serif;
+      }
+
+      body::after {
+        position: fixed;
+        inset: 12px;
+        z-index: 1;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 20px;
+        content: "";
+        pointer-events: none;
+      }
+
+      #scene {
+        position: fixed;
+        inset: 0;
+        display: block;
+      }
+
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        padding: 30px 40px;
+      }
+
+      .nav__logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+      }
+
+      .nav__mark {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--bg);
+        color: var(--ink);
+        font-size: 13px;
+      }
+
+      .nav__edition {
+        margin-left: clamp(28px, 7vw, 110px);
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.15;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.55;
+      }
+
+      .nav__menu {
+        margin-left: auto;
+        padding: 10px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 999px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      .meta {
+        position: fixed;
+        bottom: 34px;
+        left: 40px;
+        z-index: 2;
+        display: grid;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .meta span:last-child {
+        opacity: 0.5;
+      }
+
+      .folio {
+        position: fixed;
+        right: 40px;
+        bottom: 32px;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .folio::before {
+        width: 42px;
+        height: 1px;
+        background: currentColor;
+        content: "";
+        opacity: 0.5;
+      }
+
+      @media (max-width: 640px) {
+        body::after {
+          inset: 8px;
+          border-radius: 14px;
+        }
+
+        .nav {
+          padding: 22px 24px;
+        }
+
+        .nav__edition {
+          display: none;
+        }
+
+        .meta {
+          bottom: 24px;
+          left: 24px;
+        }
+
+        .folio {
+          right: 24px;
+          bottom: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+
+    <h1 id="headline" class="sr-only">
+      <span>Make</span>
+      <span>Ideas</span>
+      <span>Move</span>
+    </h1>
+
+    <nav class="nav" aria-label="Primary navigation">
+      <span class="nav__logo"><span class="nav__mark">N</span>North/Star</span>
+      <span class="nav__edition">Independent creative studio<br />Edition 08 &mdash; 2026</span>
+      <button class="nav__menu" type="button">Menu&nbsp; &#8599;</button>
+    </nav>
+
+    <div class="meta">
+      <span>Toronto &mdash; 43.6532&deg; N</span>
+      <span>Strategy / Identity / Digital</span>
+    </div>
+    <div class="folio">Move your cursor</div>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+      const LINES = [...document.querySelectorAll("#headline span")].map((span) =>
+        span.textContent.trim().toUpperCase()
+      );
+      const BG = "#2a1a6e";
+      const INK = "#ffffff";
+      const CAMERA_Z = 5;
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      const canvas = document.getElementById("scene");
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(BG);
+
+      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+      camera.position.z = CAMERA_Z;
+
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
+
+      const textCanvas = document.createElement("canvas");
+      const textCtx = textCanvas.getContext("2d");
+      let textTexture = null;
+      let photo = null;
+
+      const textPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({ toneMapped: false })
+      );
+      scene.add(textPlane);
+
+      function createStarGeometry() {
+        const shape = new THREE.Shape();
+        const points = 5;
+        const outerRadius = 1.3;
+        const innerRadius = 0.55;
+
+        for (let index = 0; index < points * 2; index += 1) {
+          const radius = index % 2 === 0 ? outerRadius : innerRadius;
+          const angle = -Math.PI / 2 + (index * Math.PI) / points;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          if (index === 0) shape.moveTo(x, y);
+          else shape.lineTo(x, y);
+        }
+        shape.closePath();
+
+        const geometry = new THREE.ExtrudeGeometry(shape, {
+          depth: 0.48,
+          bevelEnabled: true,
+          bevelSegments: 12,
+          steps: 1,
+          bevelSize: 0.16,
+          bevelThickness: 0.18,
+          curveSegments: 12,
+        });
+        geometry.center();
+        return geometry;
+      }
+
+      const star = new THREE.Mesh(
+        createStarGeometry(),
+        new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 0.03,
+          transmission: 1,
+          thickness: 1.35,
+          ior: 1.4,
+          dispersion: 6,
+          envMapIntensity: 1.55,
+          clearcoat: 1,
+          clearcoatRoughness: 0.08,
+          toneMapped: false,
+        })
+      );
+      star.position.z = 2.05;
+      star.rotation.set(-0.22, 0.35, 0.12);
+      scene.add(star);
+
+      function drawText(width, height) {
+        const dpr = Math.min(window.devicePixelRatio, 2);
+        textCanvas.width = Math.round(width * dpr);
+        textCanvas.height = Math.round(height * dpr);
+        textCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        textCtx.fillStyle = BG;
+        textCtx.fillRect(0, 0, width, height);
+        if (photo && photo.complete && photo.naturalWidth > 0) {
+          const scale = Math.max(width / photo.naturalWidth, height / photo.naturalHeight);
+          const drawW = photo.naturalWidth * scale;
+          const drawH = photo.naturalHeight * scale;
+          textCtx.drawImage(photo, (width - drawW) / 2, (height - drawH) / 2, drawW, drawH);
+        }
+        textCtx.fillStyle = INK;
+        textCtx.textAlign = "center";
+        textCtx.textBaseline = "middle";
+
+        const isMobile = width < 640;
+        const maxWidth = isMobile ? width * 0.88 : width * 0.72;
+        const size = Math.min(height * (isMobile ? 0.14 : 0.18), width * 0.16);
+        const lineHeight = size * 0.82;
+        const firstY = height / 2 - ((LINES.length - 1) * lineHeight) / 2;
+
+        LINES.forEach((line, index) => {
+          textCtx.font = `900 ${size}px "Inter Tight", sans-serif`;
+          const measured = textCtx.measureText(line).width;
+          const scaleX = Math.min(1, maxWidth / measured);
+          textCtx.save();
+          textCtx.translate(width / 2, firstY + index * lineHeight);
+          textCtx.scale(scaleX, 1);
+          textCtx.fillText(line, 0, 0);
+          textCtx.restore();
+        });
+
+        textTexture?.dispose();
+        textTexture = new THREE.CanvasTexture(textCanvas);
+        textTexture.colorSpace = THREE.SRGBColorSpace;
+        textTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        textPlane.material.map = textTexture;
+        textPlane.material.needsUpdate = true;
+      }
+
+      function resize() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        renderer.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+
+        const visibleHeight =
+          2 * CAMERA_Z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        const visibleWidth = visibleHeight * camera.aspect;
+        textPlane.scale.set(visibleWidth, visibleHeight, 1);
+
+        const isMobile = width < 640;
+        const starScale = Math.min(visibleWidth, visibleHeight) * (isMobile ? 0.26 : 0.24);
+        star.scale.setScalar(starScale);
+        star.position.x = 0;
+        star.position.y = 0;
+        drawText(width, height);
+      }
+
+      const image = new Image();
+      image.decoding = "async";
+      image.onload = () => {
+        photo = image;
+        resize();
+      };
+      image.src = "/images/placeholders/02.jpg";
+
+      const pointer = new THREE.Vector2();
+      window.addEventListener("pointermove", (event) => {
+        pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+        pointer.y = (event.clientY / window.innerHeight) * 2 - 1;
+      });
+
+      const clock = new THREE.Clock();
+
+      function render() {
+        const time = clock.getElapsedTime();
+
+        if (reducedMotion) {
+          star.rotation.set(-0.22, 0.35, 0.12);
+        } else {
+          star.rotation.x = -0.22 + Math.sin(time * 0.45) * 0.1 + pointer.y * 0.18;
+          star.rotation.y = 0.35 + Math.sin(time * 0.32) * 0.18 + pointer.x * 0.28;
+          star.rotation.z = 0.12 + Math.sin(time * 0.28) * 0.08;
+        }
+
+        renderer.render(scene, camera);
+      }
+
+      function debounce(fn, delay) {
+        let timeoutId;
+        return () => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(fn, delay);
+        };
+      }
+
+      const debouncedResize = debounce(resize, 150);
+      window.addEventListener("resize", debouncedResize);
+
+      document.fonts.ready.then(() => {
+        resize();
+        if (reducedMotion) {
+          render();
+        } else {
+          renderer.setAnimationLoop(render);
+        }
+      });
+    </script>
+  </body>
+</html>

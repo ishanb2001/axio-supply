@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sidebar</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --page: #0e100f;
+        --sidebar: #ffffff;
+        --sidebar-hover: #f4f4f4;
+        --sidebar-active: #f85931;
+        --border: rgba(0, 0, 0, 0.1);
+        --ink: #0e100f;
+        --muted: #555555;
+        --muted-2: #7c7c6f;
+        --accent: #f85931;
+        --accent-text: #ededed;
+        --surface: #f4f4f4;
+        --online: #22c55e;
+        --sidebar-w: 280px;
+        --sidebar-w-collapsed: 72px;
+        --pad-x: 14px;
+        --icon: 18px;
+        --radius-attached: 0 10px 10px 0;
+        --radius-pill: 10px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--page);
+        color: var(--ink);
+        font-family: Inter, system-ui, sans-serif;
+        font-size: 13.5px;
+        letter-spacing: -0.015em;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .page {
+        display: flex;
+        min-height: 100vh;
+        padding: 0;
+        gap: 0;
+        background: #f0f0f0;
+      }
+
+      .sidebar {
+        position: relative;
+        width: var(--sidebar-w-collapsed);
+        height: calc(100vh - 40px);
+        margin: 20px 0 20px 20px;
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+        flex-shrink: 0;
+        z-index: 20;
+        will-change: width, height, margin;
+      }
+
+      .sidebar__clip {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: var(--radius-pill);
+        background: var(--sidebar);
+        box-shadow: none;
+        will-change: border-radius;
+      }
+
+      /* —— Header —— */
+      .sidebar__header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px var(--pad-x) 10px;
+        min-height: 64px;
+        flex-shrink: 0;
+      }
+
+      .logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: var(--accent);
+        border: 0;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        color: #fff;
+      }
+
+      .logo svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .workspace {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .workspace__name {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 600;
+        font-size: 13.5px;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+
+      .workspace__name svg {
+        width: 12px;
+        height: 12px;
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+
+      .workspace__meta {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 11.5px;
+        white-space: nowrap;
+      }
+
+      .workspace__meta svg {
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+      }
+
+      .collapse-btn {
+        position: absolute;
+        top: 26px;
+        right: -13px;
+        z-index: 20;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1.5px solid #555;
+        background: #fff;
+        color: var(--ink);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        padding: 0;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      }
+
+      .collapse-btn:hover {
+        background: var(--surface);
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .collapse-btn svg {
+        position: absolute;
+        width: 13px;
+        height: 13px;
+        will-change: transform, opacity;
+      }
+
+      .collapse-btn .icon-expand {
+        opacity: 0;
+      }
+
+      /* —— Search —— */
+      .search {
+        margin: 4px 10px 12px;
+        flex-shrink: 0;
+      }
+
+      .search__btn {
+        width: 100%;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 9px;
+        cursor: pointer;
+        font: inherit;
+        overflow: hidden;
+        transition: background 0.2s ease, border-color 0.2s ease;
+      }
+
+      .search__btn:hover {
+        background: #ececec;
+        border-color: rgba(0, 0, 0, 0.16);
+      }
+
+      .search__btn > svg {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+      }
+
+      .search__label {
+        flex: 1;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .search__kbd {
+        font-size: 11px;
+        color: var(--muted-2);
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 2px 5px;
+        line-height: 1.2;
+        flex-shrink: 0;
+      }
+
+      /* —— Nav —— */
+      .sidebar__scroll {
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 0 8px 8px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+      }
+
+      .nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .nav-item {
+        position: relative;
+      }
+
+      .nav-link {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        color: var(--ink);
+        font: inherit;
+        font-weight: 500;
+        text-align: left;
+        cursor: pointer;
+        text-decoration: none;
+        overflow: hidden;
+        transition: background 0.18s ease, color 0.18s ease;
+      }
+
+      .nav-link:hover {
+        background: var(--sidebar-hover);
+        color: var(--ink);
+      }
+
+      .nav-link.is-active {
+        background: var(--sidebar-active);
+        color: var(--accent-text);
+      }
+
+      .nav-link__icon {
+        width: var(--icon);
+        height: var(--icon);
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+      }
+
+      .nav-link:hover .nav-link__icon {
+        color: var(--ink);
+      }
+
+      .nav-link.is-active .nav-link__icon {
+        color: var(--accent-text);
+      }
+
+      .nav-link__icon svg {
+        width: var(--icon);
+        height: var(--icon);
+      }
+
+      .nav-link__label {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .nav-link__badge {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted);
+        background: rgba(0, 0, 0, 0.06);
+        border-radius: 999px;
+        padding: 1px 7px;
+        line-height: 1.4;
+        flex-shrink: 0;
+      }
+
+      .nav-link.is-active .nav-link__badge {
+        color: var(--accent-text);
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .nav-link__sparkles {
+        display: flex;
+        gap: 2px;
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .nav-link.is-active .nav-link__sparkles {
+        color: #fff;
+      }
+
+      .nav-link__sparkles svg {
+        width: 11px;
+        height: 11px;
+      }
+
+      /* Sections */
+      .nav-section {
+        margin-top: 14px;
+        position: relative;
+      }
+
+      .nav-section__head {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px 6px;
+        min-height: 28px;
+        overflow: hidden;
+      }
+
+      .nav-section__toggle {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex: 1;
+        min-width: 0;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 0;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .nav-section__toggle:hover {
+        color: var(--ink);
+      }
+
+      .nav-section__chevron {
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+        transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+
+      .nav-section.is-folded .nav-section__chevron {
+        transform: rotate(-90deg);
+      }
+
+      .nav-section__title {
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .nav-section__add {
+        width: 22px;
+        height: 22px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted-2);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        padding: 0;
+        flex-shrink: 0;
+      }
+
+      .nav-section__add:hover {
+        background: var(--sidebar-hover);
+        color: var(--ink);
+      }
+
+      .nav-section__add svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .nav-section__body {
+        overflow: hidden;
+      }
+
+      .nav-section__body .nav-link {
+        color: var(--muted);
+        font-weight: 450;
+      }
+
+      .nav-section__body .nav-link.is-active {
+        color: var(--accent-text);
+      }
+
+      .section-dots {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding-left: 14px;
+        color: var(--muted-2);
+        border: 0;
+        background: transparent;
+        cursor: default;
+        border-radius: 8px;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .section-dots svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* —— Update card —— */
+      .update-card {
+        margin: 8px 6px 4px;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .update-card__close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 22px;
+        height: 22px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted-2);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        padding: 0;
+        z-index: 2;
+      }
+
+      .update-card__close:hover {
+        color: var(--ink);
+        background: var(--sidebar-hover);
+      }
+
+      .update-card__close svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .update-card__title {
+        margin: 0 0 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+        padding-right: 20px;
+        white-space: nowrap;
+      }
+
+      .update-card__body {
+        margin: 0 0 12px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: var(--muted);
+        max-width: 78%;
+      }
+
+      .update-card__action {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--accent);
+        font-size: 12.5px;
+        font-weight: 500;
+        text-decoration: none;
+      }
+
+      .update-card__action:hover {
+        color: #e04e2a;
+      }
+
+      .update-card__art {
+        position: absolute;
+        right: 8px;
+        bottom: 6px;
+        width: 56px;
+        height: 56px;
+        opacity: 0.35;
+        pointer-events: none;
+        color: #555;
+      }
+
+      /* —— Footer —— */
+      .sidebar__footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px var(--pad-x) 14px;
+        border-top: 1px solid var(--border);
+        min-height: 68px;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+
+      .avatar {
+        position: relative;
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+      }
+
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 9px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .avatar__status {
+        position: absolute;
+        right: -2px;
+        bottom: -2px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--online);
+        border: 2px solid var(--sidebar);
+      }
+
+      .user {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .user__name {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 600;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .user__name svg {
+        width: 12px;
+        height: 12px;
+        color: var(--muted);
+      }
+
+      .user__email {
+        margin-top: 1px;
+        font-size: 11.5px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .footer-more {
+        width: 28px;
+        height: 28px;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--muted);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        padding: 0;
+        flex-shrink: 0;
+      }
+
+      .footer-more:hover {
+        background: var(--sidebar-hover);
+        color: var(--ink);
+      }
+
+      .footer-more svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* —— Tooltip —— */
+      .tooltip {
+        position: absolute;
+        left: calc(100% + 14px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-4px);
+        background: #0e100f;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 7px 10px;
+        border-radius: 8px;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        z-index: 50;
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+      }
+
+      .tooltip::before {
+        content: "";
+        position: absolute;
+        left: -4px;
+        top: 50%;
+        transform: translateY(-50%) rotate(45deg);
+        width: 8px;
+        height: 8px;
+        background: #0e100f;
+      }
+
+      .sidebar.is-collapsed .nav-item:hover .tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(-50%) translateX(0);
+      }
+
+      .main {
+        flex: 1;
+        min-width: 0;
+        margin: 16px 16px 16px 12px;
+        border-radius: 20px;
+        background: #f7f7f7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <aside class="sidebar" id="sidebar" aria-label="Workspace navigation">
+        <button
+          class="collapse-btn"
+          id="toggle"
+          type="button"
+          aria-label="Collapse sidebar"
+          aria-pressed="false"
+          title="Collapse sidebar"
+        >
+          <svg class="icon-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+          <svg class="icon-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+
+        <div class="sidebar__clip">
+        <div class="sidebar__header">
+          <div class="logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </div>
+          <div class="workspace" data-reveal>
+            <div class="workspace__name">
+              DesignHub
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="workspace__meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              21 members
+            </div>
+          </div>
+        </div>
+
+        <div class="search">
+          <button class="search__btn" type="button" aria-label="Search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <span class="search__label" data-reveal>Search</span>
+            <kbd class="search__kbd" data-reveal>⌘K</kbd>
+          </button>
+        </div>
+
+        <div class="sidebar__scroll">
+          <ul class="nav-list" role="list">
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+                <span class="nav-link__label" data-reveal>Dashboard</span>
+              </a>
+              <span class="tooltip">Dashboard</span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="nav-link__label" data-reveal>Messages</span>
+                <span class="nav-link__badge" data-reveal>16</span>
+              </a>
+              <span class="tooltip">Messages</span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+                <span class="nav-link__label" data-reveal>Tasks</span>
+              </a>
+              <span class="tooltip">Tasks</span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></span>
+                <span class="nav-link__label" data-reveal>Notes</span>
+              </a>
+              <span class="tooltip">Notes</span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H4z"/><path d="M22 4l-10 7L2 4"/></svg></span>
+                <span class="nav-link__label" data-reveal>Emails</span>
+              </a>
+              <span class="tooltip">Emails</span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+                <span class="nav-link__label" data-reveal>Reports</span>
+              </a>
+              <span class="tooltip">Reports</span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 6h8M6 8v8M18 8v8M8 18h8"/></svg></span>
+                <span class="nav-link__label" data-reveal>Automations</span>
+                <span class="nav-link__sparkles" data-reveal aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.2 4.8L18 8l-4.8 1.2L12 14l-1.2-4.8L6 8l4.8-1.2L12 2z"/></svg>
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.2 4.8L18 8l-4.8 1.2L12 14l-1.2-4.8L6 8l4.8-1.2L12 2z"/></svg>
+                </span>
+              </a>
+              <span class="tooltip">Automations</span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4M12 11l-7 6M12 11l7 6"/></svg></span>
+                <span class="nav-link__label" data-reveal>Workflows</span>
+                <span class="nav-link__sparkles" data-reveal aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.2 4.8L18 8l-4.8 1.2L12 14l-1.2-4.8L6 8l4.8-1.2L12 2z"/></svg>
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.2 4.8L18 8l-4.8 1.2L12 14l-1.2-4.8L6 8l4.8-1.2L12 2z"/></svg>
+                </span>
+              </a>
+              <span class="tooltip">Workflows</span>
+            </li>
+          </ul>
+
+          <div class="nav-section" data-section>
+            <button class="section-dots" type="button" tabindex="-1" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+            </button>
+            <div class="nav-section__head" data-section-head>
+              <button class="nav-section__toggle" type="button" data-section-toggle>
+                <svg class="nav-section__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <span class="nav-section__title">Favorites</span>
+              </button>
+              <button class="nav-section__add" type="button" aria-label="Add favorite">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+            <div class="nav-section__body" data-section-body>
+              <ul class="nav-list">
+                <li class="nav-item">
+                  <a class="nav-link" href="#">
+                    <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l3 7h7l-5.5 4.5L18 22l-6-4-6 4 1.5-8.5L2 9h7z"/></svg></span>
+                    <span class="nav-link__label" data-reveal>Key Accounts</span>
+                  </a>
+                  <span class="tooltip">Key Accounts</span>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">
+                    <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg></span>
+                    <span class="nav-link__label" data-reveal>Strategic Initiatives</span>
+                  </a>
+                  <span class="tooltip">Strategic Initiatives</span>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">
+                    <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg></span>
+                    <span class="nav-link__label" data-reveal>Focus Areas</span>
+                  </a>
+                  <span class="tooltip">Focus Areas</span>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">
+                    <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 21l2.3-7-6-4.6h7.6z"/></svg></span>
+                    <span class="nav-link__label" data-reveal>Starred Items</span>
+                  </a>
+                  <span class="tooltip">Starred Items</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="nav-section" data-section>
+            <button class="section-dots" type="button" tabindex="-1" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+            </button>
+            <div class="nav-section__head" data-section-head>
+              <button class="nav-section__toggle" type="button" data-section-toggle>
+                <svg class="nav-section__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <span class="nav-section__title">Records</span>
+              </button>
+              <button class="nav-section__add" type="button" aria-label="Add record">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+            <div class="nav-section__body" data-section-body>
+              <ul class="nav-list">
+                <li class="nav-item">
+                  <a class="nav-link is-active" href="#" aria-current="page">
+                    <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span>
+                    <span class="nav-link__label" data-reveal>Companies</span>
+                  </a>
+                  <span class="tooltip">Companies</span>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">
+                    <span class="nav-link__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                    <span class="nav-link__label" data-reveal>People</span>
+                  </a>
+                  <span class="tooltip">People</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="update-card" data-update-card data-reveal-block>
+            <button class="update-card__close" type="button" aria-label="Dismiss">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <h3 class="update-card__title">New version available</h3>
+            <p class="update-card__body">
+              An improved version of App is available. Please restart now to upgrade.
+            </p>
+            <a class="update-card__action" href="#">Update →</a>
+            <svg class="update-card__art" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.4">
+              <path d="M32 8l20 12v24L32 56 12 44V20L32 8z"/>
+              <path d="M32 32l20-12M32 32L12 20M32 32v24"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sidebar__footer">
+          <div class="avatar">
+            <img
+              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces"
+              alt=""
+            />
+            <span class="avatar__status" aria-hidden="true"></span>
+          </div>
+          <div class="user" data-reveal>
+            <div class="user__name">
+              Liam Smith
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="user__email">smith@example.com</div>
+          </div>
+          <button class="footer-more" data-reveal type="button" aria-label="More options">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+          </button>
+        </div>
+        </div>
+      </aside>
+
+      <main class="main" aria-hidden="true"></main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+      CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+      const sidebar = document.getElementById("sidebar");
+      const clip = document.querySelector(".sidebar__clip");
+      const toggle = document.getElementById("toggle");
+      const iconCollapse = toggle.querySelector(".icon-collapse");
+      const iconExpand = toggle.querySelector(".icon-expand");
+      const sectionDots = gsap.utils.toArray(".section-dots");
+      const updateCard = document.querySelector("[data-update-card]");
+
+      const W_EXPANDED = 280;
+      const W_COLLAPSED = 72;
+      const PILL_INSET = 20;
+
+      let isExpanded = true;
+      let tl;
+      let enterEndTime = 0;
+
+      // Section fold (Favorites / Records)
+      document.querySelectorAll("[data-section]").forEach((section) => {
+        const btn = section.querySelector("[data-section-toggle]");
+        const body = section.querySelector("[data-section-body]");
+        if (!btn || !body) return;
+
+        gsap.set(body, { height: "auto" });
+
+        btn.addEventListener("click", () => {
+          if (!isExpanded) return;
+          const folded = section.classList.toggle("is-folded");
+          if (folded) {
+            gsap.to(body, {
+              height: 0,
+              autoAlpha: 0,
+              duration: 0.45,
+              ease: "osmo",
+            });
+          } else {
+            gsap.fromTo(
+              body,
+              { height: 0, autoAlpha: 0 },
+              {
+                height: "auto",
+                autoAlpha: 1,
+                duration: 0.55,
+                ease: "osmo",
+              }
+            );
+          }
+        });
+      });
+
+      updateCard?.querySelector(".update-card__close")?.addEventListener("click", () => {
+        gsap.to(updateCard, {
+          height: 0,
+          autoAlpha: 0,
+          marginTop: 0,
+          marginBottom: 0,
+          paddingTop: 0,
+          paddingBottom: 0,
+          duration: 0.45,
+          ease: "osmo",
+          onComplete() {
+            updateCard.remove();
+            buildTimeline(isExpanded);
+          },
+        });
+      });
+
+      function syncCollapsedClass() {
+        sidebar.classList.toggle("is-collapsed", !isExpanded);
+        toggle.setAttribute("aria-pressed", String(!isExpanded));
+        toggle.setAttribute(
+          "aria-label",
+          isExpanded ? "Collapse sidebar" : "Expand sidebar"
+        );
+        toggle.title = isExpanded ? "Collapse sidebar" : "Expand sidebar";
+      }
+
+      function buildTimeline(startExpanded = true) {
+        const iconItems = [
+          ...gsap.utils.toArray(".logo"),
+          ...gsap.utils.toArray(".search__btn > svg"),
+          ...gsap.utils.toArray(".nav-link__icon"),
+          ...gsap.utils.toArray(".section-dots svg"),
+          ...gsap.utils.toArray(".avatar"),
+        ];
+        const collapsedIconX = (_, icon) => {
+          if (icon.matches(".logo, .avatar")) return 5;
+          if (icon.closest(".section-dots")) return 14;
+          return 9;
+        };
+        const largeItems = [
+          ...gsap.utils.toArray(".workspace"),
+          ...gsap.utils.toArray(".search [data-reveal]"),
+          ...gsap.utils.toArray(
+            ".sidebar__scroll > .nav-list:first-of-type [data-reveal]"
+          ),
+        ];
+        const smallItems = [
+          ...gsap.utils.toArray("[data-section-head]"),
+          ...gsap.utils.toArray(".nav-section [data-reveal]"),
+          ...gsap.utils.toArray("[data-update-card]"),
+          ...gsap.utils.toArray(".user"),
+          ...gsap.utils.toArray(".footer-more"),
+        ];
+
+        tl?.kill();
+
+        // Collapsed = floating pill
+        gsap.set(sidebar, {
+          width: W_COLLAPSED,
+          height: window.innerHeight - PILL_INSET * 2,
+          marginTop: PILL_INSET,
+          marginBottom: PILL_INSET,
+          marginLeft: PILL_INSET,
+          marginRight: 0,
+        });
+        gsap.set(clip, {
+          borderRadius: "10px 10px 10px 10px",
+          boxShadow: "none",
+        });
+        gsap.set(iconCollapse, {
+          autoAlpha: 0,
+          rotation: -90,
+          transformOrigin: "50% 50%",
+        });
+        gsap.set(iconExpand, {
+          autoAlpha: 1,
+          rotation: 0,
+          transformOrigin: "50% 50%",
+        });
+        gsap.set(sectionDots, { autoAlpha: 1 });
+        gsap.set(iconItems, {
+          x: collapsedIconX,
+          scale: 0.88,
+          transformOrigin: "50% 50%",
+          force3D: true,
+        });
+        gsap.set(largeItems, { autoAlpha: 0, xPercent: 25 });
+        gsap.set(smallItems, { autoAlpha: 0, yPercent: 100 });
+
+        tl = gsap.timeline({
+          paused: true,
+          defaults: {
+            ease: "osmo",
+            easeReverse: "osmo",
+          },
+        });
+
+        // ── ENTER — pill → edge-attached panel ──
+        tl.to(
+          sidebar,
+          {
+            width: W_EXPANDED,
+            height: () => window.innerHeight,
+            marginTop: 0,
+            marginBottom: 0,
+            marginLeft: 0,
+            duration: 0.7,
+          },
+          0
+        )
+          .to(
+            clip,
+            {
+              borderRadius: "0px 10px 10px 0px",
+              boxShadow: "none",
+              duration: 0.7,
+            },
+            0
+          )
+          .to(
+            sectionDots,
+            {
+              autoAlpha: 0,
+              duration: 0.5,
+            },
+            0
+          )
+          .to(
+            iconExpand,
+            {
+              autoAlpha: 0,
+              rotation: 90,
+              duration: 0.25,
+              ease: "osmo",
+              easeReverse: "osmoSettle",
+            },
+            0
+          )
+          .to(
+            iconCollapse,
+            {
+              autoAlpha: 1,
+              rotation: 0,
+              duration: 0.35,
+              ease: "osmoSettle",
+              easeReverse: "osmo",
+            },
+            0.05
+          )
+          .to(
+            iconItems,
+            {
+              x: 0,
+              scale: 1,
+              duration: 0.55,
+              stagger: 0.04,
+              ease: "osmoSettle",
+              easeReverse: "osmo",
+            },
+            0.05
+          )
+          .fromTo(
+            largeItems,
+            { autoAlpha: 0, xPercent: 25 },
+            {
+              autoAlpha: 1,
+              xPercent: 0,
+              duration: 0.7,
+              stagger: 0.05,
+            },
+            0
+          )
+          .fromTo(
+            smallItems,
+            { autoAlpha: 0, yPercent: 100 },
+            {
+              autoAlpha: 1,
+              yPercent: 0,
+              duration: 0.5,
+              stagger: 0.03,
+              ease: "osmoSettle",
+            },
+            0.3
+          );
+
+        enterEndTime = tl.duration();
+        tl.addPause();
+
+        // ── EXIT — edge panel → floating pill ──
+        tl.to(
+          [largeItems, smallItems],
+          {
+            autoAlpha: 0,
+            duration: 0.3,
+          },
+          "<"
+        )
+          .to(
+            sidebar,
+            {
+              width: W_COLLAPSED,
+              height: () => window.innerHeight - PILL_INSET * 2,
+              marginTop: PILL_INSET,
+              marginBottom: PILL_INSET,
+              marginLeft: PILL_INSET,
+              duration: 0.6,
+            },
+            "<"
+          )
+          .to(
+            clip,
+            {
+              borderRadius: "10px 10px 10px 10px",
+              boxShadow: "none",
+              duration: 0.6,
+            },
+            "<"
+          )
+          .to(
+            sectionDots,
+            {
+              autoAlpha: 1,
+              duration: 0.5,
+            },
+            "<"
+          )
+          .to(
+            iconItems,
+            {
+              x: collapsedIconX,
+              scale: 0.88,
+              duration: 0.45,
+              stagger: { each: 0.04, from: "end" },
+              ease: "osmoSettle",
+            },
+            "<"
+          )
+          .to(
+            iconCollapse,
+            {
+              autoAlpha: 0,
+              rotation: -90,
+              duration: 0.25,
+              ease: "osmo",
+            },
+            "<"
+          )
+          .to(
+            iconExpand,
+            {
+              autoAlpha: 1,
+              rotation: 0,
+              duration: 0.35,
+              ease: "osmoSettle",
+            },
+            "<+=0.05"
+          );
+
+        if (startExpanded) {
+          tl.time(enterEndTime);
+          isExpanded = true;
+        } else {
+          tl.time(0);
+          isExpanded = false;
+        }
+        syncCollapsedClass();
+      }
+
+      function toggleSidebar() {
+        isExpanded = !isExpanded;
+        syncCollapsedClass();
+
+        if (isExpanded) {
+          tl.invalidate();
+          if (tl.time() >= enterEndTime) tl.timeScale(1).restart();
+          else tl.timeScale(1).play();
+        } else {
+          if (tl.time() < enterEndTime) tl.timeScale(1).reverse();
+          else tl.timeScale(1).play();
+        }
+      }
+
+      buildTimeline(false);
+      toggle.addEventListener("click", toggleSidebar);
+
+      window.addEventListener("resize", () => {
+        if (isExpanded) {
+          gsap.set(sidebar, { height: window.innerHeight });
+        } else {
+          gsap.set(sidebar, {
+            height: window.innerHeight - PILL_INSET * 2,
+          });
+        }
+      });
+
+      sidebar.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          sidebar.querySelectorAll(".nav-link.is-active").forEach((el) => {
+            el.classList.remove("is-active");
+            el.removeAttribute("aria-current");
+          });
+          link.classList.add("is-active");
+          link.setAttribute("aria-current", "page");
+        });
+      });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

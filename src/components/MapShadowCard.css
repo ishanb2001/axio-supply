@@ -1,0 +1,77 @@
+.map-card {
+  position: relative;
+  flex: 0 0 360px;
+  display: flex;
+  align-items: center;
+  width: 360px;
+  min-height: 240px;
+  overflow: hidden;
+  padding: 18px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #b7b4e8 0%, #eceaf8 100%);
+}
+
+.map-card__arrow {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #111111;
+  cursor: pointer;
+}
+
+.map-card__arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.map-card__headline {
+  width: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.map-card__headline-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  gap: 0.28em;
+  will-change: transform;
+}
+
+.map-card__headline-track span {
+  font-family: Inter, "PP Neue Montreal", sans-serif;
+  font-size: clamp(42px, 4.2vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+.map-card__pill {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 2;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #111111;
+  white-space: nowrap;
+}

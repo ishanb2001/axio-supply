@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cards Gallery</title>
+    <style>
+      :root {
+        --page: #f3f3f3;
+        --ink: #111111;
+        --muted: #9a9a9a;
+        --card: #ffffff;
+        --line: #ececec;
+        --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        background: var(--page);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body.is-locked {
+        overflow: hidden;
+      }
+
+      .page {
+        width: min(1120px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: clamp(40px, 7vh, 72px) 0 80px;
+        will-change: filter;
+      }
+
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(20px, 2.8vw, 36px) clamp(18px, 2.4vw, 32px);
+      }
+
+      .item {
+        border: 0;
+        background: transparent;
+        padding: 10px;
+        border-radius: 10px;
+        text-align: left;
+        font: inherit;
+        color: inherit;
+        cursor: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: background-color 0.25s ease;
+      }
+
+      .item:hover {
+        background: #dcdcdc66;
+      }
+
+      @media (hover: none), (pointer: coarse) {
+        .item {
+          cursor: pointer;
+        }
+      }
+
+      .flair {
+        width: 72px;
+        height: 72px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 90;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #111;
+        color: #fff;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .flair svg {
+        width: 22px;
+        height: 22px;
+        display: block;
+      }
+
+      body.is-locked .flair {
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+
+      .item:focus-visible {
+        outline: 2px solid #111;
+        outline-offset: 4px;
+        border-radius: 10px;
+      }
+
+      .item__media {
+        position: relative;
+        aspect-ratio: 1 / 1.05;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+        will-change: transform;
+      }
+
+      .item__media > * {
+        width: 100%;
+        height: 100%;
+      }
+
+      .item__meta {
+        padding: 14px 4px 0;
+      }
+
+      .item__title {
+        font-size: 1.6rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      /* —— Card visuals —— */
+      .viz {
+        position: relative;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .viz--sky {
+        background: linear-gradient(180deg, #b9d4f0 0%, #d7e8f8 55%, #eef5fb 100%);
+      }
+
+      .viz--sky::before,
+      .viz--sky::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.55);
+        filter: blur(2px);
+      }
+
+      .viz--sky::before {
+        width: 46%;
+        height: 18%;
+        top: 22%;
+        left: 12%;
+      }
+
+      .viz--sky::after {
+        width: 38%;
+        height: 14%;
+        top: 34%;
+        right: 10%;
+      }
+
+      .countdown {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 4px;
+        font-size: 0.62rem;
+        font-weight: 500;
+        color: rgba(30, 50, 80, 0.45);
+        letter-spacing: 0.04em;
+      }
+
+      .viz--green {
+        background:
+          radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18), transparent 40%),
+          linear-gradient(145deg, #6faa72, #4f8f5a 50%, #3d7a48);
+      }
+
+      .mini-card {
+        width: min(72%, 200px);
+        background: #fff;
+        border-radius: 14px;
+        padding: 12px 12px 10px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
+      }
+
+      .mini-card__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.58rem;
+        color: #888;
+        margin-bottom: 10px;
+      }
+
+      .mini-card__row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mini-card__avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background:
+          linear-gradient(135deg, #d8c4b0, #b8957a);
+        flex-shrink: 0;
+      }
+
+      .mini-card__name {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .mini-card__role {
+        font-size: 0.5rem;
+        color: #888;
+      }
+
+      .mini-card__meta {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.42rem;
+        color: #999;
+        letter-spacing: 0.04em;
+      }
+
+      .mini-card__sig {
+        font-family: var(--font);
+        font-style: italic;
+        font-weight: 500;
+        font-size: 0.72rem;
+        color: #333;
+        line-height: 1;
+      }
+
+      .mini-card__actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 6px;
+      }
+
+      .mini-card__actions span {
+        flex: 1;
+        height: 22px;
+        border-radius: 999px;
+        background: #f1f1f1;
+        display: grid;
+        place-items: center;
+        font-size: 0.48rem;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .viz--island {
+        background: #f7f7f7;
+      }
+
+      .island {
+        width: 42%;
+        height: 18px;
+        background: #111;
+        border-radius: 999px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+
+      .viz--crystal {
+        background: radial-gradient(circle at 50% 40%, #eef3ff, #d9e4ff 60%, #c5d4f5);
+      }
+
+      .crystal {
+        width: 42%;
+        aspect-ratio: 1;
+        background: linear-gradient(145deg, #7eb6ff, #3b6ef5 45%, #1f4fd0);
+        clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+        box-shadow: 0 18px 40px rgba(40, 90, 200, 0.28);
+        position: relative;
+      }
+
+      .crystal::after {
+        content: "✦";
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 1.4rem;
+      }
+
+      .viz--read,
+      .viz--music {
+        background: linear-gradient(180deg, #f6f1e8, #efe7d8);
+      }
+
+      .blob {
+        width: 46%;
+        aspect-ratio: 1;
+        background: #1a1a1a;
+        border-radius: 46% 54% 48% 52% / 52% 46% 54% 48%;
+        position: relative;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+      }
+
+      .blob__band {
+        position: absolute;
+        top: 18%;
+        left: 12%;
+        right: 12%;
+        height: 14%;
+        background: #7c5cff;
+        border-radius: 8px;
+      }
+
+      .blob__book {
+        position: absolute;
+        left: 50%;
+        bottom: 10%;
+        transform: translateX(-50%);
+        width: 54%;
+        height: 28%;
+        background: #e24b4b;
+        border-radius: 4px;
+        box-shadow: inset 0 0 0 2px #fff3;
+      }
+
+      .blob__book::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: rgba(255, 255, 255, 0.35);
+        transform: translateX(-50%);
+      }
+
+      .blob__stars {
+        position: absolute;
+        top: -18%;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #7c5cff;
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+        white-space: nowrap;
+      }
+
+      .blob__phones {
+        position: absolute;
+        top: 8%;
+        left: -6%;
+        right: -6%;
+        height: 34%;
+        border: 7px solid #7c5cff;
+        border-bottom: 0;
+        border-radius: 40px 40px 0 0;
+      }
+
+      .blob__note {
+        position: absolute;
+        color: #7c5cff;
+        font-size: 0.85rem;
+      }
+
+      .blob__note--a {
+        top: -8%;
+        right: -18%;
+      }
+
+      .blob__note--b {
+        top: 10%;
+        left: -22%;
+      }
+
+      /* —— Overlay —— */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: grid;
+        place-items: center;
+        padding: clamp(16px, 3vw, 32px);
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .overlay.is-open {
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .overlay__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(230, 230, 230, 0.55);
+        backdrop-filter: blur(22px) saturate(1.05);
+        -webkit-backdrop-filter: blur(22px) saturate(1.05);
+        opacity: 0;
+        will-change: opacity;
+      }
+
+      .modal {
+        position: relative;
+        z-index: 1;
+        width: min(960px, 100%);
+        max-height: min(620px, calc(100vh - 48px));
+        background: #fff;
+        border-radius: 32px;
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        overflow: hidden;
+        box-shadow:
+          0 50px 120px rgba(0, 0, 0, 0.14),
+          0 12px 32px rgba(0, 0, 0, 0.06);
+        opacity: 0;
+        transform-origin: 50% 50%;
+        will-change: transform, opacity;
+      }
+
+      .modal__visual-wrap,
+      .modal__info {
+        will-change: transform, opacity;
+      }
+
+      .modal__close {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        z-index: 3;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        background: transparent;
+        border-radius: 50%;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        color: #111;
+      }
+
+      .modal__close:hover {
+        background: #f3f3f3;
+      }
+
+      .modal__close svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .modal__visual-wrap {
+        min-width: 0;
+        min-height: 0;
+      }
+
+      .modal__visual {
+        position: relative;
+        height: 100%;
+        min-height: 460px;
+        padding: 22px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .modal__visual-bg {
+        position: absolute;
+        inset: 16px;
+        border-radius: 24px;
+        background: linear-gradient(145deg, #7bb07a, #5a9a62 48%, #3f7f4a);
+        overflow: hidden;
+      }
+
+      .modal__visual-bg::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.22;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        mix-blend-mode: overlay;
+      }
+
+      .modal__caption {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 42px;
+        z-index: 2;
+        text-align: center;
+        font-family: var(--font);
+        font-style: italic;
+        font-weight: 500;
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.78);
+        pointer-events: none;
+      }
+
+      .profile {
+        position: relative;
+        z-index: 2;
+        width: min(300px, 82%);
+        background: #fff;
+        border-radius: 20px;
+        padding: 18px 18px 16px;
+        box-shadow: 0 24px 56px rgba(0, 0, 0, 0.18);
+        will-change: transform, opacity;
+      }
+
+      .profile__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.72rem;
+        color: #8a8a8a;
+        margin-bottom: 14px;
+      }
+
+      .profile__x {
+        width: 16px;
+        height: 16px;
+        opacity: 0.5;
+      }
+
+      .profile__person {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .profile__avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 35% 30%, #f0e0d0, transparent 40%),
+          linear-gradient(145deg, #c9a68a, #8d6a52);
+        flex-shrink: 0;
+      }
+
+      .profile__name {
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .profile__role {
+        font-size: 0.7rem;
+        color: #888;
+        margin-top: 2px;
+      }
+
+      .profile__issued {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .profile__label {
+        font-size: 0.58rem;
+        letter-spacing: 0.06em;
+        color: #aaa;
+        text-transform: uppercase;
+      }
+
+      .profile__value {
+        margin-top: 4px;
+        font-size: 0.78rem;
+        font-weight: 600;
+      }
+
+      .profile__sig {
+        margin-top: 2px;
+        font-family: var(--font);
+        font-style: italic;
+        font-weight: 500;
+        font-size: 1.15rem;
+      }
+
+      .profile__actions {
+        margin-top: 16px;
+        display: flex;
+        gap: 8px;
+      }
+
+      .profile__actions button {
+        flex: 1;
+        border: 0;
+        border-radius: 999px;
+        background: #f2f2f2;
+        color: #111;
+        font: inherit;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 10px 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+
+      .profile__actions button svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .modal__info {
+        padding: clamp(40px, 5.5vw, 64px) clamp(32px, 4.5vw, 52px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0;
+        background: #fff;
+      }
+
+      .modal__year {
+        font-size: 0.88rem;
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+
+      .modal__title {
+        font-size: clamp(1.55rem, 2.7vw, 2rem);
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1.15;
+        margin-bottom: 14px;
+      }
+
+      .modal__desc {
+        font-size: 1rem;
+        color: #8f8f8f;
+        line-height: 1.55;
+        margin-bottom: 42px;
+        max-width: 26ch;
+      }
+
+      .modal__tools-label {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .modal__tools {
+        font-size: 1rem;
+        color: #8f8f8f;
+      }
+
+      .modal__info > * {
+        will-change: transform, opacity;
+      }
+
+      @media (max-width: 900px) {
+        .gallery {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .modal {
+          grid-template-columns: 1fr;
+          max-height: calc(100vh - 32px);
+          overflow: auto;
+        }
+
+        .modal__visual {
+          min-height: 320px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .page {
+          width: calc(100% - 28px);
+        }
+
+        .gallery {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="gallery" id="gallery">
+        <button
+          class="item"
+          type="button"
+          data-project='{"year":"2026","title":"Countdown calendar","desc":"A soft sky countdown for seasonal launches.","tools":"Figma, After Effects","cat":"Interaction design","visual":"sky"}'
+        >
+          <div class="item__media">
+            <div class="viz viz--sky">
+              <div class="countdown">
+                <span>12</span><span>:</span><span>04</span><span>:</span
+                ><span>33</span>
+              </div>
+            </div>
+          </div>
+          <div class="item__meta">
+            <span class="item__title">Countdown calendar</span>
+          </div>
+        </button>
+
+        <button
+          class="item"
+          type="button"
+          data-project='{"year":"2026","title":"Ando welcome card","desc":"A welcome lanyard animation for Ando.","tools":"Figma, Claude code","cat":"Interaction design","visual":"green"}'
+        >
+          <div class="item__media">
+            <div class="viz viz--green">
+              <div class="mini-card">
+                <div class="mini-card__top">
+                  <span>Profile</span><span>×</span>
+                </div>
+                <div class="mini-card__row">
+                  <div class="mini-card__avatar"></div>
+                  <div>
+                    <div class="mini-card__name">Caleb Wu</div>
+                    <div class="mini-card__role">Ando · Product Design Intern</div>
+                  </div>
+                </div>
+                <div class="mini-card__meta">
+                  <div>
+                    <div>ISSUED ON</div>
+                    <strong style="color: #333">June 05 2026</strong>
+                  </div>
+                  <div style="text-align: right">
+                    <div>ISSUED TO</div>
+                    <div class="mini-card__sig">Caleb</div>
+                  </div>
+                </div>
+                <div class="mini-card__actions">
+                  <span>Message</span><span>Jam</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="item__meta">
+            <span class="item__title">Ando welcome card</span>
+          </div>
+        </button>
+
+        <button
+          class="item"
+          type="button"
+          data-project='{"year":"2026","title":"Dynamic Island Streak","desc":"A streak tracker that lives in the Dynamic Island.","tools":"Figma, SwiftUI","cat":"Interaction design","visual":"island"}'
+        >
+          <div class="item__media">
+            <div class="viz viz--island"><div class="island"></div></div>
+          </div>
+          <div class="item__meta">
+            <span class="item__title">Dynamic Island Streak</span>
+          </div>
+        </button>
+
+        <button
+          class="item"
+          type="button"
+          data-project='{"year":"2026","title":"Crystal Badge","desc":"A 3D achievement badge for learning streaks.","tools":"Spline, Figma","cat":"Animation","visual":"crystal"}'
+        >
+          <div class="item__media">
+            <div class="viz viz--crystal"><div class="crystal"></div></div>
+          </div>
+          <div class="item__meta">
+            <span class="item__title">Crystal Badge</span>
+          </div>
+        </button>
+
+        <button
+          class="item"
+          type="button"
+          data-project='{"year":"2026","title":"Reading Nights","desc":"A cozy reading mascot for nightly habits.","tools":"Figma, Rive","cat":"Animation","visual":"read"}'
+        >
+          <div class="item__media">
+            <div class="viz viz--read">
+              <div class="blob">
+                <div class="blob__band"></div>
+                <div class="blob__book"></div>
+                <div class="blob__stars">✦ ✦ ✦</div>
+              </div>
+            </div>
+          </div>
+          <div class="item__meta">
+            <span class="item__title">Reading Nights</span>
+          </div>
+        </button>
+
+        <button
+          class="item"
+          type="button"
+          data-project='{"year":"2026","title":"Focus Headphones","desc":"A soundscape mascot for deep work sessions.","tools":"Figma, Lottie","cat":"Animation","visual":"music"}'
+        >
+          <div class="item__media">
+            <div class="viz viz--music">
+              <div class="blob">
+                <div class="blob__phones"></div>
+                <div class="blob__band" style="top: 28%; opacity: 0.85"></div>
+                <span class="blob__note blob__note--a">♪</span>
+                <span class="blob__note blob__note--b">♫</span>
+              </div>
+            </div>
+          </div>
+          <div class="item__meta">
+            <span class="item__title">Focus Headphones</span>
+          </div>
+        </button>
+      </div>
+    </main>
+
+    <div class="overlay" id="overlay" aria-hidden="true">
+      <div class="overlay__backdrop" data-close></div>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <button class="modal__close" type="button" aria-label="Close" data-close>
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M1 1l12 12M13 1L1 13" stroke-linecap="round" />
+          </svg>
+        </button>
+
+        <div class="modal__visual-wrap">
+          <div class="modal__visual">
+            <div class="modal__visual-bg" id="modal-visual-bg"></div>
+            <div class="profile" id="modal-profile">
+              <div class="profile__top">
+                <span>Profile</span>
+                <svg
+                  class="profile__x"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path d="M1 1l12 12M13 1L1 13" stroke-linecap="round" />
+                </svg>
+              </div>
+              <div class="profile__person">
+                <div class="profile__avatar"></div>
+                <div>
+                  <div class="profile__name">Caleb Wu</div>
+                  <div class="profile__role">Ando · Product Design Intern</div>
+                </div>
+              </div>
+              <div class="profile__issued">
+                <div>
+                  <div class="profile__label">Issued on</div>
+                  <div class="profile__value">June 05 2026</div>
+                </div>
+                <div>
+                  <div class="profile__label">Issued to</div>
+                  <div class="profile__sig">Caleb</div>
+                </div>
+              </div>
+              <div class="profile__actions">
+                <button type="button">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4A8 8 0 1 1 21 12z"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  Message
+                </button>
+                <button type="button">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M4 13v-2a8 8 0 0 1 16 0v2" />
+                    <path
+                      d="M4 13a2 2 0 0 0 2 2h1v-5H6a2 2 0 0 0-2 2zM20 13a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2z"
+                    />
+                  </svg>
+                  Jam
+                </button>
+              </div>
+            </div>
+            <p class="modal__caption">Sign your card</p>
+          </div>
+        </div>
+
+        <div class="modal__info">
+          <div class="modal__year" id="modal-year">2026</div>
+          <h2 class="modal__title" id="modal-title">Ando welcome card</h2>
+          <p class="modal__desc" id="modal-desc">
+            A welcome lanyard animation for Ando.
+          </p>
+          <div class="modal__tools-label">Tools Used</div>
+          <div class="modal__tools" id="modal-tools">Figma, Claude code</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flair" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M5 12h14M13 6l6 6-6 6"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+      CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+      const overlay = document.querySelector("#overlay");
+      const backdrop = overlay.querySelector(".overlay__backdrop");
+      const modal = overlay.querySelector(".modal");
+      const visualWrap = overlay.querySelector(".modal__visual-wrap");
+      const infoPanel = overlay.querySelector(".modal__info");
+      const profile = document.querySelector("#modal-profile");
+      const visualBg = document.querySelector("#modal-visual-bg");
+      const caption = overlay.querySelector(".modal__caption");
+      const infoBits = gsap.utils.toArray(
+        ".modal__year, .modal__title, .modal__desc, .modal__tools-label, .modal__tools"
+      );
+      const closeBtns = overlay.querySelectorAll("[data-close]");
+      const items = gsap.utils.toArray(".item");
+      const page = document.querySelector(".page");
+      const flair = document.querySelector(".flair");
+      const canHover = window.matchMedia(
+        "(hover: hover) and (pointer: fine)"
+      ).matches;
+
+      const visualStyles = {
+        sky: "linear-gradient(180deg, #b9d4f0 0%, #d7e8f8 55%, #eef5fb 100%)",
+        green:
+          "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 40%), linear-gradient(145deg, #7bb07a, #5a9a62 48%, #3f7f4a)",
+        island: "linear-gradient(180deg, #f7f7f7, #ececec)",
+        crystal:
+          "radial-gradient(circle at 50% 40%, #eef3ff, #d9e4ff 60%, #c5d4f5)",
+        read: "linear-gradient(180deg, #f6f1e8, #efe7d8)",
+        music: "linear-gradient(180deg, #f6f1e8, #efe7d8)",
+      };
+
+      let openTl = null;
+      let isOpen = false;
+
+      gsap.set(backdrop, { opacity: 0 });
+      gsap.set(modal, { opacity: 0, scale: 0.94, y: 40 });
+      gsap.set(visualWrap, { opacity: 0, x: -24 });
+      gsap.set(infoPanel, { opacity: 0, x: 28 });
+      gsap.set(profile, { opacity: 0, y: 32, scale: 0.92 });
+      gsap.set(caption, { opacity: 0, y: 14 });
+      gsap.set(infoBits, { opacity: 0, y: 22 });
+      gsap.set(page, { filter: "blur(0px) saturate(1)" });
+      gsap.set(flair, { xPercent: -50, yPercent: -50, scale: 0, autoAlpha: 0 });
+
+      const pointer = { x: 0, y: 0 };
+      const xTo = gsap.quickTo(flair, "x", { duration: 0.6, ease: "osmo" });
+      const yTo = gsap.quickTo(flair, "y", { duration: 0.6, ease: "osmo" });
+
+      function showFlair() {
+        if (!canHover || isOpen) return;
+        gsap.killTweensOf(flair, "scale,autoAlpha");
+        gsap.to(flair, {
+          scale: 1,
+          autoAlpha: 1,
+          duration: 0.35,
+          ease: "osmoSettle",
+        });
+      }
+
+      function hideFlair() {
+        gsap.killTweensOf(flair, "scale,autoAlpha");
+        gsap.to(flair, {
+          scale: 0,
+          autoAlpha: 0,
+          duration: 0.25,
+          ease: "osmo",
+        });
+      }
+
+      function itemIndexUnderPointer() {
+        const el = document.elementFromPoint(pointer.x, pointer.y);
+        if (!el) return -1;
+        return items.findIndex((item) => item.contains(el));
+      }
+
+      function syncFlairToPointer() {
+        if (isOpen) {
+          hideFlair();
+          return;
+        }
+        if (itemIndexUnderPointer() >= 0) showFlair();
+        else hideFlair();
+      }
+
+      if (canHover) {
+        window.addEventListener("pointermove", (e) => {
+          pointer.x = e.clientX;
+          pointer.y = e.clientY;
+          xTo(e.clientX);
+          yTo(e.clientY);
+        });
+      }
+
+      items.forEach((item) => {
+        item.addEventListener("pointerenter", () => {
+          if (isOpen) return;
+          showFlair();
+        });
+
+        item.addEventListener("pointerleave", () => {
+          requestAnimationFrame(syncFlairToPointer);
+        });
+      });
+
+      function fillModal(data) {
+        document.querySelector("#modal-year").textContent = data.year;
+        document.querySelector("#modal-title").textContent = data.title;
+        document.querySelector("#modal-desc").textContent = data.desc;
+        document.querySelector("#modal-tools").textContent = data.tools;
+        visualBg.style.background =
+          visualStyles[data.visual] || visualStyles.green;
+        caption.textContent =
+          data.visual === "green" ? "Sign your card" : data.title;
+      }
+
+      function openOverlay(data, originEl) {
+        if (isOpen) return;
+        isOpen = true;
+        hideFlair();
+        fillModal(data);
+        document.body.classList.add("is-locked");
+        overlay.classList.add("is-open");
+        overlay.setAttribute("aria-hidden", "false");
+
+        if (openTl) openTl.kill();
+
+        let origin = "50% 50%";
+        if (originEl) {
+          const media = originEl.querySelector(".item__media");
+          const rect = media.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          origin = `${(cx / window.innerWidth) * 100}% ${(cy / window.innerHeight) * 100}%`;
+          gsap.fromTo(
+            media,
+            { scale: 0.97 },
+            { scale: 1, duration: 0.55, ease: "osmo" }
+          );
+        }
+
+        gsap.set(backdrop, { opacity: 0 });
+        gsap.set(modal, {
+          opacity: 0,
+          scale: 0.88,
+          y: 0,
+          transformOrigin: origin,
+        });
+        gsap.set(visualWrap, { opacity: 0, x: -36 });
+        gsap.set(infoPanel, { opacity: 0, x: 36 });
+        gsap.set(profile, { opacity: 0, y: 36, scale: 0.9 });
+        gsap.set(caption, { opacity: 0, y: 16 });
+        gsap.set(infoBits, { opacity: 0, y: 24 });
+
+        openTl = gsap.timeline({ defaults: { ease: "osmo" } });
+
+        openTl
+          .to(backdrop, { opacity: 1, duration: 0.6 }, 0)
+          .to(
+            page,
+            { filter: "blur(10px) saturate(0.92)", duration: 0.65 },
+            0
+          )
+          .to(modal, { opacity: 1, scale: 1, duration: 0.8 }, 0.04)
+          .to(visualWrap, { opacity: 1, x: 0, duration: 0.7 }, 0.16)
+          .to(infoPanel, { opacity: 1, x: 0, duration: 0.7 }, 0.22)
+          .to(
+            profile,
+            { opacity: 1, y: 0, scale: 1, duration: 0.72 },
+            0.3
+          )
+          .to(caption, { opacity: 0.85, y: 0, duration: 0.55 }, 0.42)
+          .to(
+            infoBits,
+            { opacity: 1, y: 0, duration: 0.6, stagger: 0.055 },
+            0.34
+          );
+      }
+
+      function closeOverlay() {
+        if (!isOpen) return;
+        if (openTl) openTl.kill();
+
+        openTl = gsap.timeline({
+          defaults: { ease: "osmo" },
+          onComplete: () => {
+            isOpen = false;
+            document.body.classList.remove("is-locked");
+            overlay.classList.remove("is-open");
+            overlay.setAttribute("aria-hidden", "true");
+            gsap.set(modal, { clearProps: "transformOrigin" });
+            gsap.set(page, { filter: "blur(0px) saturate(1)" });
+            syncFlairToPointer();
+          },
+        });
+
+        openTl
+          .to(
+            page,
+            { filter: "blur(0px) saturate(1)", duration: 0.55 },
+            0
+          )
+          .to(backdrop, { opacity: 0, duration: 0.5 }, 0)
+          .to(
+            infoBits,
+            { opacity: 0, y: 10, duration: 0.28, stagger: 0.015 },
+            0
+          )
+          .to(profile, { opacity: 0, y: 12, scale: 0.96, duration: 0.32 }, 0)
+          .to(caption, { opacity: 0, duration: 0.24 }, 0)
+          .to(visualWrap, { opacity: 0, x: -14, duration: 0.38 }, 0.02)
+          .to(infoPanel, { opacity: 0, x: 14, duration: 0.38 }, 0.02)
+          .to(modal, { opacity: 0, scale: 0.95, duration: 0.45 }, 0.04);
+      }
+
+      items.forEach((item) => {
+        item.addEventListener("click", () => {
+          const data = JSON.parse(item.dataset.project);
+          openOverlay(data, item);
+        });
+      });
+
+      closeBtns.forEach((btn) => btn.addEventListener("click", closeOverlay));
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeOverlay();
+      });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

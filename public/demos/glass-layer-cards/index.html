@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glass Layer Cards</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main class="stage">
+      <div class="col">
+        <article class="card">
+          <span class="card__index">01</span>
+          <canvas class="card__glass" data-kind="motion"></canvas>
+        </article>
+        <h2 class="card__label">motion</h2>
+      </div>
+      <div class="col">
+        <article class="card">
+          <span class="card__index">02</span>
+          <canvas class="card__glass" data-kind="components"></canvas>
+        </article>
+        <h2 class="card__label">components</h2>
+      </div>
+      <div class="col">
+        <article class="card">
+          <span class="card__index">03</span>
+          <canvas class="card__glass" data-kind="systems"></canvas>
+        </article>
+        <h2 class="card__label">systems</h2>
+      </div>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

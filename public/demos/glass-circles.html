@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glass Circles</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #1a1020;
+        overflow: hidden;
+        font-family: Inter, sans-serif;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .nav {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 0;
+        padding: 10px;
+        border-radius: 22px;
+        transform: translate(-50%, -50%) scale(1);
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .nav.is-pressed {
+        transform: translate(-50%, -50%) scale(0.94);
+      }
+
+      .nav__row,
+      .nav__more {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .nav__more {
+        display: none;
+      }
+
+      .nav.is-open .nav__more {
+        display: flex;
+      }
+
+      .nav button {
+        margin: 0;
+        padding: 10px 18px;
+        border: 0;
+        border-radius: 14px;
+        background: transparent;
+        color: #ffffff;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        cursor: pointer;
+      }
+
+      .nav button[aria-expanded="true"] {
+        color: #ffffff;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <nav class="nav" id="nav" aria-label="Primary">
+      <div class="nav__row">
+        <button type="button" data-menu="work">Work</button>
+        <button type="button" data-menu="studio">Studio</button>
+        <button type="button">Journal</button>
+        <button type="button">Contact</button>
+      </div>
+      <div class="nav__more" data-for="work">
+        <button type="button">Selected</button>
+        <button type="button">Archive</button>
+        <button type="button">Case studies</button>
+      </div>
+      <div class="nav__more" data-for="studio">
+        <button type="button">About</button>
+        <button type="button">Process</button>
+        <button type="button">Careers</button>
+      </div>
+    </nav>
+    <script type="module">
+      import * as THREE from "three";
+      import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+      const CAMERA_Z = 5;
+      const canvas = document.getElementById("scene");
+      const nav = document.getElementById("nav");
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.toneMapping = THREE.NoToneMapping;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+      camera.position.z = CAMERA_Z;
+
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
+
+      const backdrop = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({ color: 0x1a1020, toneMapped: false })
+      );
+      scene.add(backdrop);
+
+      function roundedRectGeometry(worldW, worldH, worldR) {
+        const radius = Math.min(worldR, worldH / 2 - 0.001, worldW / 2 - 0.001);
+        const shape = new THREE.Shape();
+        const halfW = worldW / 2;
+        const halfH = worldH / 2;
+        shape.moveTo(-halfW + radius, -halfH);
+        shape.lineTo(halfW - radius, -halfH);
+        shape.quadraticCurveTo(halfW, -halfH, halfW, -halfH + radius);
+        shape.lineTo(halfW, halfH - radius);
+        shape.quadraticCurveTo(halfW, halfH, halfW - radius, halfH);
+        shape.lineTo(-halfW + radius, halfH);
+        shape.quadraticCurveTo(-halfW, halfH, -halfW, halfH - radius);
+        shape.lineTo(-halfW, -halfH + radius);
+        shape.quadraticCurveTo(-halfW, -halfH, -halfW + radius, -halfH);
+        const geometry = new THREE.ExtrudeGeometry(shape, {
+          depth: Math.min(0.16, worldH * 0.35),
+          bevelEnabled: true,
+          bevelSegments: 6,
+          steps: 1,
+          bevelSize: Math.min(0.035, radius * 0.35),
+          bevelThickness: Math.min(0.04, worldH * 0.12),
+          curveSegments: 12,
+        });
+        geometry.center();
+        return geometry;
+      }
+
+      function glassMaterial() {
+        return new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 0.03,
+          transmission: 1,
+          thickness: 1.35,
+          ior: 1.4,
+          dispersion: 6,
+          envMapIntensity: 1.55,
+          clearcoat: 1,
+          clearcoatRoughness: 0.08,
+          toneMapped: false,
+        });
+      }
+
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.1), glassMaterial());
+      bar.position.z = 1.35;
+      scene.add(bar);
+
+      const itemMeshes = [...nav.querySelectorAll("button")].map((button) => {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.08), glassMaterial());
+        mesh.position.z = 1.55;
+        mesh.userData.button = button;
+        scene.add(mesh);
+        return mesh;
+      });
+
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load("/images/card-bg-motion.jpg", (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        backdrop.material.map = texture;
+        backdrop.material.needsUpdate = true;
+      });
+
+      let openMenu = "";
+      let press = 0;
+
+      function placeMesh(mesh, rect, radiusPx, z) {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const visibleHeight = 2 * CAMERA_Z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        const visibleWidth = visibleHeight * camera.aspect;
+        const worldW = (rect.width / width) * visibleWidth;
+        const worldH = (rect.height / height) * visibleHeight;
+        const worldR = (radiusPx / height) * visibleHeight;
+        mesh.geometry.dispose();
+        mesh.geometry = roundedRectGeometry(worldW, worldH, worldR);
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        mesh.position.x = ((cx / width) * 2 - 1) * (visibleWidth / 2);
+        mesh.position.y = (1 - (cy / height) * 2) * (visibleHeight / 2);
+        mesh.position.z = z;
+      }
+
+      let viewW = 0;
+      let viewH = 0;
+
+      function syncGlass() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        if (width !== viewW || height !== viewH) {
+          viewW = width;
+          viewH = height;
+          renderer.setSize(width, height);
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+        }
+        const visibleHeight = 2 * CAMERA_Z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        const visibleWidth = visibleHeight * camera.aspect;
+        backdrop.scale.set(visibleWidth, visibleHeight, 1);
+        const navRect = nav.getBoundingClientRect();
+        placeMesh(bar, navRect, 22, 1.35);
+        bar.scale.setScalar(1 - press * 0.06);
+        itemMeshes.forEach((mesh) => {
+          const rect = mesh.userData.button.getBoundingClientRect();
+          if (!rect.width || !rect.height) {
+            mesh.visible = false;
+            return;
+          }
+          mesh.visible = true;
+          placeMesh(mesh, rect, 14, 1.55);
+          mesh.scale.setScalar(1 - press * 0.06);
+        });
+      }
+
+      nav.querySelectorAll("[data-menu]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const name = button.dataset.menu;
+          const next = openMenu === name ? "" : name;
+          openMenu = next;
+          nav.classList.add("is-pressed");
+          window.setTimeout(() => nav.classList.remove("is-pressed"), 160);
+          nav.querySelectorAll(".nav__more").forEach((panel) => {
+            panel.style.display = panel.dataset.for === next ? "flex" : "none";
+          });
+          nav.querySelectorAll("[data-menu]").forEach((item) => {
+            item.setAttribute("aria-expanded", item.dataset.menu === next ? "true" : "false");
+          });
+        });
+      });
+
+      function render() {
+        press += ((nav.classList.contains("is-pressed") ? 1 : 0) - press) * 0.2;
+        syncGlass();
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+
+      window.addEventListener("resize", syncGlass);
+      render();
+    </script>
+  </body>
+</html>

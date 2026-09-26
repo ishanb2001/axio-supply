@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Horizontal Image Row</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
+    <style>
+      :root {
+        --bg: #f4f4f5;
+        --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --card: min(72vw, 420px);
+        --gap: clamp(16px, 2.4vw, 28px);
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html.has-scroll-smooth {
+        overflow: hidden;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      /* Locomotive horizontal layout */
+      html[data-scroll-orientation="horizontal"],
+      html.has-scroll-smooth {
+        height: 100%;
+      }
+
+      [data-scroll-container] {
+        min-height: 100vh;
+      }
+
+      /*
+        Locomotive sets [data-scroll-section] to inline-block for horizontal
+        mode — keep that on .gallery and put the flex row inside.
+      */
+      .gallery {
+        display: inline-block;
+        height: 100vh;
+        vertical-align: top;
+        padding: 0 clamp(48px, 10vw, 120px);
+      }
+
+      .gallery__row {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        width: max-content;
+        gap: var(--gap);
+      }
+
+      .card-slot {
+        position: relative;
+        flex: 0 0 var(--card);
+        width: var(--card);
+        height: var(--card);
+        will-change: transform;
+      }
+
+      .card-stretch {
+        width: 100%;
+        height: 100%;
+        will-change: transform;
+      }
+
+      .card {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: #e4e4e7;
+        will-change: transform;
+      }
+
+      .card img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .hint {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        z-index: 5;
+        transform: translateX(-50%);
+        font-size: 11px;
+        font-weight: 510;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(0, 0, 0, 0.28);
+        pointer-events: none;
+      }
+
+      .controls {
+        position: fixed;
+        right: clamp(20px, 3vw, 36px);
+        bottom: clamp(20px, 3vw, 32px);
+        z-index: 10;
+        display: flex;
+        gap: 8px;
+      }
+
+      .control {
+        display: grid;
+        place-items: center;
+        width: 46px;
+        height: 46px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 50%;
+        color: #171717;
+        background: rgba(255, 255, 255, 0.88);
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition:
+          color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+          background-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .control:hover:not(:disabled) {
+        background: #ffffff;
+        transform: scale(1.05);
+      }
+
+      .control:active:not(:disabled) {
+        transform: scale(0.96);
+      }
+
+      .control:disabled {
+        color: rgba(0, 0, 0, 0.2);
+        cursor: default;
+      }
+
+      .control svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.8;
+      }
+
+      @media (max-width: 720px) {
+        :root {
+          --card: min(78vw, 320px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .card {
+          will-change: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <p class="hint">Scroll</p>
+
+    <nav class="controls" aria-label="Gallery controls">
+      <button class="control" id="previousCard" type="button" aria-label="Previous image">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+      </button>
+      <button class="control" id="nextCard" type="button" aria-label="Next image">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      </button>
+    </nav>
+
+    <div data-scroll-container>
+      <section class="gallery" data-scroll-section>
+        <div class="gallery__row">
+          <article class="card" data-card>
+            <img
+              src="/images/placeholders/01.jpg"
+              alt=""
+              width="1200"
+              height="1200"
+              decoding="async"
+              fetchpriority="high"
+            />
+          </article>
+          <article class="card" data-card>
+            <img
+              src="/images/placeholders/02.jpg"
+              alt=""
+              width="1200"
+              height="1200"
+              decoding="async"
+            />
+          </article>
+          <article class="card" data-card>
+            <img
+              src="/images/placeholders/03.jpg"
+              alt=""
+              width="1200"
+              height="1200"
+              decoding="async"
+            />
+          </article>
+          <article class="card" data-card>
+            <img
+              src="/images/placeholders/04.jpg"
+              alt=""
+              width="1200"
+              height="1200"
+              decoding="async"
+            />
+          </article>
+          <article class="card" data-card>
+            <img
+              src="/images/placeholders/01.jpg"
+              alt=""
+              width="1200"
+              height="1200"
+              decoding="async"
+            />
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      gsap.registerPlugin(CustomEase);
+
+      // Momentum pull: quick stretch, long settle back.
+      CustomEase.create("momentumSettle", "M0,0 C0.14,0.88 0.2,1 1,1");
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const container = document.querySelector("[data-scroll-container]");
+      const cards = gsap.utils.toArray("[data-card]");
+      const previousButton = document.getElementById("previousCard");
+      const nextButton = document.getElementById("nextCard");
+
+      // slot = gap spread, stretch = horizontal pull
+      const layers = cards.map((card) => {
+        const slot = document.createElement("div");
+        const stretch = document.createElement("div");
+        slot.className = "card-slot";
+        stretch.className = "card-stretch";
+        card.before(slot);
+        slot.append(stretch);
+        stretch.append(card);
+        return { slot, stretch };
+      });
+      const slots = layers.map(({ slot }) => slot);
+      const stretches = layers.map(({ stretch }) => stretch);
+
+      gsap.set(cards, { force3D: true });
+      gsap.set(slots, { force3D: true });
+      gsap.set(stretches, { force3D: true, transformOrigin: "50% 50%" });
+
+      const locoScroll = new LocomotiveScroll({
+        el: container,
+        smooth: !reduced,
+        multiplier: 1,
+        lerp: reduced ? 1 : 0.14,
+        getSpeed: true,
+        getDirection: true,
+        direction: "horizontal",
+        gestureDirection: "both",
+        smartphone: {
+          smooth: !reduced,
+          direction: "horizontal",
+          gestureDirection: "both",
+        },
+        tablet: {
+          smooth: !reduced,
+          direction: "horizontal",
+          gestureDirection: "both",
+        },
+      });
+
+      // Staggered settle durations make the string/pull feel cascade.
+      const spreadTo = slots.map((slot, index) =>
+        gsap.quickTo(slot, "x", {
+          duration: reduced ? 0 : 0.55 + index * 0.06,
+          ease: "momentumSettle",
+        })
+      );
+      const stretchTo = stretches.map((stretch, index) =>
+        gsap.quickTo(stretch, "scaleX", {
+          duration: reduced ? 0 : 0.48 + index * 0.05,
+          ease: "momentumSettle",
+        })
+      );
+
+      let previousX = 0;
+      let currentX = 0;
+      let activeIndex = 0;
+
+      function settleCards() {
+        spreadTo.forEach((move) => move(0));
+        stretchTo.forEach((stretch) => stretch(1));
+      }
+
+      const settleCall = gsap.delayedCall(0.08, settleCards).pause();
+
+      function updateControls() {
+        const maxIndex = cards.length - 1;
+        previousButton.disabled = activeIndex <= 0;
+        nextButton.disabled = activeIndex >= maxIndex;
+      }
+
+      locoScroll.on("scroll", (instance) => {
+        currentX = instance.scroll.x;
+        const delta = currentX - previousX;
+        previousX = currentX;
+
+        /*
+         * Strong pull/stretch: gaps open clearly in the scroll direction,
+         * cards elongate slightly, then ease back to normal spacing.
+         */
+        const pull = reduced
+          ? 0
+          : gsap.utils.clamp(0, 72, Math.abs(delta) * 3.2);
+        const movingForward = delta >= 0;
+        const scale = 1 + (pull / 72) * 0.08;
+
+        spreadTo.forEach((move, index) => {
+          const distance = movingForward
+            ? index * pull
+            : -(slots.length - 1 - index) * pull;
+          move(distance);
+        });
+        stretchTo.forEach((stretchCard) => stretchCard(scale));
+        settleCall.restart(true);
+
+        const viewportCenter = currentX + window.innerWidth * 0.5;
+        let nearestDistance = Infinity;
+        slots.forEach((slot, index) => {
+          const center = slot.offsetLeft + slot.offsetWidth * 0.5;
+          const distance = Math.abs(center - viewportCenter);
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            activeIndex = index;
+          }
+        });
+        updateControls();
+      });
+
+      function scrollToCard(index) {
+        activeIndex = gsap.utils.clamp(0, cards.length - 1, index);
+        const slot = slots[activeIndex];
+        const destination = Math.max(
+          0,
+          slot.offsetLeft - (window.innerWidth - slot.offsetWidth) * 0.5
+        );
+
+        locoScroll.scrollTo(destination, {
+          duration: reduced ? 0 : 900,
+          easing: [0.22, 1, 0.36, 1],
+          disableLerp: false,
+        });
+        updateControls();
+      }
+
+      previousButton.addEventListener("click", () => {
+        scrollToCard(activeIndex - 1);
+      });
+
+      nextButton.addEventListener("click", () => {
+        scrollToCard(activeIndex + 1);
+      });
+
+      updateControls();
+
+      window.addEventListener("load", () => locoScroll.update());
+
+      Promise.all(
+        [...document.images].map((img) =>
+          img.complete
+            ? Promise.resolve()
+            : new Promise((resolve) => {
+                img.addEventListener("load", resolve, { once: true });
+                img.addEventListener("error", resolve, { once: true });
+              })
+        )
+      ).then(() => locoScroll.update());
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,532 @@
+.feature-cards {
+  width: min(1400px, calc(100% - 2 * clamp(20px, 4vw, 40px)));
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: clamp(72px, 12vh, 140px) 0 clamp(36px, 5vh, 52px);
+}
+
+.feature-cards__intro {
+  width: min(720px, 100%);
+  margin: 0 auto clamp(40px, 6vh, 72px);
+  text-align: center;
+}
+
+.feature-cards__title {
+  margin: 0;
+  font-family: Inter, "PP Neue Montreal", sans-serif;
+  font-size: clamp(28px, 3.2vw + 0.4rem, 48px);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 1.16;
+  color: #111111;
+}
+
+.feature-cards__lede {
+  margin: 14px 0 0;
+  font-family: Inter, "PP Neue Montreal", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.4;
+  color: #8a8a8a;
+}
+
+.feature-filter {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 36px;
+  padding: 5px;
+  overflow: visible;
+  border-radius: 999px;
+  background: #f2f2f2;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.feature-cards__spots {
+  display: none;
+}
+
+.feature-cards__stack {
+  position: relative;
+  width: 100%;
+}
+
+.feature-cards__grid-shell {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.feature-cards__grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.feature-cards__fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.72) 42%,
+    #ffffff 78%
+  );
+}
+
+.feature-card__shot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  height: auto;
+  min-height: 340px;
+  padding: 16px 16px 18px;
+  border: 0;
+  border-radius: 16px;
+  background: #ededed;
+  text-align: left;
+  white-space: normal;
+  will-change: transform, opacity;
+}
+
+.feature-card__stage {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  min-height: 0;
+  flex: none;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.feature-cards .feature-card__stage .card-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.feature-cards .feature-card__stage .card-thumb__shot {
+  object-fit: cover;
+  object-position: center;
+}
+
+.feature-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.feature-filter__hover {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  width: 0;
+  height: 0;
+  background-color: #e8e8ea;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  visibility: hidden;
+  will-change: left, width, height, top, opacity, background-color;
+}
+
+.feature-filter__backdrop {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  width: 0;
+  height: 0;
+  background-color: #000000;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 0;
+  will-change: left, width, height, top, background-color;
+  transition: background-color 0.16s cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+.feature-filter__backdrop.is-pressed {
+  background-color: #1a1a1a;
+}
+
+.feature-filter__list {
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  width: max-content;
+  margin: 0;
+  padding: 0;
+}
+
+.feature-filter__item {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  padding: 10px 28px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.feature-filter__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.feature-filter__number {
+  display: none;
+}
+
+.feature-filter__title {
+  margin: 0;
+  font-family: Inter, "PP Neue Montreal", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #8a8a8a;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.feature-filter__item.is-active .feature-filter__title {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.feature-filter--classic .feature-filter__backdrop {
+  background-color: #ffffff;
+}
+
+.feature-filter--classic .feature-filter__backdrop.is-pressed {
+  background-color: #f6f6f6;
+}
+
+.feature-filter--classic .feature-filter__item.is-active .feature-filter__title,
+.feature-filter--light .feature-filter__item.is-active .feature-filter__title {
+  color: #111111;
+}
+
+.feature-filter--light .feature-filter__backdrop {
+  background-color: #ffffff;
+}
+
+.feature-filter--light .feature-filter__backdrop.is-pressed {
+  background-color: #f6f6f6;
+}
+
+.feature-cards__grid-shell {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.feature-card__badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: Inter, "PP Neue Montreal", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #111111;
+}
+
+.feature-card__badge span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+.feature-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 4px 2px;
+}
+
+.feature-cards .feature-card__meta {
+  padding: 14px 2px 0;
+}
+
+.feature-card__meta h3 {
+  margin: 0;
+  font-family: Inter, "PP Neue Montreal", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #1a1a1a;
+}
+
+.feature-cards .feature-card__meta h3 {
+  font-weight: 700;
+}
+
+.feature-card__meta p {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: Inter, "PP Neue Montreal", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #8a8a8a;
+}
+
+.feature-card__free-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px dashed #22c55e;
+}
+
+.feature-card__mention {
+  position: relative;
+  width: min(78%, 230px);
+}
+
+.feature-card__mention-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.feature-card__favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: #111111;
+  flex-shrink: 0;
+}
+
+.feature-card__mention-head strong,
+.feature-card__mention-body strong {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #111111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feature-card__mention-head small,
+.feature-card__mention-body small {
+  display: block;
+  font-size: 10px;
+  color: #8a8a8a;
+}
+
+.feature-card__mention-card {
+  overflow: hidden;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card__mention-top {
+  display: grid;
+  place-items: center;
+  height: 72px;
+  background: #111111;
+}
+
+.feature-card__spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px dashed #ffffff;
+}
+
+.feature-card__mention-body {
+  padding: 10px 12px 12px;
+}
+
+.feature-card__mention-body p {
+  margin: 4px 0 8px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #6b6b6b;
+}
+
+.feature-card__cursor {
+  position: absolute;
+  right: -6px;
+  top: 58%;
+  width: 12px;
+  height: 12px;
+  background: #111111;
+  clip-path: polygon(0 0, 100% 70%, 55% 70%, 70% 100%, 48% 100%, 34% 70%, 0 70%);
+}
+
+.feature-card__mock {
+  width: min(72%, 200px);
+}
+
+.feature-card__mock--wipe {
+  font-style: normal;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  color: #111111;
+}
+
+.feature-card__mock--wipe em {
+  font-style: normal;
+  background-image: linear-gradient(90deg, #111, #ff4b1f, #6c5ce7, #111);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.feature-card__mock--tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  height: 120px;
+}
+
+.feature-card__mock--tiles span {
+  border-radius: 12px;
+  background: #ececee;
+}
+
+.feature-cards .feature-card__mock--tiles span,
+.feature-cards .feature-card__mock--list i,
+.feature-cards .feature-card__mock--row span {
+  background: #ffffff;
+}
+
+.feature-cards .feature-card__mock--nav b:nth-child(2),
+.feature-cards .feature-card__mock--nav b:nth-child(3) {
+  background: #ffffff;
+}
+
+.feature-card__mock--list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feature-card__mock--list i {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: #ececee;
+}
+
+.feature-card__mock--list i:nth-child(2) {
+  width: 78%;
+}
+
+.feature-card__mock--list i:nth-child(3) {
+  width: 64%;
+}
+
+.feature-card__mock--nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 88px;
+}
+
+.feature-card__mock--nav b {
+  display: block;
+  height: 28px;
+  border-radius: 10px;
+  background: #111111;
+}
+
+.feature-card__mock--nav b:nth-child(2),
+.feature-card__mock--nav b:nth-child(3) {
+  background: #ececee;
+}
+
+.feature-card__mock--row {
+  display: flex;
+  gap: 8px;
+}
+
+.feature-card__mock--row span {
+  flex: 1;
+  height: 88px;
+  border-radius: 12px;
+  background: #ececee;
+}
+
+@media (max-width: 980px) {
+  .feature-cards__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .feature-cards__fade {
+    height: 36%;
+  }
+}
+
+@media (max-width: 640px) {
+  .feature-cards__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-cards__fade {
+    height: 28%;
+  }
+}
+
+.feature-cards__more {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  transform: translateX(-50%);
+  margin: 0;
+  pointer-events: none;
+}
+
+.feature-cards__view-all {
+  border: 0;
+  background: #111111;
+  color: #ffffff;
+  font-family: Inter, "PP Neue Montreal", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  border-radius: 10px;
+  pointer-events: auto;
+}
+
+.feature-cards__view-all:hover {
+  background: #2a2a2a;
+}

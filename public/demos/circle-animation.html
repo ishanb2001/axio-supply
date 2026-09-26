@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Protein Circle</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --page: #f3efe8;
+        --label: #2f2f2f;
+        --track: rgba(255, 255, 255, 0.32);
+        --draw-duration: 0.85s;
+        --draw-ease: cubic-bezier(0.32, 0.72, 0, 1);
+        --settle-ease: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: var(--page);
+        font-family: Inter, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+      }
+
+      .stage {
+        position: relative;
+        width: min(94vw, 580px);
+        aspect-ratio: 1;
+        cursor: pointer;
+      }
+
+      .ring {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        z-index: 2;
+      }
+
+      .ring-track,
+      .ring-segment {
+        fill: none;
+        stroke-width: 42;
+        transform-origin: 200px 200px;
+      }
+
+      .ring-track {
+        
+        /* Fixed start at 12 o'clock — never animated */
+        transform: rotate(-90deg);
+      }
+
+      /*
+        Each segment is its own circle stroke.
+        Positioned with a static rotate(angle).
+        Revealed only by animating stroke-dashoffset (path length),
+        never by rotating during the animation.
+      */
+      .ring-segment {
+        stroke-linecap: butt;
+      }
+
+      .center {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        pointer-events: none;
+      }
+
+      .center__amount,
+      .center__label {
+        margin: 0;
+        color: #252525;
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+      }
+
+      .stage.is-drawing .center__amount,
+      .stage.is-drawing .center__label {
+        animation: fadeUp 0.75s var(--draw-ease) forwards;
+      }
+
+      .stage.is-drawing .center__label {
+        animation-delay: 0.12s;
+      }
+
+      @keyframes fadeUp {
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .center__amount {
+        font-size: clamp(1.35rem, 4vw, 1.95rem);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .center__label {
+        margin-top: 0.12em;
+        font-size: clamp(1.75rem, 5.5vw, 2.65rem);
+        font-weight: 800;
+        letter-spacing: -0.045em;
+      }
+
+      .labels {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        pointer-events: none;
+      }
+
+      .pill {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        padding: 0.48em 0.9em;
+        border-radius: 999px;
+        background: #fff;
+        color: var(--label);
+        font-size: clamp(0.56rem, 1.5vw, 0.74rem);
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        line-height: 1;
+        white-space: nowrap;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.55);
+        will-change: transform, opacity;
+      }
+
+      .stage.is-drawing .pill {
+        animation: pillIn 0.45s var(--settle-ease) forwards;
+      }
+
+      @keyframes pillIn {
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      .hint {
+        position: fixed;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+        margin: 0;
+        color: rgba(40, 40, 40, 0.4);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="stage" aria-label="Protein amino acid breakdown">
+      <svg class="ring" viewBox="0 0 400 400" aria-hidden="true">
+        <circle class="ring-track" cx="200" cy="200" r="145" />
+        <g id="segments"></g>
+      </svg>
+
+      <div class="center">
+        <div>
+          <p class="center__amount">72g / 95g</p>
+          <p class="center__label">Protein</p>
+        </div>
+      </div>
+
+      <div class="labels" id="labels"></div>
+    </div>
+
+    <p class="hint">Click to replay</p>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+      CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+      // Each entry = a macro/calorie category slice of the ring
+      const SEGMENTS = [
+        { name: "ISOLEUCINE", value: 1 },
+        { name: "HISTIDINE", value: 0.85 },
+        { name: "THREONINE", value: 0.7 },
+        { name: "TRYPTOPHAN", value: 0.55 },
+        { name: "PHENYLALANINE", value: 0.9 },
+        { name: "METHIONINE", value: 0.65 },
+        { name: "LYSINE", value: 0.8 },
+        { name: "VALINE", value: 0.75 },
+        { name: "LEUCINE", value: 1 },
+      ];
+
+      const CX = 200;
+      const CY = 200;
+      const R = 145;
+      const COUNT = SEGMENTS.length;
+      const GAP_DEG = 4; // identical visual gap between every slice
+      // First slice begins at 12 o'clock; angles increase clockwise
+      const START_DEG = -90;
+
+      const C = 2 * Math.PI * R;
+      const DEG_TO_LEN = C / 360;
+      const TOTAL_VALUE = SEGMENTS.reduce(
+        (sum, segment) => sum + segment.value,
+        0
+      );
+      // Remove all uniform gaps first, then distribute the remaining
+      // circumference proportionally across the calorie categories.
+      const AVAILABLE_DEG = 360 - GAP_DEG * COUNT;
+
+      const segmentsGroup = document.getElementById("segments");
+      const labelsRoot = document.getElementById("labels");
+      const stage = document.getElementById("stage");
+
+      function polar(r, deg) {
+        const rad = (deg * Math.PI) / 180;
+        return {
+          x: CX + r * Math.cos(rad),
+          y: CY + r * Math.sin(rad),
+        };
+      }
+
+      let nextStartDeg = START_DEG;
+
+      const items = SEGMENTS.map((seg, i) => {
+        const startDeg = nextStartDeg;
+        const sweepDeg = (seg.value / TOTAL_VALUE) * AVAILABLE_DEG;
+        const targetLen = sweepDeg * DEG_TO_LEN;
+        // Every arc ends with exactly the same GAP_DEG spacing.
+        nextStartDeg += sweepDeg + GAP_DEG;
+
+        // One circle per category — static rotate places the arc;
+        // dashoffset alone grows that arc from 0 → target.
+        const circle = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "circle"
+        );
+        circle.classList.add("ring-segment");
+        circle.setAttribute("cx", String(CX));
+        circle.setAttribute("cy", String(CY));
+        circle.setAttribute("r", String(R));
+        circle.setAttribute("stroke", "#ffffff");
+        // dash = visible arc length when offset is 0; rest of circle is gap
+        circle.setAttribute("stroke-dasharray", `${targetLen} ${C}`);
+        // Fully hidden: offset equals the dash length
+        circle.setAttribute("stroke-dashoffset", String(targetLen));
+        // Static placement only (not animated)
+        circle.style.transform = `rotate(${startDeg}deg)`;
+        segmentsGroup.appendChild(circle);
+
+        const mid = startDeg + sweepDeg / 2;
+        const pos = polar(192, mid);
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = seg.name;
+        pill.style.left = `${(pos.x / 400) * 100}%`;
+        pill.style.top = `${(pos.y / 400) * 100}%`;
+        labelsRoot.appendChild(pill);
+
+        return { circle, pill, targetLen, index: i };
+      });
+
+      const centerBits = gsap.utils.toArray(
+        ".center__amount, .center__label"
+      );
+      let drawTl = null;
+
+      function play() {
+        if (drawTl) drawTl.kill();
+
+        items.forEach((item) => {
+          gsap.killTweensOf([item.circle, item.pill]);
+          gsap.set(item.circle, { attr: { "stroke-dashoffset": item.targetLen } });
+          gsap.set(item.pill, {
+            opacity: 0,
+            scale: 0.55,
+            xPercent: -50,
+            yPercent: -50,
+          });
+        });
+        gsap.set(centerBits, { opacity: 0, y: 12, scale: 0.96 });
+
+        drawTl = gsap.timeline({ defaults: { ease: "osmo" } });
+
+        items.forEach((item, i) => {
+          const delay = 0.2 + i * 0.12;
+          drawTl.to(
+            item.circle,
+            {
+              attr: { "stroke-dashoffset": 0 },
+              duration: 0.85,
+            },
+            delay
+          );
+          drawTl.to(
+            item.pill,
+            {
+              opacity: 1,
+              scale: 1,
+              duration: 0.45,
+              ease: "osmoSettle",
+            },
+            delay + 0.35
+          );
+        });
+
+        drawTl.to(
+          centerBits,
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.75,
+            stagger: 0.12,
+            ease: "osmoSettle",
+          },
+          0.35
+        );
+      }
+
+      play();
+      stage.addEventListener("click", play);
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

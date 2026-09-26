@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Color Lines</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        background: #f2ecd5;
+        overflow-x: hidden;
+        font-family: Inter, Arial, sans-serif;
+      }
+
+      .color-lines {
+        --color-lines-cream: #f2ecd5;
+        --color-lines-orange: #e8a63d;
+        --color-lines-yellow: #e8bd42;
+        --color-lines-pink: #e68fa3;
+        --color-lines-coral: #e8783e;
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        background: var(--color-lines-cream);
+        overflow: hidden;
+      }
+
+      .color-lines__track {
+        display: grid;
+        grid-template-columns: 1fr repeat(4, minmax(0, 1fr)) 1fr;
+        width: 100%;
+        height: 100%;
+      }
+
+      .color-lines__line {
+        height: 100%;
+        border-right: 1.5px solid #000;
+        transform: scaleY(0);
+        transform-origin: top center;
+        will-change: transform;
+        backface-visibility: hidden;
+      }
+
+      .color-lines__line:first-child {
+        border-left: 1.5px solid #000;
+      }
+
+      .color-lines__line.is--cream {
+        background: var(--color-lines-cream);
+      }
+
+      .color-lines__line.is--orange {
+        background: var(--color-lines-orange);
+      }
+
+      .color-lines__line.is--yellow {
+        background: var(--color-lines-yellow);
+      }
+
+      .color-lines__line.is--pink {
+        background: var(--color-lines-pink);
+      }
+
+      .color-lines__line.is--coral {
+        background: var(--color-lines-coral);
+      }
+    </style>
+  </head>
+  <body>
+    <section class="color-lines" aria-hidden="true">
+      <div class="color-lines__track">
+        <div data-color-line class="color-lines__line is--cream"></div>
+        <div data-color-line class="color-lines__line is--orange"></div>
+        <div data-color-line class="color-lines__line is--yellow"></div>
+        <div data-color-line class="color-lines__line is--pink"></div>
+        <div data-color-line class="color-lines__line is--coral"></div>
+        <div data-color-line class="color-lines__line is--cream"></div>
+      </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(ScrollTrigger, CustomEase);
+      CustomEase.create("osmo", "M0,0 C0.32,0.72 0,1 1,1");
+      CustomEase.create("osmoSettle", "M0,0 C0.16,1 0.3,1 1,1");
+
+      const section = document.querySelector(".color-lines");
+      const lines = gsap.utils.toArray("[data-color-line]");
+
+      gsap.set(lines, {
+        scaleY: 0,
+        transformOrigin: "top center",
+        force3D: true,
+      });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: "+=250%",
+          pin: true,
+          scrub: 1.15,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      lines.forEach((line, index) => {
+        tl.fromTo(
+          line,
+          { scaleY: 0 },
+          {
+            scaleY: 1,
+            duration: 1,
+            ease: "osmo",
+          },
+          index * 0.16,
+        );
+      });
+    </script>
+    <script src="./osmos-motion.js" defer></script>
+</body>
+</html>

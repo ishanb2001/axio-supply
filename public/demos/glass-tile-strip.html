@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glass Tile Strip</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #ffffff;
+      }
+
+      body {
+        min-height: 100vh;
+        display: grid;
+        align-items: center;
+      }
+
+      .float-tiles {
+        position: relative;
+        width: 100%;
+        height: 340px;
+        overflow: hidden;
+      }
+
+      .float-tiles__scene {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .float-tiles__row {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 20px;
+        width: max-content;
+      }
+
+      .float-tiles__row--clone {
+        position: relative;
+        left: 0;
+      }
+
+      .float-tiles__tile {
+        position: relative;
+        height: clamp(160px, 24vh, 240px);
+        flex-shrink: 0;
+        overflow: hidden;
+        border-radius: 26px;
+        background: #ececee;
+      }
+
+      .float-tiles__shot {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .float-tiles__lens {
+        position: absolute;
+        overflow: hidden;
+        isolation: isolate;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .float-tiles__lens-clip,
+      .float-tiles__lens-blur {
+        position: absolute;
+        inset: 0;
+      }
+
+      .float-tiles__lens-refraction {
+        position: absolute;
+        transform-origin: top left;
+        pointer-events: none;
+      }
+
+      .float-tiles__clone {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: max-content;
+        height: 100%;
+      }
+
+      .float-tiles__filters {
+        position: absolute;
+        width: 0;
+        height: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="float-tiles" id="root">
+      <div class="float-tiles__scene">
+        <div class="float-tiles__row float-tiles__row--live" id="live"></div>
+      </div>
+      <div class="float-tiles__lens" id="lens">
+        <div class="float-tiles__lens-clip" id="clip">
+          <div class="float-tiles__lens-blur" id="blur">
+            <div class="float-tiles__lens-refraction" id="refraction">
+              <div class="float-tiles__clone" id="clone">
+                <div class="float-tiles__row float-tiles__row--clone" id="cloneRow"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <svg class="float-tiles__filters" id="housing" aria-hidden="true"></svg>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      const TILES = [
+        { w: 280, id: "glass-type-hero", bg: "#e9e9e7" },
+        { w: 386, id: "scroll-cube", bg: "#f3f3f5" },
+        { w: 246, id: "color-lines", bg: "#f2ecd5" },
+        { w: 333, id: "banner-text", bg: "#000000" },
+        { w: 294, id: "navbar-2", bg: "#ffffff" },
+        { w: 414, id: "cards-gallery", bg: "#f3f3f3" },
+        { w: 260, id: "card-animation", bg: "#000000" },
+        { w: 353, id: "horizontal-image-row", bg: "#f4f4f5" },
+      ];
+
+      const GLASS = { depth: 60, splay: 2, feather: 24, curve: 2 };
+      const RADIUS = 0;
+      const PAD = 20;
+      const BOOST = 0.8;
+      const SVG_NS = "http://www.w3.org/2000/svg";
+      const XLINK_NS = "http://www.w3.org/1999/xlink";
+      const mapCache = new Map();
+      const clamp255 = (value) => (value < 0 ? 0 : value > 255 ? 255 : value);
+
+      function buildLensMap(mapW, mapH, lensW, lensH, radius, rim, curve, feather) {
+        const key = `v2:${mapW}:${lensW}:${radius}:${rim}:${curve}:${feather}`;
+        const hit = mapCache.get(key);
+        if (hit) return hit;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = mapW;
+        canvas.height = mapH;
+        const ctx = canvas.getContext("2d");
+        const image = ctx.createImageData(mapW, mapH);
+        const pixels = image.data;
+        const halfW = lensW / 2;
+        const halfH = lensH / 2;
+
+        const sdf = (x, y) => {
+          const qx = Math.abs(x - mapW / 2) - (halfW - radius);
+          const qy = Math.abs(y - mapH / 2) - (halfH - radius);
+          const ox = Math.max(qx, 0);
+          const oy = Math.max(qy, 0);
+          return Math.hypot(ox, oy) + Math.min(Math.max(qx, qy), 0) - radius;
+        };
+
+        for (let y = 0; y < mapH; y += 1) {
+          for (let x = 0; x < mapW; x += 1) {
+            const cx = x + 0.5;
+            const cy = y + 0.5;
+            const dist = sdf(cx, cy);
+            const gx = sdf(cx + 1, cy) - sdf(cx - 1, cy);
+            const gy = sdf(cx, cy + 1) - sdf(cx, cy - 1);
+            const length = Math.hypot(gx, gy) || 1;
+            const nx = gx / length;
+            const ny = gy / length;
+            const span = dist < 0 ? rim + feather : rim;
+            let amount = Math.max(0, 1 - Math.abs(dist) / span);
+            amount = amount * amount * amount * (amount * (amount * 6 - 15) + 10);
+            amount = Math.pow(amount, curve);
+            const insetX = halfW - Math.abs(cx - mapW / 2);
+            const insetY = halfH - Math.abs(cy - mapH / 2);
+            if (insetY <= insetX) amount = 0;
+            const index = (y * mapW + x) * 4;
+            pixels[index] = clamp255(Math.round(127.5 - nx * amount * 127 * BOOST));
+            pixels[index + 1] = clamp255(Math.round(127.5 - ny * amount * 127 * BOOST));
+            pixels[index + 2] = 128;
+            pixels[index + 3] = 255;
+          }
+        }
+
+        ctx.putImageData(image, 0, 0);
+        const url = canvas.toDataURL("image/png");
+        mapCache.set(key, url);
+        return url;
+      }
+
+      function fillRow(row) {
+        [...TILES, ...TILES].forEach((tile) => {
+          const card = document.createElement("div");
+          card.className = "float-tiles__tile";
+          card.style.width = `${tile.w}px`;
+          card.style.background = tile.bg;
+          const img = document.createElement("img");
+          img.className = "float-tiles__shot";
+          img.src = `/thumbnails/${tile.id}.jpg`;
+          img.alt = "";
+          img.draggable = false;
+          card.appendChild(img);
+          row.appendChild(card);
+        });
+      }
+
+      const root = document.getElementById("root");
+      const liveRow = document.getElementById("live");
+      const cloneRow = document.getElementById("cloneRow");
+      const lens = document.getElementById("lens");
+      const clip = document.getElementById("clip");
+      const refraction = document.getElementById("refraction");
+      const clone = document.getElementById("clone");
+      const housing = document.getElementById("housing");
+
+      fillRow(liveRow);
+      fillRow(cloneRow);
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduced) {
+        gsap.fromTo(
+          liveRow,
+          { x: 0 },
+          { x: () => -liveRow.scrollWidth / 2, duration: 28, ease: "none", repeat: -1 }
+        );
+      }
+
+      const defs = document.createElementNS(SVG_NS, "defs");
+      housing.appendChild(defs);
+
+      let feImage = null;
+      let displacement = null;
+      let version = 0;
+      let visible = true;
+      let lastPaint = 0;
+      let lastPaintX = null;
+      const geom = { width: 0 };
+
+      function place() {
+        const tile = root.querySelector(".float-tiles__scene .float-tiles__tile");
+        const rootRect = root.getBoundingClientRect();
+        const tileRect = tile?.getBoundingClientRect();
+        const height = tileRect?.height || 220;
+        const top = tileRect ? tileRect.top - rootRect.top : 0;
+        const width = root.clientWidth;
+        geom.width = width;
+
+        const mapW = width + PAD * 2;
+        const mapH = height + PAD * 2;
+
+        lens.style.left = "0px";
+        lens.style.top = `${top}px`;
+        lens.style.width = `${width}px`;
+        lens.style.height = `${height}px`;
+        lens.style.borderRadius = "0px";
+        clip.style.clipPath = "inset(0 round 0px)";
+        refraction.style.width = `${mapW}px`;
+        refraction.style.height = `${mapH}px`;
+        refraction.style.left = `${-PAD}px`;
+        refraction.style.top = `${-PAD}px`;
+        refraction.style.clipPath = `inset(${PAD}px round ${RADIUS}px)`;
+        clone.style.left = `${PAD}px`;
+        clone.style.top = `${-(top - PAD)}px`;
+
+        const mapUrl = buildLensMap(
+          mapW,
+          mapH,
+          width,
+          height,
+          RADIUS,
+          GLASS.splay,
+          GLASS.curve,
+          GLASS.feather
+        );
+
+        feImage = document.createElementNS(SVG_NS, "feImage");
+        feImage.setAttribute("href", mapUrl);
+        feImage.setAttributeNS(XLINK_NS, "href", mapUrl);
+        feImage.setAttribute("x", "0");
+        feImage.setAttribute("y", "0");
+        feImage.setAttribute("width", String(mapW));
+        feImage.setAttribute("height", String(mapH));
+        feImage.setAttribute("preserveAspectRatio", "none");
+        feImage.setAttribute("result", "map");
+
+        displacement = document.createElementNS(SVG_NS, "feDisplacementMap");
+        displacement.setAttribute("in", "SourceGraphic");
+        displacement.setAttribute("in2", "map");
+        displacement.setAttribute("scale", String(GLASS.depth));
+        displacement.setAttribute("xChannelSelector", "R");
+        displacement.setAttribute("yChannelSelector", "G");
+        displacement.setAttribute("result", "disp");
+      }
+
+      function paint() {
+        if (!feImage || !displacement || geom.width < 2) return;
+        const filter = document.createElementNS(SVG_NS, "filter");
+        const id = `float-glass-${version}`;
+        version += 1;
+        filter.setAttribute("id", id);
+        filter.setAttribute("x", "0");
+        filter.setAttribute("y", "0");
+        filter.setAttribute("width", "100%");
+        filter.setAttribute("height", "100%");
+        filter.setAttribute("filterUnits", "objectBoundingBox");
+        filter.setAttribute("color-interpolation-filters", "sRGB");
+        filter.appendChild(feImage);
+        filter.appendChild(displacement);
+        defs.replaceChildren(filter);
+        refraction.style.filter = `url(#${id})`;
+      }
+
+      function tick() {
+        const raw = Number(gsap.getProperty(liveRow, "x")) || 0;
+        const x = Math.round(raw);
+        if (!reduced && x !== raw) gsap.set(liveRow, { x });
+        cloneRow.style.left = `${x}px`;
+        if (!visible) return;
+        const now = performance.now();
+        const moved = lastPaintX === null || Math.abs(x - lastPaintX) >= 1;
+        if (!moved || now - lastPaint < 42) return;
+        lastPaint = now;
+        lastPaintX = x;
+        paint();
+      }
+
+      place();
+      paint();
+
+      const observer = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+      });
+      observer.observe(root);
+      const resize = new ResizeObserver(() => {
+        place();
+        paint();
+      });
+      resize.observe(root);
+      if (!reduced) gsap.ticker.add(tick);
+    </script>
+  </body>
+</html>

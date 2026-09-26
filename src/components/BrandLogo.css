@@ -1,0 +1,11 @@
+.brand-logo-mark {
+  display: block;
+  font-family: Outfit, sans-serif;
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  color: inherit;
+  pointer-events: none;
+  user-select: none;
+}
