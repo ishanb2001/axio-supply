@@ -71,8 +71,11 @@ export default function LibrarySidebar({
   onNavigate,
   query = "",
   onQueryChange,
+  mobileOpen = false,
+  onMobileClose,
 }) {
   const rootRef = useRef(null);
+  const backdropRef = useRef(null);
   const [activeId, setActiveId] = useState(category === "all" ? "all" : category);
 
   const categories = useMemo(() => {
@@ -209,13 +212,26 @@ export default function LibrarySidebar({
     { scope: rootRef, dependencies: [categories] }
   );
 
+  function choose(id) {
+    activate(id);
+    onCategoryChange(id);
+    onMobileClose?.();
+  }
+
   function activate(id) {
     if (id === activeId) return;
     setActiveId(id);
   }
 
   return (
-    <aside className="library-sidebar" ref={rootRef}>
+    <>
+    <div
+      className={`library-drawer-backdrop${mobileOpen ? " is-open" : ""}`}
+      ref={backdropRef}
+      onClick={() => onMobileClose?.()}
+    />
+    <aside className={`library-sidebar${mobileOpen ? " is-open" : ""}`} ref={rootRef}>
+      <div className="library-sidebar__top">
       <button
         className="library-sidebar__brand"
         type="button"
@@ -224,6 +240,17 @@ export default function LibrarySidebar({
       >
         <BrandLogo />
       </button>
+      <button
+        className="library-sidebar__close"
+        type="button"
+        aria-label="Close menu"
+        onClick={() => onMobileClose?.()}
+      >
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+          <path d="M1 1l12 12M13 1L1 13" strokeLinecap="round" />
+        </svg>
+      </button>
+      </div>
 
       <label className="library-sidebar__search">
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -247,10 +274,7 @@ export default function LibrarySidebar({
           className={`library-sidebar__item library-sidebar__vault-btn${activeId === "all" ? " is-active" : ""}`}
           type="button"
           data-sidebar-id="all"
-          onClick={() => {
-            activate("all");
-            onCategoryChange("all");
-          }}
+          onClick={() => choose("all")}
         >
           <span className="library-sidebar__vault-left">
             <Icon name="vault" />
@@ -265,10 +289,7 @@ export default function LibrarySidebar({
                 className={`library-sidebar__item library-sidebar__cat${activeId === item.id ? " is-active" : ""}`}
                 type="button"
                 data-sidebar-id={item.id}
-                onClick={() => {
-                  activate(item.id);
-                  onCategoryChange(item.id);
-                }}
+                onClick={() => choose(item.id)}
               >
                 <span>{String(item.count).padStart(2, "0")}</span>
                 {item.label}
@@ -278,5 +299,6 @@ export default function LibrarySidebar({
         </ul>
       </div>
     </aside>
+    </>
   );
 }

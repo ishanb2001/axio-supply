@@ -3,3 +3,8 @@ body,
 #root {
   min-height: 100%;
 }
+
+button,
+a {
+  touch-action: manipulation;
+}

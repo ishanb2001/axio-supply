@@ -8,6 +8,7 @@ import FaqAccordion from "./FaqAccordion";
 import FeatureCards from "./FeatureCards";
 import FloatTiles from "./FloatTiles";
 import ExpandCards from "./ExpandCards";
+import axioBrandingBg from "../assets/axio-branding-bg.png";
 import "./HomePage.css";
 
 gsap.registerPlugin(useGSAP, CustomEase, ScrollTrigger);
@@ -151,6 +152,7 @@ const FOOTER_WORD = "axio";
 export default function HomePage({ onNavigate, playIntro = false }) {
   const homeRef = useRef(null);
   const footerRef = useRef(null);
+  const marqueeRef = useRef(null);
   const [showIntro] = useState(playIntro);
 
   useGSAP(
@@ -169,6 +171,8 @@ export default function HomePage({ onNavigate, playIntro = false }) {
         if (!width) return;
         word.style.fontSize = `${(word.clientWidth / width) * 100}px`;
       };
+
+      const reveal = root.querySelector(".home-footer__reveal");
 
       let alive = true;
       let played = false;
@@ -201,6 +205,7 @@ export default function HomePage({ onNavigate, playIntro = false }) {
 
       const onResize = () => {
         fitWord();
+        ScrollTrigger.refresh();
         if (!played) hide();
       };
       window.addEventListener("resize", onResize);
@@ -215,9 +220,28 @@ export default function HomePage({ onNavigate, playIntro = false }) {
 
       hide();
 
+      if (reveal) {
+        gsap.fromTo(
+          reveal,
+          { y: -160, force3D: false },
+          {
+            y: 0,
+            force3D: false,
+            ease: "none",
+            scrollTrigger: {
+              trigger: root,
+              start: "top bottom",
+              end: "top 28%",
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
+      }
+
       ScrollTrigger.create({
-        trigger: root,
-        start: "top 85%",
+        trigger: word,
+        start: "top 88%",
         onEnter: rise,
         onLeaveBack: () => {
           played = false;
@@ -225,13 +249,10 @@ export default function HomePage({ onNavigate, playIntro = false }) {
         },
       });
 
-      if (root.getBoundingClientRect().top < window.innerHeight * 0.85) {
-        rise();
-      }
-
       document.fonts?.ready.then(() => {
         if (!alive) return;
         fitWord();
+        ScrollTrigger.refresh();
         if (!played) hide();
       });
 
@@ -241,6 +262,66 @@ export default function HomePage({ onNavigate, playIntro = false }) {
       };
     },
     { scope: footerRef }
+  );
+
+  useGSAP(
+    () => {
+      const root = marqueeRef.current;
+      if (!root) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const track = root.querySelector(".home-marquee__track");
+      const group = root.querySelector(".home-marquee__group");
+      if (!track || !group) return;
+      const play = () => {
+        const distance = group.offsetWidth;
+        if (!distance) return;
+        gsap.killTweensOf(track);
+        gsap.set(track, { x: 0 });
+        gsap.to(track, {
+          x: -distance,
+          duration: Math.max(16, distance / 110),
+          ease: "none",
+          repeat: -1,
+        });
+      };
+      play();
+      window.addEventListener("resize", play);
+      return () => {
+        window.removeEventListener("resize", play);
+      };
+    },
+    { scope: marqueeRef }
+  );
+
+  useGSAP(
+    (context, contextSafe) => {
+      const button = homeRef.current?.querySelector(".home-banner__button");
+      const wipe = button?.querySelector(".home-banner__button-wipe");
+      if (!button || !wipe) return;
+
+      gsap.set(wipe, { scaleX: 0, transformOrigin: "0% 50%" });
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const tweenTo = (scaleX) => {
+        gsap.to(wipe, {
+          scaleX,
+          duration: reduced ? 0 : 0.7,
+          ease: "power3.inOut",
+          overwrite: "auto",
+        });
+      };
+      const onEnter = contextSafe(() => tweenTo(1));
+      const onLeave = contextSafe(() => tweenTo(0));
+
+      button.addEventListener("pointerenter", onEnter);
+      button.addEventListener("pointerleave", onLeave);
+
+      return () => {
+        button.removeEventListener("pointerenter", onEnter);
+        button.removeEventListener("pointerleave", onLeave);
+      };
+    },
+    { scope: homeRef }
   );
 
   useGSAP(
@@ -461,7 +542,17 @@ export default function HomePage({ onNavigate, playIntro = false }) {
 
       <DynamicNav onNavigate={onNavigate} />
 
+      <div className="home-sheet">
       <section className="home-banner" id="top">
+        <div className="home-banner__brand">
+          <img
+            className="home-banner__branding"
+            src={axioBrandingBg}
+            alt=""
+            aria-hidden="true"
+            draggable="false"
+          />
+        </div>
         <div className="home-banner__layout">
           <div className="home-banner__inner">
             <div className="home-banner__badge-mask" data-reveal="eyebrow">
@@ -496,23 +587,31 @@ export default function HomePage({ onNavigate, playIntro = false }) {
                       type="button"
                       onClick={() => onNavigate("library")}
                     >
-                      Explore the Library
+                      <span className="home-banner__button-fill" aria-hidden="true">
+                        <span className="home-banner__button-wipe" />
+                      </span>
+                      <span className="home-banner__button-label">Explore the Library</span>
+                      <span className="home-banner__button-tile" aria-hidden="true">
+                        <span className="home-banner__button-clip">
+                          <span className="home-banner__button-scene">
+                            <span className="home-banner__button-rig">
+                              <span className="home-banner__button-face home-banner__button-face--front">
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M9 6.5 15 12l-6 5.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </span>
+                              <span className="home-banner__button-face home-banner__button-face--next">
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M9 6.5 15 12l-6 5.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </span>
+                            </span>
+                          </span>
+                        </span>
+                      </span>
                     </button>
                   </span>
                 </div>
-
-                <p className="home-banner__lede" data-reveal="description">
-                  <span className="home-banner__lede-line">
-                    <span className="reveal-inner">
-                      Preview live motion, components, and systems —
-                    </span>
-                  </span>
-                  <span className="home-banner__lede-line">
-                    <span className="reveal-inner">
-                      then pick the ones that fit what you&apos;re building.
-                    </span>
-                  </span>
-                </p>
               </div>
             </div>
           </div>
@@ -542,62 +641,107 @@ export default function HomePage({ onNavigate, playIntro = false }) {
 
       <FaqAccordion />
 
-      <footer className="home-footer" ref={footerRef}>
-        <div className="home-footer__inner">
-          <div className="home-footer__bar">
-            <div className="home-footer__meta">
-              <span>© {new Date().getFullYear()} axio</span>
-              <ul className="home-footer__links">
-                <li>
-                  <button type="button" onClick={() => onNavigate("library")}>
-                    Library
-                  </button>
-                </li>
-                <li>
-                  <button type="button" onClick={() => onNavigate("library", { category: "Animation" })}>
-                    Motion
-                  </button>
-                </li>
-                <li>
-                  <button type="button" onClick={() => onNavigate("library")}>
-                    Components
-                  </button>
-                </li>
-              </ul>
+      <div className="home-marquee" ref={marqueeRef} aria-hidden="true">
+        <div className="home-marquee__track">
+          {[0, 1].map((group) => (
+            <div className="home-marquee__group" key={group}>
+              {Array.from({ length: 6 }, (_, index) => (
+                <span className="home-marquee__item" key={`${group}-${index}`}>
+                  Every layer
+                </span>
+              ))}
             </div>
-            <ul className="home-footer__social">
-              <li>
-                <a
-                  href="https://www.linkedin.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="LinkedIn"
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M6.94 8.5H2.5V21h4.44V8.5zM4.72 3C3.49 3 2.5 3.99 2.5 5.22s.99 2.22 2.22 2.22 2.22-.99 2.22-2.22S5.95 3 4.72 3zM21.5 13.38V21h-4.44v-7.06c0-1.68-.03-3.84-2.34-3.84-2.34 0-2.7 1.83-2.7 3.72V21H7.58V8.5h4.26v1.71h.06c.59-1.12 2.04-2.3 4.2-2.3 4.49 0 5.4 2.96 5.4 6.8z" />
+          ))}
+        </div>
+      </div>
+      </div>
+
+      <footer className="home-footer" ref={footerRef}>
+        <div className="home-footer__reveal">
+        <div className="home-footer__inner">
+          <div className="home-footer__grid">
+            <div className="home-footer__intro">
+              <button className="home-footer__brand" type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+                <span className="home-footer__mark" aria-hidden="true">
+                  <svg viewBox="0 0 16 16">
+                    <path d="M8 1.2 14.2 8 8 14.8 1.8 8 8 1.2z" fill="none" stroke="currentColor" strokeWidth="1.4" />
                   </svg>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.instagram.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Instagram"
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12 7.2A4.8 4.8 0 1 0 12 16.8 4.8 4.8 0 0 0 12 7.2zm0 7.92a3.12 3.12 0 1 1 0-6.24 3.12 3.12 0 0 1 0 6.24zM17.52 6.96a1.12 1.12 0 1 1-2.24 0 1.12 1.12 0 0 1 2.24 0zM12 2.88c-2.48 0-2.79.01-3.77.06-2.5.11-3.83 1.42-3.94 3.94-.05.98-.06 1.29-.06 3.77s.01 2.79.06 3.77c.11 2.51 1.43 3.83 3.94 3.94.98.05 1.29.06 3.77.06s2.79-.01 3.77-.06c2.52-.11 3.83-1.43 3.94-3.94.05-.98.06-1.29.06-3.77s-.01-2.79-.06-3.77c-.11-2.52-1.42-3.83-3.94-3.94-.98-.05-1.29-.06-3.77-.06zm0 1.68c2.44 0 2.73.01 3.69.05 1.85.08 2.71.96 2.79 2.79.05.96.05 1.25.05 3.69s0 2.73-.05 3.69c-.08 1.82-.93 2.71-2.79 2.79-.96.05-1.25.05-3.69.05s-2.73 0-3.69-.05c-1.87-.08-2.71-.97-2.79-2.79-.05-.96-.05-1.25-.05-3.69s0-2.73.05-3.69c.08-1.83.94-2.71 2.79-2.79.96-.04 1.25-.05 3.69-.05z" />
-                  </svg>
-                </a>
-              </li>
-              <li>
-                <a href="https://x.com" target="_blank" rel="noreferrer" aria-label="X">
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M18.9 2.25h3.25l-7.1 8.12L23.5 21.75h-6.56l-5.14-6.72-5.88 6.72H2.66l7.6-8.68L.5 2.25h6.72l4.64 6.14 6.04-6.14zm-1.14 17.52h1.8L6.4 4.08H4.47l13.29 15.69z" />
-                  </svg>
-                </a>
-              </li>
-            </ul>
+                </span>
+                axio
+              </button>
+              <h2 className="home-footer__title">
+                Preview it live.
+                <br />
+                Then make it yours.
+              </h2>
+              <p className="home-footer__lede">
+                Open the motion, the components, and the systems, then take the pieces that fit what you&apos;re building.
+              </p>
+              <button className="home-footer__cta" type="button" onClick={() => onNavigate("library")}>
+                Explore the library
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <p className="home-footer__note">
+                Want a narrower start?
+                <br />
+                <button type="button" onClick={() => onNavigate("library", { category: "Animation" })}>
+                  Browse the motion pieces.
+                </button>
+              </p>
+            </div>
+            <div className="home-footer__cols">
+              <div className="home-footer__col">
+                <h3>Browse</h3>
+                <ul>
+                  <li><button type="button" onClick={() => onNavigate("library")}>The library</button></li>
+                  <li><button type="button" onClick={() => onNavigate("library", { category: "Animation" })}>Motion</button></li>
+                  <li><button type="button" onClick={() => onNavigate("library", { category: "Gallery" })}>Gallery</button></li>
+                  <li><button type="button" onClick={() => onNavigate("library", { category: "Cards" })}>Cards</button></li>
+                </ul>
+              </div>
+              <div className="home-footer__col">
+                <h3>Follow</h3>
+                <ul>
+                  <li>
+                    <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">
+                      LinkedIn
+                      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3.2 8.8 8.8 3.2M4.6 3.2h4.2V7.4" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://www.instagram.com" target="_blank" rel="noreferrer">
+                      Instagram
+                      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3.2 8.8 8.8 3.2M4.6 3.2h4.2V7.4" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://x.com" target="_blank" rel="noreferrer">
+                      X
+                      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3.2 8.8 8.8 3.2M4.6 3.2h4.2V7.4" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div className="home-footer__col home-footer__col--plain">
+                <ul>
+                  <li><button type="button" onClick={() => onNavigate("library", { tier: "free" })}>Free pieces</button></li>
+                  <li><button type="button" onClick={() => onNavigate("library", { tier: "pro" })}>Pro pieces</button></li>
+                  <li><button type="button" onClick={() => onNavigate("library")}>Components</button></li>
+                  <li><button type="button" onClick={() => onNavigate("library", { category: "Navigation" })}>Navigation</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="home-footer__base">
+            <span>© {new Date().getFullYear()} axio</span>
+            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+              Back to the top
+              <svg viewBox="0 0 12 12" aria-hidden="true">
+                <path d="M6 10V2M2.5 5.5 6 2l3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
         </div>
         <div className="home-footer__word" aria-label={FOOTER_WORD}>
@@ -606,6 +750,7 @@ export default function HomePage({ onNavigate, playIntro = false }) {
               <span className="home-footer__glyph">{letter}</span>
             </span>
           ))}
+        </div>
         </div>
       </footer>
     </div>

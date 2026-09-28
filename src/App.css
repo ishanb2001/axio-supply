@@ -4,8 +4,7 @@
   --muted: #9a9a9a;
   --card: #ffffff;
   --line: #ececec;
-  --font: "PP Neue Montreal", "Neue Montreal", "PP Neue Montreal Medium",
-    sans-serif;
+  --font: "Inter", "PP Neue Montreal Medium Placeholder", sans-serif;
 }
 
 * {
@@ -21,8 +20,9 @@ button {
   align-items: center;
   gap: 5px;
   width: min-content;
-  height: min-content;
-  padding: 10px 14px;
+  height: 44px;
+  padding: 0 12px;
+  font-size: 16px;
   text-decoration: none;
   white-space: nowrap;
   display: flex;
@@ -32,9 +32,12 @@ button {
 
 body {
   min-height: 100vh;
-  background: var(--page);
-  color: var(--ink);
-  font-family: var(--font);
+  background: #ffffff;
+  font-family: "Inter", "PP Neue Montreal Medium Placeholder", sans-serif;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 22px;
+  color: rgb(102, 102, 102);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -73,7 +76,10 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped {
 .library-page {
   min-height: 100vh;
   background: #ffffff;
-  font-family: Inter, sans-serif;
+  font-family: "Inter", "PP Neue Montreal Medium Placeholder", sans-serif;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 22px;
 }
 
 .library-page__scene {
@@ -108,12 +114,42 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped {
   margin: 8px 0 0;
   max-width: none;
   white-space: nowrap;
-  font-family: Inter, sans-serif;
+  font-family: "Inter", "PP Neue Montreal Medium Placeholder", sans-serif;
   font-size: 14px;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 1.45;
-  color: #8a8a8a;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 22px;
+  color: rgb(102, 102, 102);
+}
+
+.library-hero__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.library-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: #f2f2f2;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  flex: none;
+}
+
+.library-menu-btn span {
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: #111111;
 }
 
 .library-toolbar {
@@ -146,9 +182,11 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped {
   background: transparent;
   color: #8a8a8a;
   font-family: Inter, sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.02em;
+  height: 44px;
+  padding: 0 12px;
   border-radius: 999px;
 }
 
@@ -404,6 +442,7 @@ body.is-locked .flair {
   z-index: 4;
   width: 36px;
   height: 36px;
+  padding: 0;
   border: 1px solid #e4e4e8;
   background: #fff;
   border-radius: 10px;
@@ -445,9 +484,13 @@ body.is-locked .flair {
 .modal__desc {
   margin: 10px 0 0;
   max-width: 52ch;
+  font-family: "Inter", "PP Neue Montreal Medium Placeholder", sans-serif;
   font-size: 15px;
-  line-height: 1.45;
-  color: #6b6b6b;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 22px;
+  text-align: left;
+  color: rgb(102, 102, 102);
 }
 
 .modal__preview {
@@ -474,14 +517,19 @@ body.is-locked .flair {
 
 .modal__copy,
 .modal__codepen {
-  height: 40px;
-  padding: 0 16px;
+  height: 44px;
+  padding: 0 12px;
   border-radius: 10px;
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.02em;
   cursor: pointer;
+  transform: scale(1);
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.16s cubic-bezier(0.34, 1.25, 0.64, 1);
 }
 
 .modal__copy {
@@ -490,10 +538,6 @@ body.is-locked .flair {
   border: 1px solid #d4d4d8;
   background: #fff;
   color: #111;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
 }
 
 .modal__copy:hover {
@@ -502,8 +546,8 @@ body.is-locked .flair {
 }
 
 .modal__copy:active {
-  transform: scale(0.98);
-  background: #efeff1;
+  background: #ececef;
+  transform: scale(1.06);
 }
 
 .modal__copy-icon {
@@ -557,6 +601,16 @@ body.is-locked .flair {
   border: 1px solid #d9d9de;
   background: #fff;
   color: #111;
+}
+
+.modal__codepen:hover {
+  background: #f6f6f7;
+  border-color: #b9b9be;
+}
+
+.modal__codepen:active {
+  background: #ececef;
+  transform: scale(1.06);
 }
 
 .modal__codepen:disabled {
@@ -637,9 +691,37 @@ body.is-locked .flair {
   }
 
   .page--library {
-    width: min(1100px, calc(100% - 40px));
+    width: min(1100px, calc(100% - 32px));
     margin: 0 auto;
-    padding: 28px 0 80px;
+    padding: 24px 0 72px;
+  }
+
+  .library-menu-btn {
+    display: inline-flex;
+  }
+
+  .library-hero__lede {
+    white-space: normal;
+  }
+
+  .library-toolbar {
+    flex-wrap: nowrap;
+    align-items: center;
+    margin-top: 28px;
+  }
+
+  .library-toolbar .feature-filter {
+    margin: 0;
+    max-width: calc(100% - 132px);
+    overflow: auto;
+  }
+
+  .library-toolbar .feature-filter__item {
+    padding: 8px 14px;
+  }
+
+  .gallery .feature-card {
+    cursor: pointer;
   }
 }
 

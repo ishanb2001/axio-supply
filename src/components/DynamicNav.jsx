@@ -1,4 +1,5 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { CustomEase } from "gsap/CustomEase";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -19,6 +20,9 @@ const COMPACT_EASE = "power2.out";
 
 export default function DynamicNav({ onNavigate }) {
   const rootRef = useRef(null);
+  const drawerRef = useRef(null);
+  const drawerBackdropRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useGSAP(
     () => {
@@ -275,7 +279,10 @@ export default function DynamicNav({ onNavigate }) {
         const targetPanel = siteNav.querySelector(`#panel-${targetId}`);
         if (!targetPanel) return () => {};
 
-        const onEnter = () => openDropdown(targetPanel, trigger);
+        const onEnter = () => {
+          if (window.matchMedia("(max-width: 820px)").matches) return;
+          openDropdown(targetPanel, trigger);
+        };
         trigger.addEventListener("mouseenter", onEnter);
         return () => trigger.removeEventListener("mouseenter", onEnter);
       });
@@ -309,6 +316,21 @@ export default function DynamicNav({ onNavigate }) {
     },
     { scope: rootRef }
   );
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+    window.setTimeout(() => document.body.classList.remove("is-menu-open"), 420);
+  };
+
+  const openMenu = () => {
+    setMenuOpen(true);
+    document.body.classList.add("is-menu-open");
+  };
+
+  const go = (detail) => {
+    closeMenu();
+    onNavigate?.("library", detail);
+  };
 
   return (
     <header className="site-nav" id="siteNav" ref={rootRef}>
@@ -361,6 +383,17 @@ export default function DynamicNav({ onNavigate }) {
             Launch
           </button>
         </div>
+        <button
+          className={`nav-toggle${menuOpen ? " is-open" : ""}`}
+          type="button"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+          onClick={() => (menuOpen ? closeMenu() : openMenu())}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
       </div>
 
       <div className="dropdown-wrapper" id="dropdownWrapper">
@@ -442,6 +475,30 @@ export default function DynamicNav({ onNavigate }) {
         </div>
       </div>
       </div>
+      {createPortal(
+        <>
+          <div
+            className={`nav-drawer__backdrop${menuOpen ? " is-open" : ""}`}
+            ref={drawerBackdropRef}
+            onClick={closeMenu}
+          />
+          <aside className={`nav-drawer${menuOpen ? " is-open" : ""}`} ref={drawerRef} aria-hidden={!menuOpen}>
+            <button className="nav-drawer__link" type="button" onClick={() => go()}>
+              Library
+            </button>
+            <button className="nav-drawer__link" type="button" onClick={() => go({ category: "Animation" })}>
+              Motion
+            </button>
+            <button className="nav-drawer__link" type="button" onClick={() => go()}>
+              Components
+            </button>
+            <button className="nav-drawer__link nav-drawer__link--cta" type="button" onClick={() => go()}>
+              Launch
+            </button>
+          </aside>
+        </>,
+        document.body
+      )}
     </header>
   );
 }

@@ -13,6 +13,7 @@ import HomePage from "./components/HomePage";
 import DynamicNav from "./components/DynamicNav";
 import FilterTabs from "./components/FilterTabs";
 import LibrarySidebar from "./components/LibrarySidebar";
+import SortMenu from "./components/SortMenu";
 import CodeBlock from "./components/CodeBlock";
 import { openOnCodePen } from "./utils/openCodePen";
 import "./App.css";
@@ -111,6 +112,7 @@ export default function App() {
   const [libraryTier, setLibraryTier] = useState("all");
   const [librarySort, setLibrarySort] = useState("default");
   const [libraryCat, setLibraryCat] = useState("all");
+  const [libraryMenuOpen, setLibraryMenuOpen] = useState(false);
   const visibleProjects = useMemo(() => {
     const needle = libraryQuery.trim().toLowerCase();
     let list = projects.filter((project) => {
@@ -686,6 +688,8 @@ export default function App() {
     <div className="library-page page-view" ref={rootRef}>
       <LibrarySidebar
         category={libraryCat}
+        mobileOpen={libraryMenuOpen}
+        onMobileClose={() => setLibraryMenuOpen(false)}
         onCategoryChange={(id) => {
           if (id === libraryCat) return;
           swapGallery(() => setLibraryCat(id));
@@ -697,7 +701,19 @@ export default function App() {
       <div className="library-page__scene" ref={sceneRef}>
       <main className="page page--library" ref={pageRef}>
         <header className="library-hero">
-          <h1 className="library-hero__title">Find something that fits.</h1>
+          <div className="library-hero__bar">
+            <button
+              className="library-menu-btn"
+              type="button"
+              aria-label="Open library menu"
+              onClick={() => setLibraryMenuOpen(true)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+            <h1 className="library-hero__title">Find something that fits.</h1>
+          </div>
           <p className="library-hero__lede">
             Preview live components, then pick the ones that match the product you&apos;re building.
           </p>
@@ -716,17 +732,13 @@ export default function App() {
               tone="light"
             />
 
-            <FilterTabs
+            <SortMenu
               items={SORTS}
               value={librarySort}
               onChange={(id) => {
-                if (id === librarySort) return false;
+                if (id === librarySort) return;
                 swapGallery(() => setLibrarySort(id));
-                return true;
               }}
-              label="Sort components"
-              variant="blob"
-              tone="light"
             />
           </div>
         </header>
@@ -743,6 +755,7 @@ export default function App() {
                   key={project.id}
                   className="feature-card"
                   type="button"
+                  data-magnetic="off"
                   data-project-id={project.id}
                   ref={(el) => {
                     itemRefs.current[index] = el;

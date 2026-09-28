@@ -35,6 +35,7 @@ function isPressable(el) {
 
 function enhanceElement(el) {
   if (!el || el.__magneticMotion || el.dataset.magnetic === "off") return;
+  if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
   el.__magneticMotion = true;
   el.classList.add("magnetic-target");
 

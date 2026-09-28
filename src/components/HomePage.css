@@ -1,12 +1,21 @@
 .home {
   position: relative;
   min-height: 100vh;
-  padding-top: 16px;
   background: #ffffff;
   color: #000000;
-  font-family: "PP Neue Montreal", "Neue Montreal", "PP Neue Montreal Medium",
-    sans-serif;
+  font-family: "Inter", "PP Neue Montreal Medium Placeholder", sans-serif;
+  font-weight: 500;
   letter-spacing: 0;
+  line-height: 22px;
+}
+
+.home-sheet {
+  position: relative;
+  z-index: 2;
+  padding-top: 0;
+  margin-bottom: -72px;
+  background: #ffffff;
+  border-radius: 0 0 28px 28px;
 }
 
 .home.is-intro > :not(.home-intro) {
@@ -68,12 +77,36 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: clamp(48px, 8vh, 88px) 0 clamp(16px, 2.5vh, 28px);
+  padding: clamp(48px, 8vh, 88px) 0 clamp(36px, 5vh, 56px);
   background: #ffffff;
   color: #000000;
   overflow: hidden;
   font-family: Inter, "PP Neue Montreal", sans-serif;
   font-weight: 500;
+}
+
+.home-banner__brand {
+  position: absolute;
+  left: 50%;
+  bottom: 42%;
+  z-index: 3;
+  display: flex;
+  justify-content: flex-end;
+  width: min(1400px, calc(100% - 2 * clamp(20px, 4vw, 40px)));
+  max-width: 1400px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.home-banner__branding {
+  display: block;
+  width: min(46%, 620px);
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  object-position: right bottom;
+  pointer-events: none;
+  user-select: none;
 }
 
 .home-banner__title {
@@ -105,10 +138,10 @@
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 32px;
   width: 100%;
-  margin: 48px 0 0;
+  margin: 28px 0 0;
 }
 
 .home-banner__sr-only {
@@ -135,7 +168,6 @@
 
 .home-banner__layout {
   position: relative;
-  z-index: 1;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -149,7 +181,7 @@
 
 .home-banner__inner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -160,12 +192,12 @@
   width: min(1400px, calc(100% - 2 * clamp(20px, 4vw, 40px)));
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0;
+  padding: 80px 0 0;
   box-sizing: border-box;
 }
 
 .home-banner__typo {
-  width: 100%;
+  width: max-content;
   max-width: 100%;
   margin: 0;
 }
@@ -244,7 +276,7 @@
 .home-banner__button {
   margin: 0;
   border: 0;
-  border-radius: 8px;
+  border-radius: 14px;
   background: #000000;
   color: #ffffff;
   font-family: Inter, sans-serif;
@@ -252,27 +284,115 @@
   font-weight: 500;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  height: 48px;
+  padding: 5px 5px 5px 16px;
+  gap: 14px;
+  transform: scale(1);
+  transition: transform 0.16s cubic-bezier(0.34, 1.25, 0.64, 1);
 }
 
-.home-banner__button:hover {
-  background: #1a1a1a;
-}
-
-.home-banner__lede {
-  margin: 0 0 0 auto;
-  max-width: 36ch;
-  text-align: right;
-  font-family: Inter, sans-serif;
-  font-size: 15px;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 1.4;
-  color: #8a8a8a;
-}
-
-.home-banner__lede-line {
-  display: block;
+.home-banner__button-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.home-banner__button-wipe {
+  position: absolute;
+  inset: 0;
+  background: #3a3a3a;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.home-banner__button-label {
+  position: relative;
+  z-index: 1;
+  padding-right: 2px;
+}
+
+.home-banner__button-tile {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 10px;
+  background: #363636;
+  color: #ffffff;
+}
+
+.home-banner__button-clip {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.home-banner__button-scene {
+  display: block;
+  width: 38px;
+  height: 38px;
+  perspective: 360px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+
+.home-banner__button-rig {
+  display: block;
+  position: relative;
+  width: 38px;
+  height: 38px;
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  transition: transform 0.55s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.home-banner__button:hover .home-banner__button-rig {
+  transform: rotateX(90deg);
+}
+
+.home-banner__button-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #363636;
+  -webkit-backface-visibility: hidden;
+}
+
+.home-banner__button-face--front {
+  transform: translateZ(19px);
+}
+
+.home-banner__button-face--next {
+  transform: rotateX(-90deg) translateZ(19px);
+}
+
+.home-banner__button-face svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.home-banner__button:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-banner__button-rig,
+  .home-banner__button:hover .home-banner__button-rig {
+    transition: none;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -470,94 +590,258 @@
   background: #ffffff;
 }
 
-.home-footer {
-  background: #f4f4f4;
-  padding: 36px 0 0;
+.home-marquee {
   overflow: hidden;
+  padding: 12px 0 40px;
+  background: #ffffff;
+}
+
+.home-marquee__track {
+  display: flex;
+  width: max-content;
+}
+
+.home-marquee__group {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.home-marquee__item {
+  display: block;
+  padding-right: 0.4em;
+  font-family: Outfit, Inter, sans-serif;
+  font-size: clamp(48px, 7vw, 92px);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: #111111;
+}
+
+.home-footer {
+  position: relative;
+  z-index: 1;
+  padding: 72px 0 0;
+  overflow: hidden;
+  background: #e6e8ec;
+  color: #111111;
   font-family: Inter, sans-serif;
 }
 
 .home-footer__inner {
+  display: flex;
+  flex-direction: column;
   width: min(1400px, calc(100% - 2 * clamp(20px, 4vw, 40px)));
   margin: 0 auto;
 }
 
-.home-footer__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
+.home-footer__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 1fr);
+  gap: clamp(28px, 4vw, 72px);
+  align-items: start;
 }
 
-.home-footer__meta {
-  display: flex;
+.home-footer__brand {
+  display: inline-flex;
   align-items: center;
-  gap: clamp(16px, 3vw, 28px);
-  flex-wrap: wrap;
-  color: rgba(0, 0, 0, 0.45);
-  font-size: 13px;
-}
-
-.home-footer__links {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  list-style: none;
+  gap: 8px;
   margin: 0;
+  height: auto;
   padding: 0;
-}
-
-.home-footer__links button,
-.home-footer__social a {
   border: 0;
   background: transparent;
   color: #111111;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-family: Outfit, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
   cursor: pointer;
-  padding: 0;
-  transition: opacity 0.2s ease;
 }
 
-.home-footer__links button:hover,
-.home-footer__social a:hover {
-  opacity: 0.55;
+.home-footer__mark {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
 }
 
-.home-footer__social {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.home-footer__mark svg {
+  width: 14px;
+  height: 14px;
 }
 
-.home-footer__social a {
+.home-footer__title {
+  margin: 18px 0 14px;
+  font-family: Inter, sans-serif;
+  font-size: clamp(34px, 3.2vw, 56px);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 1.02;
+}
+
+.home-footer__lede {
+  margin: 0 0 22px;
+  max-width: 38ch;
+  font-family: "Inter", "PP Neue Montreal Medium Placeholder", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 22px;
+  color: rgb(102, 102, 102);
+}
+
+.home-footer__cta {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
+  gap: 10px;
+  border: 0;
   border-radius: 999px;
+  background: #ffffff;
   color: #111111;
+  height: 44px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  transform: scale(1);
+  transition:
+    background-color 0.18s ease,
+    transform 0.16s cubic-bezier(0.34, 1.25, 0.64, 1);
 }
 
-.home-footer__social svg {
-  display: block;
-  width: 18px;
-  height: 18px;
+.home-footer__cta:hover {
+  background: #f0f0f0;
+  opacity: 1;
+}
+
+.home-footer__cta:active {
+  background: #e4e4e4;
+  transform: scale(1.06);
+}
+
+.home-footer__cta svg {
+  width: 16px;
+  height: 16px;
+}
+
+.home-footer__note {
+  margin: 22px 0 0;
+  font-family: "Inter", "PP Neue Montreal Medium Placeholder", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 22px;
+  color: rgb(102, 102, 102);
+}
+
+.home-footer__note button {
+  border: 0;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  color: #111111;
+  font: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.home-footer__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.9fr;
+  gap: clamp(12px, 2vw, 28px);
+  padding-top: 4px;
+}
+
+.home-footer__col h3 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.home-footer__col ul {
+  display: grid;
+  gap: 11px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-footer__col button,
+.home-footer__col a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  color: #5c6168;
+  font: inherit;
+  font-size: 15px;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.home-footer__col button:hover,
+.home-footer__col a:hover,
+.home-footer__base button:hover,
+.home-footer__note button:hover {
+  opacity: 0.62;
+}
+
+.home-footer__col svg {
+  width: 11px;
+  height: 11px;
+}
+
+.home-footer__col--plain {
+  padding-top: 34px;
+}
+
+.home-footer__base {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 0;
+  color: #8a8f97;
+  font-size: 13px;
+}
+
+.home-footer__base button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  color: #111111;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.home-footer__base svg {
+  width: 12px;
+  height: 12px;
 }
 
 .home-footer__word {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
   width: 100%;
-  margin-top: clamp(12px, 2.5vh, 28px);
+  margin-top: 8px;
   margin-bottom: 0;
   line-height: 1;
   font-size: 22vw;
@@ -567,28 +851,35 @@
 
 .home-footer__char {
   display: block;
+  height: 0.78em;
   overflow: hidden;
   line-height: 1;
 }
 
 .home-footer__glyph {
   display: block;
+  margin-top: -0.26em;
   font-family: Outfit, sans-serif;
   font-weight: 700;
   font-size: 1em;
   line-height: 1;
-  padding-bottom: 0.05em;
+  padding-bottom: 0.04em;
   letter-spacing: -0.07em;
   color: #111111;
   text-transform: lowercase;
-  will-change: transform;
 }
 
 .home-footer__char:last-child .home-footer__glyph {
   letter-spacing: 0;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 1024px) {
+  .home-banner__brand {
+    display: none;
+  }
+}
+
+@media (max-width: 820px) {
   .home-banner__typo,
   .home-banner__title {
     width: 100%;
@@ -607,18 +898,83 @@
   .home-banner__end {
     flex-direction: column;
     align-items: flex-start;
-    margin: 48px 0 0;
+    margin: 20px 0 0;
     width: 100%;
   }
 
-  .home-banner__lede {
-    margin: 0;
-    max-width: 100%;
-    text-align: left;
+  .home-banner {
+    min-height: 0;
+    padding-top: 28px;
+    padding-bottom: 48px;
   }
 
-  .home-footer__bar {
-    flex-direction: column;
-    align-items: flex-start;
+  .home-banner__layout {
+    z-index: 1;
+    gap: 64px;
+  }
+
+  .home-banner__title,
+  .home-banner__line--3 {
+    font-size: clamp(30px, 8.4vw, 44px);
+  }
+
+  .float-tiles {
+    height: auto;
+    margin-top: 8px;
+    margin-bottom: 16px;
+  }
+
+  .float-tiles__tile {
+    height: 148px;
+  }
+
+  .home-expand {
+    padding: 28px 0 40px;
+  }
+
+  .home-expand__copy {
+    margin-bottom: 20px;
+  }
+
+  .home-expand__title {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+
+  .feature-cards {
+    padding: 36px 0 24px;
+  }
+
+  .feature-cards__intro {
+    margin-bottom: 28px;
+  }
+
+  .home-footer__grid,
+  .home-footer__cols {
+    grid-template-columns: 1fr;
+  }
+
+  .home-footer__cols {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .home-footer__col--plain {
+    padding-top: 0;
+  }
+
+  .home-footer__title {
+    font-size: clamp(30px, 8vw, 40px);
+  }
+
+  .home-footer__lede {
+    max-width: none;
+  }
+
+  .home-marquee {
+    padding-bottom: 28px;
+  }
+
+  .home-marquee__item {
+    font-size: 42px;
   }
 }
