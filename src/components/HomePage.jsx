@@ -651,30 +651,57 @@ export default function HomePage({ onNavigate, playIntro = false, locomotiveRef 
 
       let alive = true;
       fitWord();
-      gsap.set(glyphs, { y: 0, yPercent: reduced ? 0 : 120, overwrite: "auto" });
+      gsap.set(glyphs, { y: 0, yPercent: reduced ? 0 : 120 });
+
+      const play = () => {
+        gsap.killTweensOf(glyphs);
+        gsap.fromTo(
+          glyphs,
+          { yPercent: 120 },
+          {
+            yPercent: 0,
+            duration: 0.95,
+            ease: "power4.out",
+            stagger: 0.1,
+            overwrite: "auto",
+          }
+        );
+      };
+
+      const hide = () => {
+        gsap.killTweensOf(glyphs);
+        gsap.to(glyphs, {
+          yPercent: 120,
+          duration: 0.4,
+          ease: "power3.in",
+          stagger: { each: 0.05, from: "end" },
+          overwrite: "auto",
+        });
+      };
 
       const onResize = () => {
         fitWord();
+        ScrollTrigger.refresh();
       };
       window.addEventListener("resize", onResize);
 
       if (!reduced) {
-        gsap.to(glyphs, {
-          yPercent: 0,
-          duration: 1.05,
-          ease: "power4.out",
-          stagger: 0.09,
-          scrollTrigger: {
-            trigger: word,
-            start: "top 92%",
-            once: true,
-          },
+        const trigger = ScrollTrigger.create({
+          trigger: word,
+          start: "top 86%",
+          end: "bottom top",
+          onEnter: play,
+          onEnterBack: play,
+          onLeave: hide,
+          onLeaveBack: hide,
         });
+        if (trigger.isActive) play();
       }
 
       document.fonts?.ready.then(() => {
         if (!alive) return;
         fitWord();
+        ScrollTrigger.refresh();
       });
 
       return () => {
