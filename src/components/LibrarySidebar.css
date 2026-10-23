@@ -42,7 +42,7 @@
   height: 36px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: 12px;
   background: #f2f2f2;
   color: #111111;
   cursor: pointer;
@@ -70,7 +70,7 @@
   margin: 0 0 20px;
   padding: 0 14px;
   height: 40px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #f3f3f3;
   color: #9a9a9a;
   cursor: text;
@@ -79,7 +79,7 @@
 }
 
 .library-sidebar__search:focus-within {
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 0 0 1.5px #d4d4d4;
 }
 
@@ -95,7 +95,7 @@
   border: 0;
   background: transparent;
   outline: none;
-  font-family: Inter, sans-serif;
+  font-family: var(--font);
   font-size: 14px;
   font-weight: 400;
   letter-spacing: -0.02em;
@@ -121,7 +121,7 @@
   border: 0;
   border-radius: 12px;
   background: transparent;
-  font-family: Inter, sans-serif;
+  font-family: var(--font);
   font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.03em;
@@ -210,7 +210,7 @@
   padding: 0 12px;
   border: 0;
   background: none;
-  font-family: Inter, sans-serif;
+  font-family: var(--font);
   font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -248,7 +248,7 @@
   border: 0;
   border-radius: 12px;
   background: none;
-  font-family: Inter, sans-serif;
+  font-family: var(--font);
   font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.03em;
@@ -266,7 +266,7 @@
 .library-sidebar__link em {
   margin-left: auto;
   padding: 3px 8px;
-  border-radius: 999px;
+  border-radius: 12px;
   background: #111111;
   font-size: 11px;
   font-style: normal;
@@ -283,7 +283,7 @@
   opacity: 0.72;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .library-drawer-backdrop {
     display: block;
     position: fixed;

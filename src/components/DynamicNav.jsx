@@ -1,5 +1,4 @@
-import { useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { CustomEase } from "gsap/CustomEase";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -13,15 +12,11 @@ const S_CURVE_EASE = CustomEase.create(
   "easyEase",
   "M0,0 C0.86,0 0.14,1 1,1"
 );
-const REST_HEIGHT = 52;
-const SCROLLED_HEIGHT = 46;
 const COMPACT_DURATION = 0.48;
 const COMPACT_EASE = "power2.out";
 
 export default function DynamicNav({ onNavigate }) {
   const rootRef = useRef(null);
-  const drawerRef = useRef(null);
-  const drawerBackdropRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useGSAP(
@@ -32,6 +27,8 @@ export default function DynamicNav({ onNavigate }) {
       const navPanel = siteNav.querySelector(".site-nav__panel");
       const navTop = siteNav.querySelector(".nav-top");
       if (!navPanel || !navTop) return;
+
+      const restHeight = navPanel.getBoundingClientRect().height;
 
       const triggers = gsap.utils.toArray(".nav-trigger", siteNav);
       const panels = gsap.utils.toArray(".menu-panel", siteNav);
@@ -53,7 +50,7 @@ export default function DynamicNav({ onNavigate }) {
       const themeTriggers = darkSections.map((section) =>
         ScrollTrigger.create({
           trigger: section,
-          start: "top 72px",
+          start: "top 100px",
           end: "bottom 20px",
           onToggle: ({ isActive }) => {
             siteNav.classList.toggle("is-over-dark", isActive);
@@ -61,16 +58,10 @@ export default function DynamicNav({ onNavigate }) {
         })
       );
 
-      const barHeight = () => (compact ? SCROLLED_HEIGHT : REST_HEIGHT);
+      const barHeight = () => restHeight;
 
       const compactBar = (height) => {
-        gsap.to(siteNav, {
-          height,
-          duration: COMPACT_DURATION,
-          ease: COMPACT_EASE,
-          overwrite: "auto",
-        });
-        gsap.to(navTop, {
+        gsap.to([siteNav, navTop], {
           height,
           duration: COMPACT_DURATION,
           ease: COMPACT_EASE,
@@ -128,6 +119,7 @@ export default function DynamicNav({ onNavigate }) {
 
         triggers.forEach((t) => t.classList.remove("active"));
         if (trigger) trigger.classList.add("active");
+        targetPanel.classList.add("active");
 
         const targetNavHeight = barHeight() + targetPanel.offsetHeight + 40;
         const now = performance.now();
@@ -280,7 +272,7 @@ export default function DynamicNav({ onNavigate }) {
         if (!targetPanel) return () => {};
 
         const onEnter = () => {
-          if (window.matchMedia("(max-width: 820px)").matches) return;
+          if (window.matchMedia("(max-width: 1024px)").matches) return;
           openDropdown(targetPanel, trigger);
         };
         trigger.addEventListener("mouseenter", onEnter);
@@ -298,7 +290,8 @@ export default function DynamicNav({ onNavigate }) {
 
       siteNav.addEventListener("mouseleave", scheduleClose);
 
-      if (!reduced) {
+      const compactQuery = window.matchMedia("(max-width: 1024px)");
+      if (!reduced && !compactQuery.matches) {
         onScroll();
         window.addEventListener("scroll", onScroll, { passive: true });
       }
@@ -319,13 +312,24 @@ export default function DynamicNav({ onNavigate }) {
 
   const closeMenu = () => {
     setMenuOpen(false);
+    window.dispatchEvent(new CustomEvent("uivolve-menu", { detail: false }));
     window.setTimeout(() => document.body.classList.remove("is-menu-open"), 420);
   };
 
   const openMenu = () => {
     setMenuOpen(true);
     document.body.classList.add("is-menu-open");
+    window.dispatchEvent(new CustomEvent("uivolve-menu", { detail: true }));
   };
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const onKey = (event) => {
+      if (event.key === "Escape") closeMenu();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   const go = (detail) => {
     closeMenu();
@@ -347,7 +351,6 @@ export default function DynamicNav({ onNavigate }) {
         >
           <BrandLogo />
         </button>
-
         <nav className="navbar">
           <ul className="nav-list">
             <li>
@@ -388,6 +391,7 @@ export default function DynamicNav({ onNavigate }) {
           type="button"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
+          aria-controls="nav-drawer"
           onClick={() => (menuOpen ? closeMenu() : openMenu())}
         >
           <span />
@@ -475,30 +479,21 @@ export default function DynamicNav({ onNavigate }) {
         </div>
       </div>
       </div>
-      {createPortal(
-        <>
-          <div
-            className={`nav-drawer__backdrop${menuOpen ? " is-open" : ""}`}
-            ref={drawerBackdropRef}
-            onClick={closeMenu}
-          />
-          <aside className={`nav-drawer${menuOpen ? " is-open" : ""}`} ref={drawerRef} aria-hidden={!menuOpen}>
-            <button className="nav-drawer__link" type="button" onClick={() => go()}>
-              Library
-            </button>
-            <button className="nav-drawer__link" type="button" onClick={() => go({ category: "Animation" })}>
-              Motion
-            </button>
-            <button className="nav-drawer__link" type="button" onClick={() => go()}>
-              Components
-            </button>
-            <button className="nav-drawer__link nav-drawer__link--cta" type="button" onClick={() => go()}>
-              Launch
-            </button>
-          </aside>
-        </>,
-        document.body
-      )}
+      <div
+        className={`nav-drawer__backdrop${menuOpen ? " is-open" : ""}`}
+        onClick={closeMenu}
+      />
+      <nav className={`nav-drawer${menuOpen ? " is-open" : ""}`} id="nav-drawer" aria-label="Menu" aria-hidden={!menuOpen}>
+        <button className="nav-drawer__link" type="button" onClick={() => go()}>
+          Library
+        </button>
+        <button className="nav-drawer__link" type="button" onClick={() => go({ category: "Animation" })}>
+          Motion
+        </button>
+        <button className="nav-drawer__link" type="button" onClick={() => go()}>
+          Components
+        </button>
+      </nav>
     </header>
   );
 }

@@ -1,0 +1,11 @@
+.home-frame {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(36px, 5vh, 64px);
+}
+
+.home-frame__canvas {
+  display: block;
+  width: min(560px, 100%);
+  border-radius: 12px;
+}

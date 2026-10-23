@@ -7,14 +7,14 @@
   z-index: 100;
   letter-spacing: -0.02em;
   font-size: 14px;
-  font-family: "PP Neue Montreal", "Neue Montreal", sans-serif;
+  font-family: var(--font);
   color: #111111;
   will-change: width;
 }
 
 .explore-nav__pill {
   background: #ffffff;
-  border-radius: 100px;
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
 }
@@ -31,7 +31,7 @@
 .explore-nav__logo {
   width: 34px;
   height: 34px;
-  border-radius: 50%;
+  border-radius: 12px;
   background: #000;
   border: 0;
   padding: 0;
@@ -48,7 +48,7 @@
 
 .explore-nav__btn {
   border: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   font: inherit;
   font-size: 16px;
   font-weight: 600;

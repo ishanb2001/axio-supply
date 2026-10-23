@@ -7,7 +7,7 @@
   min-height: 240px;
   overflow: hidden;
   padding: 18px;
-  border-radius: 28px;
+  border-radius: 12px;
   background: linear-gradient(180deg, #b7b4e8 0%, #eceaf8 100%);
 }
 
@@ -22,7 +22,7 @@
   height: 36px;
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: 12px;
   background: #ffffff;
   color: #111111;
   cursor: pointer;
@@ -48,7 +48,7 @@
 }
 
 .map-card__headline-track span {
-  font-family: Inter, "PP Neue Montreal", sans-serif;
+  font-family: var(--font);
   font-size: clamp(42px, 4.2vw, 64px);
   font-weight: 700;
   letter-spacing: -0.05em;
@@ -66,9 +66,9 @@
   display: inline-flex;
   align-items: center;
   padding: 8px 14px;
-  border-radius: 999px;
+  border-radius: 12px;
   background: #ffffff;
-  font-family: Inter, sans-serif;
+  font-family: var(--font);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: -0.02em;

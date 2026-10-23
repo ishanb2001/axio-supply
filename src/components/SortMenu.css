@@ -11,7 +11,7 @@
   height: 44px;
   padding: 0 12px;
   border: 1px solid #e4e4e7;
-  border-radius: 999px;
+  border-radius: 12px;
   background: #ffffff;
   color: #111111;
   font-family: Inter, sans-serif;
@@ -53,16 +53,17 @@
   z-index: 20;
   min-width: 160px;
   padding: 6px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #ffffff;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  transform-origin: right top;
 }
 
 .sort-menu__option {
   display: flex;
   width: 100%;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: transparent;
   color: #111111;
   font-family: Inter, sans-serif;
@@ -78,4 +79,15 @@
 .sort-menu__option.is-active,
 .sort-menu__option:hover {
   background: #f3f3f4;
+}
+
+.sort-menu__option-mask {
+  display: block;
+  overflow: hidden;
+  height: 22px;
+  line-height: 22px;
+}
+
+.sort-menu__option-text {
+  display: block;
 }

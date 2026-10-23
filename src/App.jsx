@@ -162,7 +162,7 @@ export default function App() {
 
     document.documentElement.style.setProperty(
       "--library-sidebar",
-      view === "library" && window.innerWidth > 860 ? "260px" : "0px"
+      view === "library" && window.innerWidth > 1024 ? "260px" : "0px"
     );
 
     return () => {
@@ -177,11 +177,28 @@ export default function App() {
 
     if (isOpen) {
       locomotive.stop();
-    } else {
+    } else if (!document.body.classList.contains("is-menu-open")) {
       locomotive.start();
       locomotive.resize();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    const onMenu = (event) => {
+      const locomotive = locomotiveRef.current;
+      if (!locomotive) return;
+      if (event.detail) {
+        locomotive.stop();
+        return;
+      }
+      if (!isOpenRef.current) {
+        locomotive.start();
+        locomotive.resize();
+      }
+    };
+    window.addEventListener("uivolve-menu", onMenu);
+    return () => window.removeEventListener("uivolve-menu", onMenu);
+  }, []);
 
   function applyRoute(nextView, { push = true } = {}) {
     if (push) {
@@ -375,13 +392,13 @@ export default function App() {
         return () => window.removeEventListener("popstate", onPopState);
       }
 
-      const infoBits = gsap.utils.toArray(
-        overlay.querySelectorAll(".modal__title, .modal__desc, .modal__preview, .modal__code-bar, .modal__code")
-      );
-
       gsap.set(backdrop, { opacity: 0 });
-      gsap.set(modal, { yPercent: 108 });
-      gsap.set(page, { filter: "blur(0px) saturate(1)" });
+      gsap.set(modal, {
+        yPercent: 108,
+        force3D: true,
+        transformOrigin: "50% 100%",
+      });
+      gsap.set(page, { clearProps: "filter" });
       gsap.set(flair, { xPercent: -50, yPercent: -50, scale: 0, autoAlpha: 0 });
 
       xToRef.current = gsap.quickTo(flair, "x", { duration: 0.6, ease: "power3" });
@@ -433,6 +450,7 @@ export default function App() {
         setActive(data);
         setDevice("desktop");
         hideFlair();
+        locomotiveRef.current?.stop();
         document.body.classList.add("is-locked");
         overlay.classList.add("is-open");
         overlay.setAttribute("aria-hidden", "false");
@@ -460,18 +478,21 @@ export default function App() {
         if (sheetScrollRef.current) sheetScrollRef.current.scrollTop = 0;
 
         gsap.set(backdrop, { opacity: 0 });
-        gsap.set(modal, { yPercent: 108 });
+        gsap.set(modal, {
+          yPercent: 108,
+          force3D: true,
+          transformOrigin: "50% 100%",
+        });
 
         openTlRef.current = gsap.timeline({ defaults: { ease: "sheetEase" } });
 
         openTlRef.current
-          .to(backdrop, { opacity: 1, duration: 0.7 }, 0)
-          .to(page, { filter: "blur(8px) saturate(0.94)", duration: 0.85 }, 0)
+          .to(backdrop, { opacity: 1, duration: 0.4 }, 0)
           .fromTo(
             modal,
             { yPercent: 108 },
-            { yPercent: 0, duration: 1.12, ease: "sheetEase" },
-            0.02
+            { yPercent: 0, duration: 0.58, ease: "sheetEase", force3D: true },
+            0
           );
       });
 
@@ -490,15 +511,13 @@ export default function App() {
             overlay.classList.remove("is-open");
             overlay.setAttribute("aria-hidden", "true");
             gsap.set(modal, { clearProps: "transformOrigin" });
-            gsap.set(page, { filter: "blur(0px) saturate(1)" });
             syncFlairToPointer();
           },
         });
 
         openTlRef.current
-          .to(page, { filter: "blur(0px) saturate(1)", duration: 0.4 }, 0)
-          .to(backdrop, { opacity: 0, duration: 0.4 }, 0)
-          .to(modal, { yPercent: 108, duration: 0.78 }, 0);
+          .to(backdrop, { opacity: 0, duration: 0.32 }, 0)
+          .to(modal, { yPercent: 108, duration: 0.42, force3D: true }, 0);
       });
 
       const onPointerMove = contextSafe((e) => {
@@ -677,7 +696,7 @@ export default function App() {
   if (view === "home") {
     return (
       <>
-        <HomePage onNavigate={navigate} />
+        <HomePage onNavigate={navigate} locomotiveRef={locomotiveRef} />
         {wipe}
       </>
     );
@@ -799,57 +818,82 @@ export default function App() {
                 <path d="M1 1l12 12M13 1L1 13" strokeLinecap="round" />
               </svg>
             </button>
-            <div className="modal__scroll" ref={sheetScrollRef} data-lenis-prevent>
-              <div className="modal__heading">
-                <h2 className="modal__title" id="modal-title">{active.title}</h2>
-                <p className="modal__desc">{active.desc}</p>
-              </div>
-              <div className="modal__preview">
-                {isOpen && (
-                  <DemoPreview
-                    key={active.id}
-                    file={active.file}
-                    background={active.background}
-                    interactive
-                    title={`${active.title} preview`}
-                  />
-                )}
-              </div>
-              <div className="modal__code-bar">
-                <button
-                  className={`modal__copy${copied ? " is-copied" : ""}`}
-                  type="button"
-                  aria-label={copied ? "Copied" : "Copy all the code"}
-                  onClick={copyAllCode}
-                >
-                  <span className="modal__copy-icon" aria-hidden="true">
-                    <span className="modal__copy-icon-track">
-                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
-                        <path d="M10.5 5.5V3.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1H5.5" />
-                      </svg>
-                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
-                        <path d="M3.5 8.5l3 3 6-6.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+            <div className="modal__layout">
+              <div className="modal__fixed">
+                <div className="modal__heading">
+                  <h2 className="modal__title" id="modal-title">{active.title}</h2>
+                  <p className="modal__desc">{active.desc}</p>
+                </div>
+                <div className="modal__preview">
+                  {isOpen && (
+                    <DemoPreview
+                      key={active.id}
+                      file={active.file}
+                      background={active.background}
+                      interactive
+                      title={`${active.title} preview`}
+                    />
+                  )}
+                </div>
+                <div className="modal__actions">
+                  <button
+                    className={`modal__copy${copied ? " is-copied" : ""}`}
+                    type="button"
+                    aria-label={copied ? "Copied" : "Copy all code"}
+                    onClick={copyAllCode}
+                  >
+                    <span className="modal__copy-icon" aria-hidden="true">
+                      <span className="modal__copy-icon-track">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
+                          <path d="M10.5 5.5V3.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1H5.5" />
+                        </svg>
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
+                          <path d="M3.5 8.5l3 3 6-6.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
                     </span>
-                  </span>
-                  <span className="modal__copy-label">
-                    <span>Copy all the code</span>
-                    <span>Copied</span>
-                  </span>
-                </button>
-                <button
-                  className="modal__codepen"
-                  type="button"
-                  onClick={handleViewCodePen}
-                  disabled={codePenLoading}
-                >
-                  {codePenLoading ? "Opening…" : "View on CodePen"}
-                </button>
+                    <span className="modal__copy-label">
+                      <span>Copy all code</span>
+                      <span>Copied</span>
+                    </span>
+                  </button>
+                  <button
+                    className="modal__codepen"
+                    type="button"
+                    onClick={handleViewCodePen}
+                    disabled={codePenLoading}
+                  >
+                    {codePenLoading ? "Opening…" : "View on CodePen"}
+                  </button>
+                </div>
+                <section className="modal__details" aria-label="Resource details">
+                  <h3>Resource details</h3>
+                  <dl>
+                    <div>
+                      <dt>Published</dt>
+                      <dd>{active.year}</dd>
+                    </div>
+                    <div>
+                      <dt>Category</dt>
+                      <dd>{active.cat}</dd>
+                    </div>
+                    <div>
+                      <dt>Tools</dt>
+                      <dd>{active.tools}</dd>
+                    </div>
+                    <div>
+                      <dt>Access</dt>
+                      <dd>{projectStatus(active)}</dd>
+                    </div>
+                  </dl>
+                </section>
               </div>
-              <CodeBlock label="HTML" code={source.html} />
-              <CodeBlock label="CSS" code={source.css} />
-              <CodeBlock label="JavaScript" code={source.js} />
+              <div className="modal__code-pane" ref={sheetScrollRef} data-lenis-prevent>
+                <CodeBlock label="HTML" code={source.html} />
+                <CodeBlock label="CSS" code={source.css} />
+                <CodeBlock label="JavaScript" code={source.js} />
+              </div>
             </div>
           </div>
       </div>

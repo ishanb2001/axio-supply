@@ -1,0 +1,236 @@
+.home-black-notes {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  background: transparent;
+}
+
+.home-about__mark {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: #c8f54a;
+  flex: none;
+}
+
+.home-about {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+  gap: 40px 56px;
+  align-items: start;
+  width: min(1100px, calc(100% - 80px));
+  margin: 0 auto;
+  padding: 136px 0 120px;
+}
+
+.home-about__label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0;
+  font-family: Satoshi, Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.home-about__copy {
+  margin: 0;
+  font-family: Satoshi, Inter, sans-serif;
+  font-size: clamp(21px, 1.7vw, 28px);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: #ffffff;
+}
+
+.home-dark-faq {
+  width: min(1100px, calc(100% - 80px));
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 136px 0 160px;
+  text-align: center;
+}
+
+.home-dark-faq__kicker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  font-family: Satoshi, Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.home-dark-faq__title {
+  margin: 18px 0 0;
+  font-family: Satoshi, Inter, sans-serif;
+  font-size: clamp(48px, 5.4vw, 84px);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  color: #ffffff;
+}
+
+.home-dark-faq__row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.home-dark-faq__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0;
+  min-height: 320px;
+  margin: 0;
+  padding: 36px 32px 40px;
+  border: 0;
+  border-radius: 28px;
+  border-top-right-radius: 0;
+  background: #ffffff;
+  text-align: left;
+  overflow: visible;
+}
+
+.home-dark-faq__edge-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.home-dark-faq__card::before,
+.home-dark-faq__card::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  background: #0a0a0b;
+  pointer-events: none;
+}
+
+.home-dark-faq__card::before {
+  top: -3px;
+  right: -3px;
+  width: 142px;
+  height: 8px;
+}
+
+.home-dark-faq__card::after {
+  top: -3px;
+  right: -4px;
+  width: 10px;
+  height: 94px;
+}
+
+.home-dark-faq__edge {
+  position: absolute;
+  top: -8px;
+  right: -36px;
+  width: 188px;
+  height: 146px;
+  background: #0a0a0b;
+  -webkit-mask-image: url("../assets/testimonial-edge.png");
+  mask-image: url("../assets/testimonial-edge.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: top right;
+  mask-position: top right;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  pointer-events: none;
+}
+
+.home-dark-faq__person {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 72px;
+  padding-right: 72px;
+}
+
+.home-dark-faq__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #111111;
+  flex: none;
+}
+
+.home-dark-faq__card h3 {
+  margin: 0;
+  font-family: Satoshi, Inter, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: #111111;
+}
+
+.home-dark-faq__card p {
+  margin: 28px 0 0;
+  max-width: 22em;
+  font-family: Satoshi, Inter, sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.28;
+  color: #161616;
+}
+
+@media (max-width: 1024px) {
+  .home-about {
+    width: calc(100% - 40px);
+  }
+
+  .home-about {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 48px 0 36px;
+  }
+
+  .home-dark-faq {
+    width: calc(100% - 32px);
+    padding: 56px 0 40px;
+  }
+
+  .home-dark-faq__title {
+    font-size: clamp(36px, 9vw, 56px);
+  }
+
+  .home-dark-faq__row {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 28px;
+  }
+
+  .home-dark-faq__card {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    padding: 28px 20px 24px;
+  }
+
+  .home-dark-faq__edge {
+    top: -4px;
+    right: 0;
+    transform: scale(0.7);
+    transform-origin: top right;
+  }
+
+  .home-dark-faq__card p {
+    max-width: none;
+    margin-top: 16px;
+    font-size: 18px;
+  }
+}

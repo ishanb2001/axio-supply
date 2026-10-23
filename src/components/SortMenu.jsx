@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { CustomEase } from "gsap/CustomEase";
+import { useGSAP } from "@gsap/react";
 import "./SortMenu.css";
 
-gsap.registerPlugin(CustomEase);
+gsap.registerPlugin(useGSAP);
 
-const OPEN_EASE = CustomEase.create("sortOpen", "M0,0 C0.16,1 0.3,1 1,1");
+const OPEN_EASE = "power3.out";
+const PANEL_ORIGIN = "right top";
+const PANEL_SCALE_FROM = 0.2;
 
 export default function SortMenu({ items, value, onChange }) {
   const rootRef = useRef(null);
@@ -13,11 +15,11 @@ export default function SortMenu({ items, value, onChange }) {
   const [open, setOpen] = useState(false);
   const current = items.find((item) => item.id === value) || items[0];
 
-  useEffect(() => {
+  const { contextSafe } = useGSAP(() => {
     const panel = panelRef.current;
     if (!panel) return;
-    gsap.set(panel, { height: 0, autoAlpha: 0, overflow: "hidden" });
-  }, []);
+    gsap.set(panel, { scale: PANEL_SCALE_FROM, autoAlpha: 0, transformOrigin: PANEL_ORIGIN });
+  }, { scope: rootRef });
 
   useEffect(() => {
     if (!open) return undefined;
@@ -35,63 +37,64 @@ export default function SortMenu({ items, value, onChange }) {
     };
   }, [open]);
 
-  function openPanel() {
+  const openPanel = contextSafe(() => {
     const panel = panelRef.current;
     if (!panel) return;
     setOpen(true);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    gsap.set(panel, { height: "auto", autoAlpha: 1 });
-    const height = panel.offsetHeight;
+    const labels = panel.querySelectorAll(".sort-menu__option-text");
+    gsap.killTweensOf([panel, ...labels]);
     gsap.fromTo(
       panel,
-      { height: 0, autoAlpha: 0 },
+      { scale: PANEL_SCALE_FROM, autoAlpha: 0, transformOrigin: PANEL_ORIGIN },
       {
-        height,
+        scale: 1,
         autoAlpha: 1,
-        duration: reduced ? 0 : 0.55,
+        duration: reduced ? 0 : 0.48,
         ease: OPEN_EASE,
         overwrite: "auto",
+        transformOrigin: PANEL_ORIGIN,
       }
     );
     gsap.fromTo(
-      panel.querySelectorAll(".sort-menu__option"),
-      { y: 10, autoAlpha: 0 },
+      labels,
+      { yPercent: 110 },
       {
-        y: 0,
-        autoAlpha: 1,
-        duration: reduced ? 0 : 0.45,
+        yPercent: 0,
+        duration: reduced ? 0 : 0.46,
         stagger: 0.05,
-        delay: reduced ? 0 : 0.06,
         ease: OPEN_EASE,
         overwrite: "auto",
       }
     );
-  }
+  });
 
-  function close() {
+  const close = contextSafe(() => {
     const panel = panelRef.current;
     if (!panel) {
       setOpen(false);
       return;
     }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    gsap.to(panel.querySelectorAll(".sort-menu__option"), {
-      y: 6,
-      autoAlpha: 0,
-      duration: reduced ? 0 : 0.18,
+    const labels = panel.querySelectorAll(".sort-menu__option-text");
+    gsap.killTweensOf([panel, ...labels]);
+    gsap.to(labels, {
+      yPercent: 40,
+      duration: reduced ? 0 : 0.16,
       stagger: 0.02,
       ease: "power2.in",
       overwrite: "auto",
     });
     gsap.to(panel, {
-      height: 0,
+      scale: PANEL_SCALE_FROM,
       autoAlpha: 0,
-      duration: reduced ? 0 : 0.38,
-      ease: "power2.inOut",
+      transformOrigin: PANEL_ORIGIN,
+      duration: reduced ? 0 : 0.28,
+      ease: "power2.in",
       overwrite: "auto",
       onComplete: () => setOpen(false),
     });
-  }
+  });
 
   return (
     <div className={`sort-menu${open ? " is-open" : ""}`} ref={rootRef}>
@@ -120,7 +123,9 @@ export default function SortMenu({ items, value, onChange }) {
               close();
             }}
           >
-            {item.label}
+            <span className="sort-menu__option-mask">
+              <span className="sort-menu__option-text">{item.label}</span>
+            </span>
           </button>
         ))}
       </div>

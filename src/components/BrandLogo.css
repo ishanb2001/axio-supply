@@ -1,6 +1,6 @@
 .brand-logo-mark {
   display: block;
-  font-family: Outfit, sans-serif;
+  font-family: var(--font);
   font-weight: 600;
   font-size: 26px;
   letter-spacing: -0.045em;

@@ -161,7 +161,7 @@ export default function LibrarySearch({
       left: from.left,
       width: from.width,
       height: from.height,
-      borderRadius: 999,
+      borderRadius: 12,
     });
     placeResults(dest, limit);
     gsap.set(veil, { autoAlpha: 0 });
@@ -171,7 +171,7 @@ export default function LibrarySearch({
 
     if (reduced) {
       gsap.set(veil, { autoAlpha: 1 });
-      gsap.set(field, { ...dest, borderRadius: 18, boxShadow: "0 0 0 1.5px #d6d6d6" });
+      gsap.set(field, { ...dest, borderRadius: 12, boxShadow: "0 0 0 1.5px #d6d6d6" });
       gsap.set(resultsEl, { autoAlpha: 1, y: 0 });
       if (scene) gsap.set(scene, { filter: "blur(14px) saturate(0.92)" });
       inputRef.current?.focus();
@@ -201,7 +201,7 @@ export default function LibrarySearch({
           left: dest.left,
           width: dest.width,
           height: dest.height,
-          borderRadius: 18,
+          borderRadius: 12,
           boxShadow: "0 0 0 1.5px #d6d6d6",
           duration: 0.62,
         },

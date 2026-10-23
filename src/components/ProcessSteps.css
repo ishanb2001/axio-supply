@@ -8,7 +8,7 @@
   justify-content: center;
   background: #ffffff;
   color: #000000;
-  font-family: "PP Neue Montreal", "Neue Montreal", sans-serif;
+  font-family: var(--font);
 }
 
 .process-steps__title {
@@ -27,7 +27,7 @@
   width: 100%;
   height: clamp(300px, 44vw, 380px);
   overflow: hidden;
-  border-radius: 28px;
+  border-radius: 12px;
 }
 
 .process-card {
@@ -42,7 +42,7 @@
   left: 0;
   background: var(--card);
   border: 0;
-  border-radius: 28px;
+  border-radius: 12px;
   padding: clamp(28px, 3.5vw, 40px) clamp(28px, 3.8vw, 44px)
     clamp(30px, 3.8vw, 44px);
   color: var(--card-ink);
@@ -118,7 +118,7 @@
 
 .process-card__body {
   max-width: 28ch;
-  font-family: "Inter", "PP Neue Montreal Medium Placeholder", sans-serif;
+  font-family: var(--font);
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0;
