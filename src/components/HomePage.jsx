@@ -682,7 +682,12 @@ export default function HomePage({ onNavigate, playIntro = false, locomotiveRef 
         });
       };
 
+      let lastWidth = window.innerWidth;
       const onResize = () => {
+        // Safari expands the bottom bar on scroll-up and fires resize with the
+        // same width. Refreshing then calls scrollTo() and stops the gesture.
+        if (window.innerWidth === lastWidth) return;
+        lastWidth = window.innerWidth;
         fitWord();
         ScrollTrigger.refresh();
       };
