@@ -17,8 +17,8 @@ gsap.registerPlugin(useGSAP, CustomEase, ScrollTrigger);
 const ROTATING_WORDS = ["platform", "environment", "ecosystem"];
 const TYPE_WORDS = ["Preview", "live,", "build", "with", "it."];
 const TYPE_PILLS = [
-  { id: "glass", label: "Glass\nlayers", tone: "green", rotate: -8, top: "0%", left: "0%" },
-  { id: "scroll", label: "Scroll\nmotion", tone: "lilac", rotate: -12, top: "0%", right: "0%" },
+  { id: "glass", label: "Glass layers", tone: "green", rotate: -8, top: "0%", left: "0%" },
+  { id: "scroll", label: "Scroll motion", tone: "lilac", rotate: -12, top: "0%", right: "0%" },
   { id: "cards", label: "Card stack", tone: "blue", rotate: 7, bottom: "0%", left: "0%" },
   { id: "type", label: "Type set", tone: "clay", rotate: 9, bottom: "0%", right: "0%" },
 ];
@@ -172,20 +172,29 @@ function TypeSet() {
 
       let bend = 0;
       let target = 0;
+      let inView = false;
       const drag = ScrollTrigger.create({
         trigger: root,
         start: "top bottom",
         end: "bottom top",
+        onToggle: (self) => {
+          inView = self.isActive;
+          if (inView) placeLetters();
+        },
         onUpdate: (self) => {
           const velocity = self.getVelocity();
           target = velocity > 40 ? gsap.utils.clamp(0, 36, velocity / 70) : 0;
         },
       });
+      inView = drag.isActive;
       const tick = () => {
+        if (!inView) return;
         placeLetters();
+        const last = Math.max(masks.length - 1, 1);
+        const resting = Math.abs(bend) < 0.05 && Math.abs(target) < 0.05;
         bend += (target - bend) * 0.14;
         target *= 0.86;
-        const last = Math.max(masks.length - 1, 1);
+        if (resting && Math.abs(bend) < 0.05) return;
         masks.forEach((mask, index) => {
           const across = (index / last) * 2 - 1;
           gsap.set(mask, { y: (1 - across * across) * bend });
@@ -196,13 +205,11 @@ function TypeSet() {
         });
       };
       gsap.ticker.add(tick);
-      window.addEventListener("scroll", placeLetters, { passive: true });
       window.addEventListener("pageshow", placeLetters);
       window.addEventListener("load", placeLetters);
       const watches = [0, 50, 150, 400, 800].map((ms) => window.setTimeout(placeLetters, ms));
 
       return () => {
-        window.removeEventListener("scroll", placeLetters);
         window.removeEventListener("pageshow", placeLetters);
         window.removeEventListener("load", placeLetters);
         watches.forEach((id) => window.clearTimeout(id));
@@ -234,11 +241,7 @@ function TypeSet() {
             }}
           >
             <span className="home-type__pill-float">
-              <span className="home-type__pill-copy">
-                {pill.label.split("\n").map((line) => (
-                  <span key={line}>{line}</span>
-                ))}
-              </span>
+              <span className="home-type__pill-copy">{pill.label}</span>
               <span className="home-type__pill-mark">
                 <PillMark id={pill.id} />
               </span>
@@ -1013,6 +1016,7 @@ export default function HomePage({ onNavigate, playIntro = false, locomotiveRef 
                 if (settling) return;
                 const progress = self.progress;
                 if (progress <= 0.02 || progress >= 0.98) return;
+                if (Math.abs(self.getVelocity()) > 40) return;
                 const destination = progress < 0.5 ? self.start : self.end;
                 const locomotive = locomotiveRef?.current;
                 settling = true;
@@ -1023,7 +1027,7 @@ export default function HomePage({ onNavigate, playIntro = false, locomotiveRef 
                   locomotive.scrollTo(destination, {
                     duration: 0.8,
                     force: true,
-                    lock: true,
+                    lock: false,
                     easing: (t) => 1 - Math.pow(1 - t, 3),
                     onComplete: release,
                   });
@@ -1031,7 +1035,7 @@ export default function HomePage({ onNavigate, playIntro = false, locomotiveRef 
                   window.scrollTo({ top: destination, behavior: "smooth" });
                   window.setTimeout(release, 900);
                 }
-              }, 90);
+              }, 280);
             },
           });
 

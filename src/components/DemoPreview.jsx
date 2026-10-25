@@ -16,7 +16,7 @@ export default function DemoPreview({
   className = "",
 }) {
   const wrapRef = useRef(null);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(0);
   const size = DEVICE_SIZES[device] || DEVICE_SIZES.desktop;
 
   useEffect(() => {
@@ -41,6 +41,13 @@ export default function DemoPreview({
       className={`demo-preview demo-preview--live demo-preview--${device} ${className}`.trim()}
       style={{ background }}
     >
+      <div
+        className="demo-preview__stage"
+        style={{
+          width: size.width * scale,
+          height: size.height * scale,
+        }}
+      >
       <iframe
         src={demoSrc(file)}
         title={title}
@@ -57,6 +64,7 @@ export default function DemoPreview({
             : "allow-scripts allow-same-origin"
         }
       />
+      </div>
     </div>
   );
 }

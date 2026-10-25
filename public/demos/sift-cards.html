@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sift Cards</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #f3f3f3;
+        color: #1a1a1a;
+        font-family: Inter, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .stage {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+      }
+
+      .float-tiles {
+        position: relative;
+        width: 100%;
+        height: min(540px, 100vh);
+        overflow: hidden;
+        cursor: none;
+        user-select: none;
+        touch-action: pan-y;
+        perspective: 1800px;
+      }
+
+      .float-tiles__cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        display: grid;
+        place-items: center;
+        width: 72px;
+        height: 72px;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #111111;
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      .float-tiles__cursor svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .float-tiles__cursor path {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .float-tiles__row {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 0;
+        height: 0;
+        transform-style: preserve-3d;
+      }
+
+      .tile {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        width: 500px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #ffffff;
+        transform-origin: center center;
+        will-change: transform;
+      }
+
+      .tile__shot {
+        aspect-ratio: 16 / 10;
+        border-radius: 12px;
+        background: #111 center / cover no-repeat;
+      }
+
+      .tile__meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 4px 2px;
+      }
+
+      .tile__meta h3 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .tile__meta p {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: #8a8a8a;
+      }
+
+      @media (max-width: 1024px) {
+        .float-tiles {
+          perspective: none;
+          cursor: grab;
+        }
+
+        .float-tiles__cursor {
+          display: none;
+        }
+
+        .tile {
+          width: 220px;
+          height: 232px;
+          padding: 8px;
+        }
+
+        .tile__shot {
+          height: 124px;
+          aspect-ratio: auto;
+        }
+
+        .tile__meta {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+          padding: 10px 4px 0;
+        }
+
+        .tile__meta h3 {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="float-tiles" id="root">
+        <div class="float-tiles__cursor" id="cursor" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </div>
+        <div class="float-tiles__row" id="row"></div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      const TILE_EASE = CustomEase.create("floatTileStep", "0.76, 0, 0.24, 1");
+      const CARDS = [
+        ["Liquid Glass", "Pro", "/images/placeholders/01.jpg"],
+        ["Wind Row", "Free", "/images/placeholders/02.jpg"],
+        ["Card Frame", "Free", "/images/placeholders/03.jpg"],
+        ["Service Hover", "Free", "/images/placeholders/04.jpg"],
+        ["Chroma Wipe", "Free", "/images/people/01.jpg"],
+        ["Scroll Cube", "Free", "/images/placeholders/02.jpg"],
+        ["Blob Tabs", "Free", "/images/placeholders/03.jpg"],
+        ["Banner Text", "Free", "/images/placeholders/04.jpg"],
+      ];
+
+      const root = document.getElementById("root");
+      const row = document.getElementById("row");
+      const cursor = document.getElementById("cursor");
+      const arrow = cursor.querySelector("svg");
+      CARDS.forEach(([title, status, image]) => {
+        const card = document.createElement("article");
+        card.className = "tile";
+        card.innerHTML = `<div class="tile__shot" style="background-image:url('${image}')"></div><div class="tile__meta"><h3>${title}</h3><p>${status}</p></div>`;
+        row.appendChild(card);
+      });
+
+      const cards = gsap.utils.toArray(".tile", root);
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let focus = 0;
+      let velocity = 0;
+      let dragging = false;
+      let dragged = false;
+      let originX = 0;
+      let lastX = 0;
+      let lastTime = 0;
+      let facing = 1;
+      let stepTween = null;
+      const GAP = 32;
+      let step = 500;
+
+      const compact = () => window.matchMedia("(max-width: 1024px)").matches;
+
+      const pose = (delta) => {
+        const influence = Math.exp(-(delta * delta) * 4);
+        const degrees = gsap.utils.clamp(-68, 68, delta * 28);
+        const theta = (degrees * Math.PI) / 180;
+        const scale = 0.92 + influence * 0.12;
+        const z = (Math.cos(theta) - 1) * 980;
+        return {
+          degrees,
+          scale,
+          z,
+          half: (cards[0].offsetWidth * scale * Math.abs(Math.cos(theta))) / 2,
+          project: 1800 / (1800 - z),
+        };
+      };
+
+      const wrapDelta = (index) => {
+        const count = cards.length;
+        let delta = index - focus;
+        delta = ((delta % count) + count) % count;
+        if (delta > count / 2) delta -= count;
+        return delta;
+      };
+
+      const render = () => {
+        if (compact()) {
+          const width = cards[0].offsetWidth || 160;
+          step = width + 14;
+          cards.forEach((card, index) => {
+            const delta = wrapDelta(index);
+            gsap.set(card, {
+              xPercent: -50,
+              yPercent: -50,
+              x: delta * step,
+              y: 0,
+              z: 0,
+              rotationY: 0,
+              scale: 1,
+              autoAlpha: Math.abs(delta) > 2.15 ? 0 : 1,
+              zIndex: Math.round(40 - Math.abs(delta) * 10),
+            });
+          });
+          return;
+        }
+
+        const items = cards.map((card, index) => ({ card, delta: wrapDelta(index) }));
+        items.sort((a, b) => a.delta - b.delta);
+        const placed = items.map((item) => pose(item.delta));
+        const along = [0];
+        for (let index = 1; index < items.length; index += 1) {
+          along[index] = along[index - 1] + placed[index - 1].half + GAP + placed[index].half;
+        }
+        let anchor = along[0];
+        let stride = cards[0].offsetWidth;
+        for (let index = 0; index < items.length; index += 1) {
+          const delta = items[index].delta;
+          const next = items[index + 1];
+          if (next) stride = Math.max(1, along[index + 1] - along[index]);
+          if (delta >= 0 || !next) {
+            anchor = along[index];
+            break;
+          }
+          if (next.delta >= 0) {
+            const span = next.delta - delta || 1;
+            anchor = along[index] + (along[index + 1] - along[index]) * ((0 - delta) / span);
+            break;
+          }
+        }
+        step = stride;
+        items.forEach((item, index) => {
+          const { degrees, scale, z, project } = placed[index];
+          gsap.set(item.card, {
+            xPercent: -50,
+            yPercent: -50,
+            x: (along[index] - anchor) / project,
+            y: 0,
+            z,
+            rotationY: -degrees,
+            scale,
+            autoAlpha: 1,
+            zIndex: Math.round((3 - Math.min(Math.abs(item.delta), 3)) * 40),
+            force3D: true,
+          });
+        });
+      };
+
+      render();
+
+      const tick = () => {
+        if (compact()) {
+          if (!dragging && !reduced && !stepTween?.isActive()) {
+            focus += 0.42 * (gsap.ticker.deltaRatio() / 60);
+          }
+          render();
+          return;
+        }
+        if (dragging || reduced || stepTween?.isActive()) return;
+        const dt = gsap.ticker.deltaRatio();
+        if (Math.abs(velocity) >= 0.02) {
+          focus += velocity * (dt / 60);
+          velocity *= Math.pow(0.94, dt);
+          render();
+          return;
+        }
+        velocity = 0;
+        const nearest = Math.round(focus);
+        if (Math.abs(nearest - focus) < 0.001) {
+          focus = nearest;
+          return;
+        }
+        focus += (nearest - focus) * Math.min(1, 0.16 * dt);
+        render();
+      };
+      if (!reduced) gsap.ticker.add(tick);
+
+      const stepBy = (direction) => {
+        const goal = Math.round(focus) + direction;
+        velocity = 0;
+        stepTween?.kill();
+        const proxy = { value: focus };
+        stepTween = gsap.to(proxy, {
+          value: goal,
+          duration: reduced ? 0 : 0.75,
+          ease: TILE_EASE,
+          overwrite: true,
+          onUpdate: () => {
+            focus = proxy.value;
+            render();
+          },
+        });
+      };
+
+      gsap.set(cursor, { xPercent: -50, yPercent: -50, scale: 0, autoAlpha: 0 });
+      gsap.set(arrow, { rotation: 0, transformOrigin: "50% 50%" });
+
+      root.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        dragging = true;
+        dragged = false;
+        velocity = 0;
+        stepTween?.kill();
+        originX = event.clientX;
+        lastX = event.clientX;
+        lastTime = performance.now();
+      });
+      root.addEventListener("pointermove", (event) => {
+        gsap.set(cursor, { x: event.clientX, y: event.clientY });
+        const rect = root.getBoundingClientRect();
+        const next = event.clientX < rect.left + rect.width / 2 ? -1 : 1;
+        if (next !== facing) {
+          facing = next;
+          gsap.to(arrow, { rotation: facing < 0 ? 180 : 0, duration: 0.35, ease: "power2.out", overwrite: "auto" });
+        }
+        if (!dragging) return;
+        const now = performance.now();
+        const dt = Math.max(16, now - lastTime) / 1000;
+        const delta = -(event.clientX - lastX) / step;
+        if (Math.abs(event.clientX - originX) > 6) dragged = true;
+        focus += delta;
+        velocity = delta / dt;
+        lastX = event.clientX;
+        lastTime = now;
+        render();
+      });
+      const release = () => {
+        dragging = false;
+      };
+      root.addEventListener("pointerup", release);
+      root.addEventListener("pointercancel", release);
+      root.addEventListener("pointerenter", (event) => {
+        gsap.to(cursor, { scale: 1, autoAlpha: 1, duration: 0.35, ease: "power2.out", overwrite: "auto" });
+        gsap.set(cursor, { x: event.clientX, y: event.clientY });
+      });
+      root.addEventListener("pointerleave", () => {
+        if (dragging) return;
+        gsap.to(cursor, { scale: 0, autoAlpha: 0, duration: 0.25, ease: "power2.inOut", overwrite: "auto" });
+      });
+      root.addEventListener("click", (event) => {
+        if (dragged) return;
+        const rect = root.getBoundingClientRect();
+        stepBy(event.clientX < rect.left + rect.width / 2 ? -1 : 1);
+      });
+      window.addEventListener("resize", render);
+    </script>
+  </body>
+</html>

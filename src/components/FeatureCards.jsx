@@ -3,9 +3,9 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { CustomEase } from "gsap/CustomEase";
 import { projects, projectStatus } from "../data/projects";
-import motionBg from "../assets/bg-cards-2.png";
-import componentsBg from "../assets/bg-4.png";
-import systemsBg from "../assets/bg-5.png";
+import motionBg from "../assets/bg-cards-2.jpg";
+import componentsBg from "../assets/bg-4.jpg";
+import systemsBg from "../assets/bg-5.jpg";
 import faceOne from "../assets/pexels-emilianovittoriosi-20797574.jpg";
 import faceTwo from "../assets/pexels-ezeguna_graphy-sulaiman-muhammad-2153324075-34689847.jpg";
 import faceThree from "../assets/pexels-michelangelo-buonarroti-8726735.jpg";
@@ -213,7 +213,6 @@ export default function FeatureCards({ onOpen }) {
       };
       const observer = new ResizeObserver(watchWidth);
       observer.observe(viewport);
-      gsap.ticker.add(watchWidth);
       window.addEventListener("resize", onResize);
 
       const placeCursor = (event) => {
@@ -380,7 +379,6 @@ export default function FeatureCards({ onOpen }) {
         viewport.removeEventListener("pointerdown", onPointerDown);
         viewport.removeEventListener("pointerup", onPointerUp);
         observer.disconnect();
-        gsap.ticker.remove(watchWidth);
         window.removeEventListener("resize", onResize);
         spinTween?.kill();
         root.querySelector(".feature-cards__library")?._arrowCleanup?.();

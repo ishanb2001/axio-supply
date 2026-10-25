@@ -19,7 +19,7 @@
   margin: 0;
   font-family: Satoshi, Inter, sans-serif;
   font-size: clamp(28px, 3.2vw + 0.4rem, 48px);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.055em;
   line-height: 1.16;
   color: #ffffff;
@@ -29,7 +29,7 @@
   margin: 8px 0 0;
   font-family: Satoshi, Inter, sans-serif;
   font-size: clamp(56px, 7vw, 104px);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.055em;
   line-height: 0.98;
   color: rgba(255, 255, 255, 0.58);
@@ -136,7 +136,7 @@
   overflow: hidden;
   font-family: Satoshi, Inter, sans-serif;
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1.2;
   color: #1a1a1a;
@@ -186,9 +186,11 @@
 
 .feature-cards__trust {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   min-width: 0;
+  text-align: center;
 }
 
 .feature-cards__faces {
@@ -234,11 +236,12 @@
 
 .feature-cards__trust p {
   margin: 0;
-  font-family: Satoshi, Inter, sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(18px, 1.6vw, 24px);
   font-weight: 500;
   letter-spacing: -0.03em;
-  line-height: 1.15;
+  line-height: 1.2;
+  text-align: center;
   color: #a3a3a8;
 }
 
@@ -259,8 +262,8 @@
 
 .feature-cards__library-label {
   display: inline-block;
-  font-family: Satoshi, Inter, sans-serif;
-  font-size: clamp(26px, 2.2vw, 36px);
+  font-family: var(--font-display);
+  font-size: var(--cta-size);
   font-weight: 500;
   letter-spacing: -0.04em;
   line-height: 1.15;
@@ -514,7 +517,7 @@
 .feature-filter__title {
   margin: 0;
   font-family: Inter, "PP Neue Montreal", sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   color: #8a8a8a;
   letter-spacing: -0.02em;
@@ -592,7 +595,7 @@
   margin: 0;
   font-family: Satoshi, Inter, sans-serif;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.03em;
   color: #1a1a1a;
 }
@@ -898,5 +901,14 @@
   .feature-cards__library {
     align-self: center;
     margin-top: 24px;
+  }
+
+  .feature-cards__trust p {
+    font-size: 0.9375rem;
+    line-height: 1.35;
+  }
+
+  .feature-filter__title {
+    font-size: 15px;
   }
 }

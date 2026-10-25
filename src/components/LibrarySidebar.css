@@ -58,7 +58,10 @@
 }
 
 .library-sidebar__brand .brand-logo-mark {
-  font-size: 30px;
+  font-family: Poppins, sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.045em;
   color: #111111;
 }
 
@@ -327,6 +330,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .library-sidebar__item,
+  .library-sidebar__search input {
+    font-size: 15px;
   }
 
   .library-sidebar__top {

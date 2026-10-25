@@ -1,5 +1,25 @@
 const catalog = [
   {
+    id: "sift-cards",
+    file: "sift-cards.html",
+    year: "2026",
+    title: "Sift Cards",
+    desc: "A banner row you drag or click through. Cards keep arriving from either side.",
+    tools: "GSAP",
+    cat: "Cards",
+    background: "#f4f4f4",
+  },
+  {
+    id: "feature-cube",
+    file: "feature-cube.html",
+    year: "2026",
+    title: "Feature Cube",
+    desc: "A card cylinder under a headline. Click either side and the next face turns into place.",
+    tools: "GSAP",
+    cat: "Cards",
+    background: "#0a0a0b",
+  },
+  {
     id: "liquid-glass-sidebar",
     file: "liquid-glass-sidebar.html",
     year: "2026",
@@ -117,11 +137,10 @@ const catalog = [
     file: "library-sidebar.html",
     year: "2026",
     title: "Library Sidebar",
-    desc: "White nav panel with a search field, elastic gray hover ghost, and black type on the active row.",
+    desc: "White nav panel. The gray highlight glides to the hovered row, and the active row slides into place on click.",
     tools: "GSAP",
     cat: "Navigation",
     background: "#f4f4f5",
-    hidden: true,
   },
   {
     id: "blob-tabs",

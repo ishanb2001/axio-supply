@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feature Cube</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #0a0a0b;
+        color: #ffffff;
+        font-family: Inter, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .feature {
+        min-height: 100vh;
+        padding: clamp(48px, 10vh, 100px) clamp(20px, 4vw, 40px) 48px;
+      }
+
+      .intro {
+        width: min(1100px, 100%);
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .kicker {
+        margin: 0;
+        font-size: clamp(28px, 3.2vw, 48px);
+        font-weight: 600;
+        letter-spacing: -0.055em;
+      }
+
+      h1 {
+        margin: 8px 0 0;
+        font-size: clamp(56px, 7vw, 104px);
+        font-weight: 600;
+        letter-spacing: -0.055em;
+        line-height: 0.98;
+        color: rgba(255, 255, 255, 0.58);
+      }
+
+      .cylinder {
+        position: relative;
+        width: min(1100px, 100%);
+        height: calc(var(--panel-h, 400px) + 72px);
+        margin: 56px auto 0;
+        cursor: none;
+        user-select: none;
+        touch-action: pan-y;
+      }
+
+      .cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        display: grid;
+        place-items: center;
+        width: 72px;
+        height: 72px;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #111111;
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      .cursor svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .cursor path {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .scene {
+        height: 100%;
+        perspective: 1100px;
+      }
+
+      .ring {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+      }
+
+      .panel {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        display: flex;
+        flex-direction: column;
+        width: var(--panel-w, 520px);
+        height: var(--panel-h, 400px);
+        padding: 12px;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #1a1a1a;
+        will-change: transform;
+      }
+
+      .panel__stage {
+        flex: 1;
+        min-height: 0;
+        border-radius: 12px;
+        background: #111 center / cover no-repeat;
+      }
+
+      .panel__meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 4px 2px;
+      }
+
+      .panel__meta h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .panel__meta p {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: #8a8a8a;
+      }
+
+      @media (max-width: 1024px) {
+        .cylinder {
+          cursor: grab;
+        }
+
+        .cursor {
+          display: none;
+        }
+
+        .panel__meta h2 {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="feature">
+      <div class="intro">
+        <p class="kicker">Newest pieces,</p>
+        <h1>ready to open.</h1>
+      </div>
+      <div class="cylinder" id="viewport">
+        <div class="cursor" id="cursor" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </div>
+        <div class="scene">
+          <div class="ring" id="row"></div>
+        </div>
+      </div>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+      const CUBE_EASE = CustomEase.create("featureCube", "0.76, 0, 0.24, 1");
+      const FOLD = 46;
+      const CARD_GAP = 28;
+      const PIECES = [
+        ["Liquid Glass", "Pro", "linear-gradient(145deg, #14301c, #3d8f55)"],
+        ["Wind Row", "Free", "linear-gradient(145deg, #123a4a, #1f8a8a 46%, #d7f36a)"],
+        ["Card Frame", "Free", "radial-gradient(circle at 28% 18%, #ffd0a8, #ff6a3d 38%, #9a1848)"],
+        ["Service Hover", "Free", "radial-gradient(circle at 70% 30%, #ffe27a, #ff4f9a 42%, #3a1570)"],
+        ["Chroma Wipe", "Free", "linear-gradient(160deg, #1b1440, #6d28d9 48%, #f43f5e)"],
+        ["Scroll Cube", "Free", "linear-gradient(160deg, #111111, #444444)"],
+        ["Blob Tabs", "Free", "linear-gradient(145deg, #f4f4f5, #c8c8cc)"],
+      ];
+
+      const viewport = document.getElementById("viewport");
+      const row = document.getElementById("row");
+      const cursor = document.getElementById("cursor");
+      const arrow = cursor.querySelector("svg");
+      for (let copy = 0; copy < 2; copy += 1) {
+        PIECES.forEach(([title, status, background]) => {
+          const panel = document.createElement("article");
+          panel.className = "panel";
+          panel.innerHTML = `<div class="panel__stage" style="background:${background}"></div><div class="panel__meta"><h2>${title}</h2><p>${status}</p></div>`;
+          row.appendChild(panel);
+        });
+      }
+
+      const panels = gsap.utils.toArray(".panel", row);
+      const count = panels.length;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const spin = { index: 0 };
+      let spinTween = null;
+      let goal = 0;
+      let orbit = 480;
+      let facing = 1;
+
+      const isCompact = () => window.matchMedia("(max-width: 1024px)").matches;
+
+      const layout = () => {
+        const target = viewport.clientWidth;
+        const foldRad = (FOLD * Math.PI) / 180;
+        const cos = Math.cos(foldRad);
+        const sin = Math.sin(foldRad);
+        if (isCompact()) {
+          const width = Math.min(Math.max(target - 80, 200), 300);
+          const height = Math.round(width * 0.7);
+          viewport.style.setProperty("--panel-w", `${width}px`);
+          viewport.style.setProperty("--panel-h", `${height}px`);
+          orbit = (height / 2) * (sin / (1 - cos)) + 16 / sin;
+          return;
+        }
+        const scene = viewport.querySelector(".scene");
+        const perspective = parseFloat(getComputedStyle(scene).perspective);
+        const span = 1 + 2 * cos;
+        let width = (target - CARD_GAP * 2) / span;
+        if (Number.isFinite(perspective) && perspective > 0) {
+          const half =
+            ((target / 2) * perspective -
+              CARD_GAP * (perspective + ((target / 2) * (cos - 1)) / sin)) /
+            (span * perspective - target * sin);
+          if (half > 0) width = half * 2;
+        }
+        width = Math.max(220, width);
+        const height = Math.round(24 + (width - 24) * (10 / 16) + 44);
+        orbit = (width / 2) * (sin / (1 - cos)) + CARD_GAP / sin;
+        viewport.style.setProperty("--panel-w", `${width}px`);
+        viewport.style.setProperty("--panel-h", `${height}px`);
+      };
+
+      const wrap = (value) => {
+        let offset = value % count;
+        if (offset > count / 2) offset -= count;
+        if (offset < -count / 2) offset += count;
+        return offset;
+      };
+
+      const apply = () => {
+        const vertical = isCompact();
+        panels.forEach((panel, index) => {
+          const offset = wrap(index - spin.index);
+          const away = Math.abs(offset);
+          if (away > 1.7) {
+            gsap.set(panel, { autoAlpha: 0, zIndex: 0, rotationX: 0, rotationY: 0 });
+            return;
+          }
+          const phi = offset * FOLD;
+          const rad = (phi * Math.PI) / 180;
+          const z = (Math.cos(rad) - 1) * orbit;
+          gsap.set(panel, {
+            xPercent: -50,
+            yPercent: -50,
+            x: vertical ? 0 : Math.sin(rad) * orbit,
+            y: vertical ? Math.sin(rad) * orbit : 0,
+            z,
+            rotationX: vertical ? -phi : 0,
+            rotationY: vertical ? 0 : phi,
+            autoAlpha: gsap.utils.clamp(0, 1, gsap.utils.mapRange(1.7, 1.15, 0, 1, away)),
+            zIndex: Math.round(200 + z),
+            force3D: true,
+          });
+        });
+      };
+
+      const rotateBy = (direction) => {
+        goal += direction;
+        spinTween?.kill();
+        const distance = Math.abs(goal - spin.index);
+        if (reduced || distance < 0.001) {
+          spin.index = goal;
+          apply();
+          return;
+        }
+        spinTween = gsap.to(spin, {
+          index: goal,
+          duration: gsap.utils.clamp(0.75, 1.2, 0.9 * distance),
+          ease: CUBE_EASE,
+          overwrite: true,
+          onUpdate: apply,
+        });
+      };
+
+      layout();
+      apply();
+      window.addEventListener("resize", () => {
+        layout();
+        apply();
+      });
+
+      gsap.set(cursor, { xPercent: -50, yPercent: -50, scale: 0, autoAlpha: 0 });
+      gsap.set(arrow, { rotation: 0, transformOrigin: "50% 50%" });
+
+      viewport.addEventListener("pointermove", (event) => {
+        const rect = viewport.getBoundingClientRect();
+        const next = event.clientX < rect.left + rect.width / 2 ? -1 : 1;
+        gsap.set(cursor, { x: event.clientX, y: event.clientY });
+        if (next === facing) return;
+        facing = next;
+        gsap.to(arrow, { rotation: facing < 0 ? 180 : 0, duration: 0.35, ease: "power2.out", overwrite: "auto" });
+      });
+      viewport.addEventListener("pointerenter", (event) => {
+        gsap.set(cursor, { x: event.clientX, y: event.clientY });
+        gsap.to(cursor, { scale: 1, autoAlpha: 1, duration: 0.35, ease: "power2.out", overwrite: "auto" });
+      });
+      viewport.addEventListener("pointerleave", () => {
+        gsap.to(cursor, { scale: 0, autoAlpha: 0, duration: 0.25, ease: "power2.inOut", overwrite: "auto" });
+      });
+      viewport.addEventListener("click", (event) => {
+        const rect = viewport.getBoundingClientRect();
+        if (isCompact()) {
+          rotateBy(1);
+          return;
+        }
+        rotateBy(event.clientX < rect.left + rect.width / 2 ? -1 : 1);
+      });
+    </script>
+  </body>
+</html>

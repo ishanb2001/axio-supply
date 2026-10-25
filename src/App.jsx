@@ -16,25 +16,10 @@ import LibrarySidebar from "./components/LibrarySidebar";
 import SortMenu from "./components/SortMenu";
 import CodeBlock from "./components/CodeBlock";
 import { openOnCodePen } from "./utils/openCodePen";
+import { prepareDemoSource } from "./utils/standaloneDemo";
 import "./App.css";
 import "./components/FeatureCards.css";
 import "./components/DynamicNav.css";
-
-function splitDemoSource(html) {
-  const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)]
-    .map((match) => match[1].trim())
-    .filter(Boolean)
-    .join("\n\n");
-  const js = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)]
-    .map((match) => match[1].trim())
-    .filter(Boolean)
-    .join("\n\n");
-  const withoutScripts = html.replace(/<script[\s\S]*?<\/script>/gi, "");
-  const withoutStyles = withoutScripts.replace(/<style[\s\S]*?<\/style>/gi, "");
-  const body = withoutStyles.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  const markup = (body ? body[1] : withoutStyles).trim();
-  return { html: markup, css, js };
-}
 
 gsap.registerPlugin(useGSAP, CustomEase, ScrollTrigger);
 CustomEase.create("premium", "M0,0 C0.32,0.72 0,1 1,1");
@@ -107,7 +92,7 @@ export default function App() {
   const [device, setDevice] = useState("desktop");
   const [codePenLoading, setCodePenLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [source, setSource] = useState({ html: "", css: "", js: "" });
+  const [source, setSource] = useState({ html: "", css: "", js: "", standalone: "" });
   const [libraryQuery, setLibraryQuery] = useState("");
   const [libraryTier, setLibraryTier] = useState("all");
   const [librarySort, setLibrarySort] = useState("default");
@@ -136,21 +121,39 @@ export default function App() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Lenis holds the scroll position to smooth wheel input. On touch screens
+    // that hold fights Chrome's native fling, so reversing direction pauses
+    // until the virtual scroll catches up. Those viewports keep native scrolling.
+    const nativeScroll = window.matchMedia("(hover: none), (pointer: coarse), (max-width: 1024px)");
 
-    const locomotive = new LocomotiveScroll({
-      scrollCallback: ScrollTrigger.update,
-      lenisOptions: {
-        lerp: 0.09,
-        smoothWheel: true,
-        syncTouch: false,
-      },
-    });
+    const stop = () => {
+      locomotiveRef.current?.destroy();
+      locomotiveRef.current = null;
+    };
 
-    locomotiveRef.current = locomotive;
+    const start = () => {
+      if (locomotiveRef.current || nativeScroll.matches) return;
+      locomotiveRef.current = new LocomotiveScroll({
+        scrollCallback: ScrollTrigger.update,
+        lenisOptions: {
+          lerp: 0.12,
+          smoothWheel: true,
+          syncTouch: false,
+        },
+      });
+    };
+
+    const sync = () => {
+      if (nativeScroll.matches) stop();
+      else start();
+    };
+
+    sync();
+    nativeScroll.addEventListener("change", sync);
 
     return () => {
-      locomotive.destroy();
-      locomotiveRef.current = null;
+      nativeScroll.removeEventListener("change", sync);
+      stop();
     };
   }, []);
 
@@ -618,15 +621,17 @@ export default function App() {
   useEffect(() => {
     if (!isOpen || !active?.file) return undefined;
     let cancelled = false;
-    setSource({ html: "", css: "", js: "" });
+    setSource({ html: "", css: "", js: "", standalone: "" });
     setCopied(false);
-    fetch(demoSrc(active.file))
+    const demoUrl = new URL(demoSrc(active.file), window.location.origin).href;
+    fetch(demoUrl)
       .then((response) => response.text())
-      .then((html) => {
-        if (!cancelled) setSource(splitDemoSource(html));
+      .then((html) => prepareDemoSource(html, demoUrl))
+      .then((next) => {
+        if (!cancelled) setSource(next);
       })
       .catch(() => {
-        if (!cancelled) setSource({ html: "", css: "", js: "" });
+        if (!cancelled) setSource({ html: "", css: "", js: "", standalone: "" });
       });
     return () => {
       cancelled = true;
@@ -634,16 +639,8 @@ export default function App() {
   }, [isOpen, active]);
 
   async function copyAllCode() {
-    const text = [
-      "<!-- HTML -->",
-      source.html,
-      "",
-      "/* CSS */",
-      source.css,
-      "",
-      "// JavaScript",
-      source.js,
-    ].join("\n");
+    const text = source.standalone;
+    if (!text) return;
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -841,6 +838,7 @@ export default function App() {
                     type="button"
                     aria-label={copied ? "Copied" : "Copy all code"}
                     onClick={copyAllCode}
+                    disabled={!source.standalone}
                   >
                     <span className="modal__copy-icon" aria-hidden="true">
                       <span className="modal__copy-icon-track">

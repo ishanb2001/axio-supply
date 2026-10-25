@@ -3,9 +3,9 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { CustomEase } from "gsap/CustomEase";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import motionBg from "../assets/bg-cards-2.png";
-import componentsBg from "../assets/bg-4.png";
-import systemsBg from "../assets/bg-5.png";
+import motionBg from "../assets/bg-cards-2.jpg";
+import componentsBg from "../assets/bg-4.jpg";
+import systemsBg from "../assets/bg-5.jpg";
 import "./ExpandCards.css";
 
 gsap.registerPlugin(useGSAP, CustomEase, ScrollTrigger);

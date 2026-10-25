@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import motionBg from "../assets/bg-cards-2.png";
-import componentsBg from "../assets/bg-4.png";
-import systemsBg from "../assets/bg-5.png";
+import motionBg from "../assets/bg-cards-2.jpg";
+import componentsBg from "../assets/bg-4.jpg";
+import systemsBg from "../assets/bg-5.jpg";
 
 const CARD_BG_IMAGES = {
   motion: motionBg,

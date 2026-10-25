@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const JS_KEYWORDS = new Set(
   "const let var function return if else for while do new class extends import export from async await try catch finally throw typeof instanceof this true false null undefined of in break continue switch case default yield void delete super static get set".split(
     " "
@@ -73,11 +75,55 @@ const HIGHLIGHT = {
 };
 
 export default function CodeBlock({ label, code }) {
+  const [copied, setCopied] = useState(false);
   const tokens = code ? (HIGHLIGHT[label]?.(code) ?? [{ type: "", value: code }]) : null;
+
+  async function copyCode() {
+    if (!code || copied) return;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        const area = document.createElement("textarea");
+        area.value = code;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.left = "-9999px";
+        document.body.appendChild(area);
+        area.select();
+        const ok = document.execCommand("copy");
+        area.remove();
+        if (!ok) return;
+      }
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1400);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   return (
     <section className="modal__code">
-      <h3>{label}</h3>
+      <div className="modal__code-head">
+        <h3>{label}</h3>
+        <button
+          className={`modal__code-copy${copied ? " is-copied" : ""}`}
+          type="button"
+          aria-label={copied ? `${label} copied` : `Copy ${label}`}
+          onClick={copyCode}
+          disabled={!code}
+        >
+          <span className="modal__code-copy-track" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
+              <path d="M10.5 5.5V3.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1H5.5" />
+            </svg>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M3.5 8.5l3 3 6-6.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        </button>
+      </div>
       <pre>
         <code>
           {tokens

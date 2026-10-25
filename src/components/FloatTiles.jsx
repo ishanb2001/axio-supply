@@ -34,6 +34,20 @@ export default function FloatTiles() {
       if (!cards.length) return;
 
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const compactQuery = window.matchMedia("(max-width: 1024px)");
+      let compact = compactQuery.matches;
+      const onCompact = () => {
+        compact = compactQuery.matches;
+      };
+      compactQuery.addEventListener("change", onCompact);
+      let inView = true;
+      const visibility = new IntersectionObserver(
+        ([entry]) => {
+          inView = entry.isIntersecting;
+        },
+        { rootMargin: "180px 0px" }
+      );
+      visibility.observe(root);
       const maxFocus = cards.length - 1;
       let focus = Math.round(maxFocus / 2);
       let velocity = 0;
@@ -94,27 +108,44 @@ export default function FloatTiles() {
           return;
         }
 
-        const placed = cards.map((_, index) => pose(index - focus));
+        const items = cards.map((card, index) => ({ card, delta: wrapDelta(index) }));
+        items.sort((a, b) => a.delta - b.delta);
+        const placed = items.map((item) => pose(item.delta));
         const along = [0];
-        for (let index = 1; index < cards.length; index += 1) {
+        for (let index = 1; index < items.length; index += 1) {
           along[index] = along[index - 1] + placed[index - 1].half + GAP + placed[index].half;
         }
-        const floor = Math.floor(focus);
-        const blend = focus - floor;
-        const next = Math.min(floor + 1, cards.length - 1);
-        const anchor = along[floor] * (1 - blend) + along[next] * blend;
-        step = Math.max(1, along[next] - along[floor] || cards[0].offsetWidth);
 
-        cards.forEach((card, index) => {
+        let anchor = along[0];
+        let stride = cards[0].offsetWidth;
+        for (let index = 0; index < items.length; index += 1) {
+          const delta = items[index].delta;
+          const next = items[index + 1];
+          if (next) stride = Math.max(1, along[index + 1] - along[index]);
+          if (delta >= 0 || !next) {
+            anchor = along[index];
+            break;
+          }
+          if (next.delta >= 0) {
+            const span = next.delta - delta || 1;
+            anchor = along[index] + (along[index + 1] - along[index]) * ((0 - delta) / span);
+            break;
+          }
+        }
+        step = stride;
+
+        items.forEach((item, index) => {
           const { degrees, scale, z, project } = placed[index];
-          gsap.set(card, {
+          gsap.set(item.card, {
             xPercent: -50,
             yPercent: -50,
             x: (along[index] - anchor) / project,
+            y: 0,
             z,
             rotationY: -degrees,
             scale,
-            zIndex: Math.round((3 - Math.min(Math.abs(index - focus), 3)) * 40),
+            autoAlpha: 1,
+            zIndex: Math.round((3 - Math.min(Math.abs(item.delta), 3)) * 40),
             force3D: true,
           });
         });
@@ -123,7 +154,8 @@ export default function FloatTiles() {
       render();
 
       const tick = () => {
-        if (window.matchMedia("(max-width: 1024px)").matches) {
+        if (!inView) return;
+        if (compact) {
           if (!dragging && !reduced && !stepTween?.isActive()) {
             focus += 0.42 * (gsap.ticker.deltaRatio() / 60);
           }
@@ -133,9 +165,8 @@ export default function FloatTiles() {
         if (dragging || reduced || stepTween?.isActive()) return;
         const dt = gsap.ticker.deltaRatio();
         if (Math.abs(velocity) >= 0.02) {
-          focus = gsap.utils.clamp(0, maxFocus, focus + velocity * (dt / 60));
+          focus += velocity * (dt / 60);
           velocity *= Math.pow(0.94, dt);
-          if (focus <= 0 || focus >= maxFocus) velocity = 0;
           render();
           return;
         }
@@ -155,7 +186,7 @@ export default function FloatTiles() {
       if (!reduced) gsap.ticker.add(tick);
 
       const stepBy = (direction) => {
-        const goal = gsap.utils.clamp(0, maxFocus, Math.round(focus) + direction);
+        const goal = Math.round(focus) + direction;
         velocity = 0;
         stepTween?.kill();
         const proxy = { value: focus };
@@ -257,7 +288,7 @@ export default function FloatTiles() {
         const dt = Math.max(16, now - lastTime) / 1000;
         const delta = -(event.clientX - lastX) / step;
         if (Math.abs(event.clientX - originX) > 6) dragged = true;
-        focus = gsap.utils.clamp(0, maxFocus, focus + delta);
+        focus += delta;
         velocity = delta / dt;
         lastX = event.clientX;
         lastTime = now;
@@ -312,6 +343,8 @@ export default function FloatTiles() {
         stepTween?.kill();
         gsap.ticker.remove(trackPointer);
         if (!reduced) gsap.ticker.remove(tick);
+        compactQuery.removeEventListener("change", onCompact);
+        visibility.disconnect();
       };
     },
     { scope: rootRef }
@@ -339,7 +372,8 @@ export default function FloatTiles() {
                 alt=""
                 draggable={false}
                 decoding="async"
-                loading={index < 4 ? "eager" : "lazy"}
+                decoding="async"
+                loading={index < 2 ? "eager" : "lazy"}
                 fetchPriority={index < 2 ? "high" : "low"}
               />
             </div>

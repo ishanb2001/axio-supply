@@ -91,3 +91,10 @@
 .sort-menu__option-text {
   display: block;
 }
+
+@media (max-width: 1024px) {
+  .sort-menu__trigger,
+  .sort-menu__option {
+    font-size: 15px;
+  }
+}

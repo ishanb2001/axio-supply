@@ -88,18 +88,28 @@
         position: relative;
       }
 
-      .hover {
+      .hover,
+      .active {
         position: absolute;
         left: 0;
         right: 0;
         top: 0;
         height: 0;
         border-radius: 12px;
-        background: #e8e8ea;
         pointer-events: none;
         z-index: 0;
+        will-change: top, height, opacity, transform;
+      }
+
+      .hover {
+        background: #e8e8ea;
         opacity: 0;
         visibility: hidden;
+      }
+
+      .active {
+        background: #d8d8dc;
+        transform-origin: 50% 50%;
       }
 
       .item {
@@ -192,6 +202,7 @@
         </label>
         <div class="menu">
           <div class="hover" aria-hidden="true"></div>
+          <div class="active" aria-hidden="true"></div>
           <button class="item vault is-active" type="button" data-id="all">The Library</button>
           <ul class="cats">
             <li><button class="item" type="button" data-id="ui"><span class="count">08</span>UI</button></li>
@@ -210,119 +221,97 @@
       </aside>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
     <script>
-      const HOVER_EASE_LEAD = "cubic-bezier(0.22, 1, 0.36, 1)";
-      const HOVER_EASE_SNAP = "cubic-bezier(0.34, 1.25, 0.64, 1)";
-      const HOVER_BG = "#e8e8ea";
-      const PRESS_BG = "#d4d4d8";
+      gsap.registerPlugin(CustomEase);
+      const SLIDE_EASE = CustomEase.create("sidebarSlide", "0.77, 0, 0.18, 1");
+      const HOVER_EASE = CustomEase.create("sidebarHover", "0.4, 0, 0.2, 1");
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       const menu = document.querySelector(".menu");
       const hoverEl = document.querySelector(".hover");
+      const activeEl = document.querySelector(".active");
       const items = gsap.utils.toArray(".item");
       const hoverPos = { top: 0, bottom: 0 };
-      let hoveredItem = null;
+      const activePos = { top: 0, bottom: 0 };
 
-      const renderHover = () => {
-        gsap.set(hoverEl, {
-          top: hoverPos.top,
-          height: Math.max(0, hoverPos.bottom - hoverPos.top),
-        });
+      const paint = (el, pos) => {
+        gsap.set(el, { top: pos.top, height: Math.max(0, pos.bottom - pos.top) });
       };
 
-      const hideHover = () => {
-        gsap.to(hoverEl, {
-          autoAlpha: 0,
-          backgroundColor: HOVER_BG,
-          duration: reduced ? 0 : 0.22,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      };
-
-      const moveHoverTo = (item, { pressed = false } = {}) => {
+      const move = (el, pos, item, travel) => {
         const targetTop = item.offsetTop;
         const targetBottom = targetTop + item.offsetHeight;
-        const visible = Number(gsap.getProperty(hoverEl, "opacity")) > 0.05;
-
-        gsap.to(hoverEl, {
-          autoAlpha: 1,
-          backgroundColor: pressed ? PRESS_BG : HOVER_BG,
-          duration: reduced ? 0 : 0.2,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-
+        const visible = Number(gsap.getProperty(el, "opacity")) > 0.05;
+        if (el === hoverEl) {
+          gsap.to(el, { autoAlpha: 1, duration: reduced ? 0 : 0.16, ease: "power2.out", overwrite: "auto" });
+        }
         if (reduced || !visible) {
-          hoverPos.top = targetTop;
-          hoverPos.bottom = targetBottom;
-          renderHover();
+          pos.top = targetTop;
+          pos.bottom = targetBottom;
+          paint(el, pos);
+          gsap.set(el, { autoAlpha: 1, scaleX: 1 });
           return;
         }
-
-        const isMovingDown = targetTop > hoverPos.top;
-        gsap.killTweensOf(hoverPos);
-
-        if (isMovingDown) {
-          gsap.to(hoverPos, {
-            bottom: targetBottom,
-            duration: 0.26,
-            ease: HOVER_EASE_LEAD,
-            onUpdate: renderHover,
-            overwrite: "auto",
-          });
-          gsap.to(hoverPos, {
-            top: targetTop,
-            duration: 0.38,
-            ease: HOVER_EASE_SNAP,
-            onUpdate: renderHover,
-            overwrite: "auto",
-          });
-          return;
-        }
-
-        gsap.to(hoverPos, {
+        gsap.killTweensOf(pos);
+        const duration = travel ? 0.55 : 0.32;
+        gsap.to(pos, {
           top: targetTop,
-          duration: 0.26,
-          ease: HOVER_EASE_LEAD,
-          onUpdate: renderHover,
-          overwrite: "auto",
-        });
-        gsap.to(hoverPos, {
           bottom: targetBottom,
-          duration: 0.38,
-          ease: HOVER_EASE_SNAP,
-          onUpdate: renderHover,
+          duration,
+          ease: travel ? SLIDE_EASE : HOVER_EASE,
+          onUpdate: () => paint(el, pos),
           overwrite: "auto",
         });
+        if (travel) {
+          gsap.killTweensOf(el, "scaleX");
+          gsap.fromTo(el, { scaleX: 1 }, {
+            scaleX: 0.975,
+            duration: duration / 2,
+            ease: SLIDE_EASE,
+            yoyo: true,
+            repeat: 1,
+            overwrite: "auto",
+          });
+        }
       };
 
+      const current = menu.querySelector(".item.is-active");
+      if (current) {
+        activePos.top = current.offsetTop;
+        activePos.bottom = current.offsetTop + current.offsetHeight;
+        paint(activeEl, activePos);
+        gsap.set(activeEl, { autoAlpha: 1, scaleX: 1 });
+      }
       gsap.set(hoverEl, { autoAlpha: 0 });
 
       items.forEach((item) => {
         item.addEventListener("pointerenter", () => {
           if (item.classList.contains("is-active")) {
-            hideHover();
+            gsap.to(hoverEl, { autoAlpha: 0, duration: 0.16, overwrite: "auto" });
             return;
           }
-          hoveredItem = item;
-          moveHoverTo(item);
-        });
-        item.addEventListener("pointerleave", () => {
-          if (hoveredItem === item) hoveredItem = null;
+          move(hoverEl, hoverPos, item, false);
         });
         item.addEventListener("pointerdown", () => {
-          if (!item.classList.contains("is-active")) moveHoverTo(item, { pressed: true });
+          gsap.to(item, { scale: 0.96, duration: 0.12, ease: "power2.out", overwrite: "auto" });
+        });
+        item.addEventListener("pointerup", () => {
+          gsap.to(item, { scale: 1, duration: 0.34, ease: SLIDE_EASE, overwrite: "auto" });
+        });
+        item.addEventListener("pointerleave", () => {
+          gsap.to(item, { scale: 1, duration: 0.34, ease: SLIDE_EASE, overwrite: "auto" });
         });
         item.addEventListener("click", () => {
+          if (item.classList.contains("is-active")) return;
           items.forEach((el) => el.classList.toggle("is-active", el === item));
-          hideHover();
+          gsap.to(hoverEl, { autoAlpha: 0, duration: 0.16, overwrite: "auto" });
+          move(activeEl, activePos, item, true);
         });
       });
 
       menu.addEventListener("pointerleave", () => {
-        hoveredItem = null;
-        hideHover();
+        gsap.to(hoverEl, { autoAlpha: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
       });
     </script>
   </body>
